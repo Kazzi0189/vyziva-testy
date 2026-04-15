@@ -564,6 +564,7 @@
         function render(e) {
             const card = document.createElement('div');
             card.className = 'card';
+            card.style.position = 'relative'; // DŮLEŽITÉ: aby koš neutekl z karty ven
 
             // Přidáme koš do hlavičky hlavní karty
             let html = `<button onclick="delMainCard(this)" style="position:absolute; top:15px; right:15px; background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:6px; padding:6px 10px; font-size:1.1rem; cursor:pointer; z-index:10;">🗑️</button>`;
