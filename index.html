@@ -388,7 +388,6 @@
                 <button id="micMain" class="btn-mic" onclick="runVoice('food')">🎤 JÍDLO</button>
                 <button id="micNote" style="background:var(--note)" class="btn-mic" onclick="runVoice('note')">🎤
                     POZNÁMKA</button>
-                <button style="background:var(--danger)" onclick="delCard()">SMAZAT</button>
             </div>
             <div class="btn-row">
                 <select id="filterSelect" onchange="setFilter(this.value)">
@@ -424,6 +423,8 @@
             <button class="modal-btn btn-export" onclick="exportData()">💾 ZÁLOHA APLIKACE (.json)</button>
             <button class="modal-btn btn-import" onclick="triggerImport()">📂 OBNOVA APLIKACE (.json)</button>
             <button class="modal-btn btn-cancel" onclick="closeSettings()">ZAVŘÍT</button>
+            <button class="modal-btn btn-overwrite" style="margin-top: 30px;" onclick="clearAllMainData()">🔥 SMAZAT
+                ÚPLNĚ VŠECHNA DATA</button>
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="handleFileSelect(event)">
             <input type="file" id="csvImportFile" style="display:none" accept=".csv" onchange="handleCSVSelect(event)">
         </div>
@@ -465,6 +466,8 @@
             </div>
             <button class="modal-btn btn-merge" onclick="transferDraft()">✅ ODESLAT DO HLAVNÍHO DENÍKU</button>
             <button class="modal-btn btn-cancel" onclick="closeDraft()">ZAVŘÍT (Uloží se jako koncept)</button>
+            <button class="modal-btn btn-overwrite" style="margin-top: 25px;" onclick="clearAllDrafts()">🗑️ SMAZAT
+                VŠECHNY KONCEPTY</button>
         </div>
     </div>
 
@@ -562,7 +565,9 @@
             const card = document.createElement('div');
             card.className = 'card';
 
-            let html = `<div class="card-header" contenteditable="true" oninput="save()" onblur="saveAndReload()">${e.d}</div>`;
+            // Přidáme koš do hlavičky hlavní karty
+            let html = `<button onclick="delMainCard(this)" style="position:absolute; top:15px; right:15px; background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:6px; padding:6px 10px; font-size:1.1rem; cursor:pointer; z-index:10;">🗑️</button>`;
+            html += `<div class="card-header" contenteditable="true" oninput="save()" onblur="saveAndReload()">${e.d}</div>`;
 
             for (let i = 0; i < 5; i++) {
                 const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '🙂' };
@@ -583,11 +588,15 @@
         }
 
         function addCard() { render({ d: new Date().toLocaleDateString('cs-CZ'), m: null }); saveAndReload(); window.scrollTo(0, 0); }
-        function delCard() {
-            if (confirm("Opravdu smazat aktuální den?")) {
-                const target = lastFocusedElement ? lastFocusedElement.closest('.card') : container.firstChild;
-                if (target) target.remove();
-                saveAndReload();
+        function delMainCard(btn) {
+            // Najdeme kartu, ve které je tlačítko umístěno
+            const card = btn.closest('.card');
+            const dateStr = card.querySelector('.card-header').innerText.trim();
+
+            if (confirm(`🚨 OPRAVDU SMAZAT? \n\nChystáte se trvale odstranit celý záznam ze dne: ${dateStr}. \n\nTuto akci nelze vrátit zpět.`)) {
+                card.remove();
+                save(); // Uložíme změnu do paměti nutri_data_v13
+                alert("Záznam byl smazán.");
             }
         }
         function cycle(el) { const em = ['🙂', '😍', '☹️']; el.innerText = em[(em.indexOf(el.innerText) + 1) % 3]; el.style.background = rates[el.innerText]; save(); }
@@ -890,8 +899,8 @@
                 card.className = 'card';
                 card.style.position = 'relative';
 
-                // Tlačítko na smazání konkrétní draft karty
-                let html = `<button onclick="delDraftCard(${index})" style="position:absolute; top:10px; right:10px; background:var(--danger); color:white; border:none; border-radius:4px; padding:5px 10px; font-weight:bold; cursor:pointer;">X</button>`;
+                // Vylepšené tlačítko s košem
+                let html = `<button onclick="delDraftCard(${index})" style="position:absolute; top:10px; right:10px; background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:6px; padding:6px 10px; font-size:1.1rem; cursor:pointer;">🗑️</button>`;
 
                 // Ukládání volá saveDraftFromUI místo save()
                 html += `<div class="card-header" contenteditable="true" oninput="saveDraftFromUI()">${e.d}</div>`;
@@ -932,13 +941,30 @@
         }
 
         function delDraftCard(index) {
-            if (confirm("Opravdu smazat tento rozpracovaný den?")) {
-                let data = getDraftData();
+            let data = getDraftData();
+            let dateStr = data[index].d || "neznámý den"; // Vytáhne si datum konkrétní karty
+
+            if (confirm(`Opravdu chcete trvale smazat kartu pro den: ${dateStr}?`)) {
                 data.splice(index, 1);
                 localStorage.setItem('nutri_draft', JSON.stringify(data));
                 renderDraftList();
             }
         }
+
+        function clearAllDrafts() {
+            let data = getDraftData();
+            if (data.length === 0) {
+                alert("Pískoviště je už prázdné.");
+                return;
+            }
+
+            // Dvojité varování, včetně informace, kolik dní se maže
+            if (confirm(`🚨 VAROVÁNÍ: Opravdu chcete NENÁVRATNĚ SMAZAT VŠECHNY (${data.length}) rozpracované dny v tomto okně?`)) {
+                localStorage.removeItem('nutri_draft');
+                renderDraftList();
+            }
+        }
+
         function sortDraftData() {
             let data = getDraftData();
             if (data.length === 0) return;
@@ -1086,6 +1112,15 @@
             closeDraft();
             load();
             alert("Papíry zdigitalizovány a bezpečně přesunuty do hlavního deníku.");
+        }
+        function clearAllMainData() {
+            if (confirm("🚨 POZOR! Chystáte se smazat CELOU HISTORII vašeho stravování. Máte vytvořenou zálohu?")) {
+                if (confirm("Poslední varování: Opravdu smazat VŠECHNA DATA z hlavního deníku?")) {
+                    localStorage.removeItem('nutri_data_v13');
+                    load(); // Znovu načte aplikaci (vytvoří prázdný den)
+                    closeSettings();
+                }
+            }
         }
     </script>
 </body>
