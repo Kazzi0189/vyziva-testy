@@ -579,7 +579,7 @@
             </div>`;
             }
             card.innerHTML = html;
-            container.prepend(card); // ZMĚNA: prepend vloží kartu na úplný začátek kontejneru
+            container.appendChild(card); // ZMĚNA: prepend vloží kartu na úplný začátek kontejneru
         }
 
         function addCard() { render({ d: new Date().toLocaleDateString('cs-CZ'), m: null }); saveAndReload(); window.scrollTo(0, 0); }
@@ -911,7 +911,7 @@
                     </div>`;
                 }
                 card.innerHTML = html;
-                list.prepend(card);
+                list.appendChild(card);
             });
         }
 
@@ -925,8 +925,8 @@
         function addDraftCard() {
             let data = getDraftData();
             let year = document.getElementById('draftYear').value;
-            // Výchozí prázdná karta s rokem z roletky
-            data.push({ d: `01.01.${year}`, m: null });
+            // Unshift vloží kartu na úplný začátek (nahoru)
+            data.unshift({ d: `01.01.${year}`, m: null });
             localStorage.setItem('nutri_draft', JSON.stringify(data));
             renderDraftList();
         }
@@ -934,9 +934,7 @@
         function delDraftCard(index) {
             if (confirm("Opravdu smazat tento rozpracovaný den?")) {
                 let data = getDraftData();
-                // Protože prepandujeme (řadíme odzadu), musíme otočit index
-                let realIndex = data.length - 1 - index;
-                data.splice(realIndex, 1);
+                data.splice(index, 1);
                 localStorage.setItem('nutri_draft', JSON.stringify(data));
                 renderDraftList();
             }
@@ -1007,7 +1005,7 @@
                         cleanDateStr = `${dateParts[0]}.${dateParts[1]}.${selectedYear}`;
 
                         let data = getDraftData();
-                        data.push({ d: cleanDateStr, m: null });
+                        data.unshift({ d: cleanDateStr, m: null });
                         localStorage.setItem('nutri_draft', JSON.stringify(data));
                         renderDraftList();
                         targetCard = document.getElementById('draftList').firstElementChild;
