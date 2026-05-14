@@ -479,6 +479,7 @@
                 <button id="micNote" style="background:var(--note)" class="btn-mic" onclick="runVoice('note')">🎤
                     POZNÁMKA</button>
                 <button style="background:#16a085" onclick="openPlanner()">🗓️ PLÁN</button>
+                <button style="background:#8e44ad" onclick="openAiModal()">🤖 AI</button>
                 <button style="background:#c0392b" onclick="openDeleteManager()">🧹 SMAZAT</button>
             </div>
             <div class="btn-row">
@@ -582,6 +583,43 @@
             <button class="modal-btn btn-cancel" onclick="closePlanner()">ZAVŘÍT</button>
         </div>
     </div>
+
+    <div class="modal-overlay" id="aiModal">
+        <div class="modal-box" style="max-width:560px;">
+            <div class="modal-title">AI podklad pro jídelníček</div>
+            <div class="modal-text">Aplikace sama AI nevolá. Připraví text z historie, který zkopírujete do ChatGPT.</div>
+
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Z čeho má AI vycházet</label>
+            <select id="aiRatingMode" style="width:100%; margin-bottom:10px;">
+                <option value="love">Jen chutnalo 😍</option>
+                <option value="good" selected>Chutnalo 😍 + dobré 🙂</option>
+                <option value="base">Chutnalo 😍 + dobré 🙂 + základ 😐</option>
+            </select>
+
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Délka AI návrhu</label>
+            <select id="aiDays" style="width:100%; margin-bottom:10px;">
+                <option value="7">7 dní</option>
+                <option value="14">14 dní</option>
+                <option value="30" selected>30 dní</option>
+            </select>
+
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Co má AI plánovat</label>
+            <select id="aiMealScope" style="width:100%; margin-bottom:12px;">
+                <option value="all" selected>Všechna jídla</option>
+                <option value="0">Jen snídaně</option>
+                <option value="1">Jen dopolední svačiny</option>
+                <option value="2">Jen obědy</option>
+                <option value="3">Jen odpolední svačiny</option>
+                <option value="4">Jen večeře</option>
+            </select>
+
+            <textarea id="aiPromptOutput" readonly style="width:100%; min-height:230px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
+            <button class="modal-btn btn-merge" onclick="generateAiPrompt()">🤖 VYTVOŘIT PODKLAD</button>
+            <button class="modal-btn btn-import" onclick="copyAiPrompt()">📋 KOPÍROVAT TEXT</button>
+            <button class="modal-btn btn-cancel" onclick="closeAiModal()">ZAVŘÍT</button>
+        </div>
+    </div>
+
 
 
 
@@ -1160,6 +1198,107 @@ Tuto akci nelze vrátit zpět.`)) return;
             load();
             alert('Návrh jídelníčku byl vytvořen a označen jako PLÁN. Můžete ho ručně upravit nebo později zrušit tlačítkem ZRUŠIT PLÁN.');
         }
+
+
+        function openAiModal() {
+            document.getElementById('aiModal').style.display = 'flex';
+            generateAiPrompt();
+        }
+
+        function closeAiModal() { document.getElementById('aiModal').style.display = 'none'; }
+
+        function getAllowedRatingsForMode(mode) {
+            if (mode === 'love') return ['😍'];
+            if (mode === 'good') return ['😍', '🙂'];
+            return ['😍', '🙂', '😐'];
+        }
+
+        function summarizeMealsForAi(data, ratingMode, mealScope) {
+            const allowed = getAllowedRatingsForMode(ratingMode);
+            const selectedIndexes = mealScope === 'all' ? [0, 1, 2, 3, 4] : [parseInt(mealScope, 10)];
+            const goodMaps = Array.from({ length: 5 }, () => new Map());
+            const avoidMaps = Array.from({ length: 5 }, () => new Map());
+            const noteItems = [];
+
+            data.forEach(day => {
+                if (day.planned === true) return; // AI podklad stavíme z reálné historie, ne z už vygenerovaného plánu
+                (day.m || []).forEach((meal, index) => {
+                    if (!selectedIndexes.includes(index)) return;
+                    const text = (meal.t || '').replace(/\s+/g, ' ').trim();
+                    if (!text) return;
+                    const key = normalizeFoodName(text);
+                    const rating = meal.r || '😐';
+                    const target = allowed.includes(rating) ? goodMaps[index] : (rating === '☹️' ? avoidMaps[index] : null);
+                    if (target) {
+                        const current = target.get(key) || { t: text, count: 0, ratings: {}, lastDate: day.d, notes: [] };
+                        current.count++;
+                        current.ratings[rating] = (current.ratings[rating] || 0) + 1;
+                        current.lastDate = day.d;
+                        if (meal.n && current.notes.length < 2) current.notes.push(meal.n.replace(/\s+/g, ' ').trim());
+                        target.set(key, current);
+                    }
+                    const note = (meal.n || '').trim();
+                    if (note && /alerg|vyráž|zvracen|reakc|průjem|bolest|nevol|osyp/i.test(note)) {
+                        noteItems.push(`${day.d} – ${mealLabels[index]}: ${text} | poznámka: ${note}`);
+                    }
+                });
+            });
+
+            function mapToLines(map, limit) {
+                return Array.from(map.values())
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, limit)
+                    .map(item => {
+                        const ratingText = Object.entries(item.ratings).map(([r, c]) => `${r}×${c}`).join(', ');
+                        const noteText = item.notes.length ? `; pozn.: ${item.notes.join(' | ')}` : '';
+                        return `- ${item.t} (${item.count}×; ${ratingText}${noteText})`;
+                    });
+            }
+
+            let sections = [];
+            selectedIndexes.forEach(index => {
+                const goodLines = mapToLines(goodMaps[index], 12);
+                const avoidLines = mapToLines(avoidMaps[index], 8);
+                sections.push(`\n${mealLabels[index]} – vhodné z historie:\n${goodLines.length ? goodLines.join('\n') : '- zatím nejsou vhodná data'}`);
+                if (avoidLines.length) sections.push(`${mealLabels[index]} – vyhnout se:\n${avoidLines.join('\n')}`);
+            });
+
+            return {
+                sections: sections.join('\n'),
+                warnings: noteItems.slice(0, 12)
+            };
+        }
+
+        function generateAiPrompt() {
+            const ratingMode = document.getElementById('aiRatingMode').value;
+            const daysCount = document.getElementById('aiDays').value;
+            const mealScope = document.getElementById('aiMealScope').value;
+            const data = getMainData();
+            const selectedText = mealScope === 'all' ? 'všechna denní jídla' : mealLabels[parseInt(mealScope, 10)];
+            const ratingText = ratingMode === 'love' ? 'jen jídla hodnocená 😍' : (ratingMode === 'good' ? 'jídla hodnocená 😍 a 🙂' : 'jídla hodnocená 😍, 🙂 a 😐');
+            const summary = summarizeMealsForAi(data, ratingMode, mealScope);
+
+            const prompt = `Potřebuji navrhnout jídelníček pro dítě na ${daysCount} dní.\n\nPracuj podle těchto pravidel:\n- plánuj: ${selectedText}\n- jako základ ber hlavně: ${ratingText}\n- nepoužívej jídla, která jsou uvedená v části „vyhnout se“\n- neopakuj stejné nebo velmi podobné jídlo hned po sobě\n- zachovej rozumnou pestrost\n- nenavrhuj nic riskantního, když je u jídla poznámka na alergii, zvracení nebo reakci\n- výstup napiš česky\n- výstup napiš v přesném formátu níže, aby šel později vložit zpět do aplikace\n\nFormát výstupu:\nDEN 1\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...\n\nDEN 2\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...\n\nHistorie jídel podle hodnocení:\n${summary.sections}\n\nDůležité poznámky / možné reakce:\n${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- žádné výrazné varovné poznámky nenalezeny'}\n`;
+
+            document.getElementById('aiPromptOutput').value = prompt;
+        }
+
+        function copyAiPrompt() {
+            const box = document.getElementById('aiPromptOutput');
+            if (!box.value.trim()) generateAiPrompt();
+            box.focus();
+            box.select();
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(box.value).then(() => alert('AI podklad byl zkopírován. Teď ho vložte do ChatGPT.')).catch(() => {
+                    document.execCommand('copy');
+                    alert('AI podklad byl označen a zkopírován, pokud to prohlížeč povolil.');
+                });
+            } else {
+                document.execCommand('copy');
+                alert('AI podklad byl označen a zkopírován, pokud to prohlížeč povolil.');
+            }
+        }
+
 
         function parseSmartDate(text, currentVal) {
             const monthsMap = {
