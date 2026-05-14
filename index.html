@@ -152,6 +152,10 @@
             border: 1px solid #f0f0f0;
         }
 
+        .meal-item.meal-hidden {
+            display: none;
+        }
+
         .meal-label {
             width: 90px;
             font-weight: 700;
@@ -391,11 +395,26 @@
             </div>
             <div class="btn-row">
                 <select id="filterSelect" onchange="setFilter(this.value)">
-                    <option value="all">Zobrazit: VŠE</option>
+                    <option value="all">Období: VŠE</option>
                     <option value="currentWeek">Aktuální týden</option>
                     <option value="lastWeek">Minulý týden</option>
                     <option value="14days">Posledních 14 dní</option>
                     <option value="lastMonth">Minulý měsíc</option>
+                </select>
+                <select id="mealFilterSelect" onchange="setMealFilter(this.value)">
+                    <option value="all">Jídlo: VŠE</option>
+                    <option value="0">Pouze snídaně</option>
+                    <option value="1">Pouze dop. svačina</option>
+                    <option value="2">Pouze oběd</option>
+                    <option value="3">Pouze odp. svačina</option>
+                    <option value="4">Pouze večeře</option>
+                </select>
+                <select id="ratingFilterSelect" onchange="setRatingFilter(this.value)">
+                    <option value="all">Hodnocení: VŠE</option>
+                    <option value="😍">Jen chutnalo 😍</option>
+                    <option value="🙂">Jen dobré 🙂</option>
+                    <option value="😐">Jen základ 😐</option>
+                    <option value="☹️">Jen nechutnalo ☹️</option>
                 </select>
                 <button style="background:#7f8c8d; max-width: 45px; font-size: 1.1rem;"
                     onclick="openSettings()">⚙️</button>
@@ -475,9 +494,11 @@
         const container = document.getElementById('cardContainer');
         const topMenu = document.getElementById('topMenu');
         let currentFilter = 'all';
+        let currentMealFilter = 'all';
+        let currentRatingFilter = 'all';
         let lastFocusedElement = null;
         let pendingImportData = null;
-        const rates = { '🙂': '#e3f9e5', '😍': '#fff9db', '☹️': '#ffe3e3' };
+        const rates = { '🙂': '#e3f9e5', '😍': '#fff9db', '😐': '#eef2f3', '☹️': '#ffe3e3' };
 
         // Názvy 5 jídel
         const mealLabels = ["Snídaně", "Dop. Svačina", "Oběd", "Odp. Svačina", "Večeře"];
@@ -521,29 +542,41 @@
             // 1. Filtrace
             const filtered = entries.filter(e => {
                 const p = e.d.split('.');
-                if (p.length !== 3) return true;
-                const dDate = new Date(p[2], p[1] - 1, p[0]);
+                let dateMatches = true;
 
-                if (currentFilter === 'all') return true;
-                const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                if (currentFilter !== 'all') {
+                    if (p.length !== 3) {
+                        dateMatches = true;
+                    } else {
+                        const dDate = new Date(p[2], p[1] - 1, p[0]);
+                        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-                if (currentFilter === 'currentWeek') {
-                    const day = now.getDay() || 7;
-                    const mon = new Date(startOfToday); mon.setDate(startOfToday.getDate() - day + 1);
-                    return dDate >= mon;
+                        if (currentFilter === 'currentWeek') {
+                            const day = now.getDay() || 7;
+                            const mon = new Date(startOfToday); mon.setDate(startOfToday.getDate() - day + 1);
+                            dateMatches = dDate >= mon;
+                        } else if (currentFilter === 'lastWeek') {
+                            const day = now.getDay() || 7;
+                            const lastMon = new Date(startOfToday); lastMon.setDate(startOfToday.getDate() - day - 6);
+                            const lastSun = new Date(lastMon); lastSun.setDate(lastMon.getDate() + 6);
+                            dateMatches = dDate >= lastMon && dDate <= lastSun;
+                        } else if (currentFilter === '14days') {
+                            dateMatches = (startOfToday - dDate) / 86400000 <= 14;
+                        } else if (currentFilter === 'lastMonth') {
+                            let lm = now.getMonth() - 1, ly = now.getFullYear();
+                            if (lm < 0) { lm = 11; ly--; }
+                            dateMatches = dDate.getMonth() === lm && dDate.getFullYear() === ly;
+                        }
+                    }
                 }
-                if (currentFilter === 'lastWeek') {
-                    const day = now.getDay() || 7;
-                    const lastMon = new Date(startOfToday); lastMon.setDate(startOfToday.getDate() - day - 6);
-                    const lastSun = new Date(lastMon); lastSun.setDate(lastMon.getDate() + 6);
-                    return dDate >= lastMon && dDate <= lastSun;
+
+                if (!dateMatches) return false;
+
+                // Když je zapnutý filtr podle smajlíka, zobrazíme jen dny, kde je alespoň jedno odpovídající jídlo.
+                if (currentRatingFilter !== 'all') {
+                    return (e.m || []).some((m, i) => mealMatchesFilters(m, i));
                 }
-                if (currentFilter === '14days') return (startOfToday - dDate) / 86400000 <= 14;
-                if (currentFilter === 'lastMonth') {
-                    let lm = now.getMonth() - 1, ly = now.getFullYear();
-                    if (lm < 0) { lm = 11; ly--; }
-                    return dDate.getMonth() === lm && dDate.getFullYear() === ly;
-                }
+
                 return true;
             });
 
@@ -558,6 +591,10 @@
             });
 
             // 3. Vykreslení
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#95a5a6; margin-top:30px; background:white; padding:20px; border-radius:12px;">Pro zvolený filtr nejsou žádné záznamy.</div>';
+                return;
+            }
             filtered.forEach(e => render(e));
         }
 
@@ -571,10 +608,11 @@
             html += `<div class="card-header" contenteditable="true" oninput="save()" onblur="saveAndReload()">${e.d}</div>`;
 
             for (let i = 0; i < 5; i++) {
-                const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '🙂' };
+                const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐' };
                 let bg = rates[m.r] || '#e3f9e5';
+                const hiddenClass = mealMatchesFilters(m, i) ? '' : ' meal-hidden';
                 html += `
-            <div class="meal-item" data-index="${i}">
+            <div class="meal-item${hiddenClass}" data-index="${i}">
                 <div class="meal-label">${mealLabels[i]}</div>
                 <div class="meal-content">
                     <div class="m-box" contenteditable="true" oninput="save()" placeholder="Napište jídlo...">${m.t}</div>
@@ -600,8 +638,20 @@
                 alert("Záznam byl smazán.");
             }
         }
-        function cycle(el) { const em = ['🙂', '😍', '☹️']; el.innerText = em[(em.indexOf(el.innerText) + 1) % 3]; el.style.background = rates[el.innerText]; save(); }
+        function cycle(el) { const em = ['🙂', '😍', '😐', '☹️']; el.innerText = em[(em.indexOf(el.innerText) + 1) % em.length]; el.style.background = rates[el.innerText]; save(); }
+
+        function mealMatchesFilters(m, index) {
+            if (currentMealFilter !== 'all' && currentMealFilter !== String(index)) return false;
+            if (currentRatingFilter !== 'all') {
+                const rating = (m && m.r) ? m.r.trim() : '😐';
+                return rating === currentRatingFilter;
+            }
+            return true;
+        }
+
         function setFilter(v) { currentFilter = v; load(); }
+        function setMealFilter(v) { currentMealFilter = v; load(); }
+        function setRatingFilter(v) { currentRatingFilter = v; load(); }
 
         function parseSmartDate(text, currentVal) {
             const monthsMap = {
@@ -722,7 +772,7 @@
                 JSON.parse(saved).forEach(d => {
                     let row = `"${d.d}"`;
                     for (let i = 0; i < 5; i++) {
-                        let m = d.m[i] || { t: '', w: '', n: '', r: '🙂' };
+                        let m = d.m[i] || { t: '', w: '', n: '', r: '😐' };
                         row += `;"${m.t}";"${m.w}";"${m.n}";"${m.r}"`;
                     }
                     csv += row + "\n";
@@ -752,7 +802,7 @@
                 // Převod starých dat (v12 - 4 jídla) na nová data (v13 - 5 jídel)
                 imported = imported.map(item => {
                     if (item.m.length === 4) {
-                        return { d: item.d, m: [item.m[0], { t: '', w: '', n: '', r: '🙂' }, item.m[1], item.m[2], item.m[3]] };
+                        return { d: item.d, m: [item.m[0], { t: '', w: '', n: '', r: '😐' }, item.m[1], item.m[2], item.m[3]] };
                     }
                     return item;
                 });
@@ -824,7 +874,7 @@
                             t: cols[offset] ? cols[offset].replace(/^"|"$/g, '').trim() : '',
                             w: cols[offset + 1] ? cols[offset + 1].replace(/^"|"$/g, '').trim() : '',
                             n: cols[offset + 2] ? cols[offset + 2].replace(/^"|"$/g, '').trim() : '',
-                            r: cols[offset + 3] && cols[offset + 3].trim() !== '' ? cols[offset + 3].replace(/^"|"$/g, '').trim() : '🙂'
+                            r: cols[offset + 3] && cols[offset + 3].trim() !== '' ? cols[offset + 3].replace(/^"|"$/g, '').trim() : '😐'
                         });
                     }
 
@@ -907,7 +957,7 @@
                 html += `<div class="card-header" contenteditable="true" oninput="saveDraftFromUI()">${e.d}</div>`;
 
                 for (let i = 0; i < 5; i++) {
-                    const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '🙂' };
+                    const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐' };
                     let bg = rates[m.r] || '#e3f9e5';
                     html += `
                     <div class="meal-item" data-index="${i}">
@@ -926,8 +976,8 @@
         }
 
         function cycleDraft(el) {
-            const em = ['🙂', '😍', '☹️'];
-            el.innerText = em[(em.indexOf(el.innerText) + 1) % 3];
+            const em = ['🙂', '😍', '😐', '☹️'];
+            el.innerText = em[(em.indexOf(el.innerText) + 1) % em.length];
             el.style.background = rates[el.innerText];
             saveDraftFromUI();
         }
