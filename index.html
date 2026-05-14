@@ -379,6 +379,92 @@
             cursor: pointer;
             flex-shrink: 0;
         }
+
+        .delete-check-wrap {
+            display: none;
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            background: #fff;
+            border: 2px solid var(--danger);
+            border-radius: 8px;
+            padding: 6px 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--danger);
+            z-index: 20;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .delete-check-wrap input {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--danger);
+        }
+
+        body.delete-mode .delete-check-wrap {
+            display: flex;
+        }
+
+        body.delete-mode .card.selected-delete {
+            outline: 3px solid var(--danger);
+            background: #fff7f7;
+        }
+
+        .delete-toolbar {
+            position: fixed;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            z-index: 2500;
+            background: white;
+            border: 2px solid var(--danger);
+            border-radius: 12px;
+            padding: 10px;
+            display: none;
+            gap: 8px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        body.delete-mode .delete-toolbar {
+            display: flex;
+        }
+
+        .delete-toolbar button {
+            padding: 10px 6px;
+            font-size: 0.75rem;
+        }
+
+        .date-input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .date-input-row input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 0.85rem;
+        }
+
+        .planned-badge {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: #e8f8f5;
+            color: #16a085;
+            font-size: 0.72rem;
+            font-weight: 800;
+            vertical-align: middle;
+        }
+
     </style>
 </head>
 
@@ -393,6 +479,7 @@
                 <button id="micNote" style="background:var(--note)" class="btn-mic" onclick="runVoice('note')">🎤
                     POZNÁMKA</button>
                 <button style="background:#16a085" onclick="openPlanner()">🗓️ PLÁN</button>
+                <button style="background:#c0392b" onclick="openDeleteManager()">🧹 SMAZAT</button>
             </div>
             <div class="btn-row">
                 <select id="filterSelect" onchange="setFilter(this.value)">
@@ -491,8 +578,36 @@
             </select>
 
             <button class="modal-btn btn-merge" onclick="generateMealPlan()">✅ VYTVOŘIT NÁVRH</button>
+            <button class="modal-btn btn-overwrite" onclick="cancelGeneratedPlan()">🗑️ ZRUŠIT PLÁN</button>
             <button class="modal-btn btn-cancel" onclick="closePlanner()">ZAVŘÍT</button>
         </div>
+    </div>
+
+
+
+    <div class="modal-overlay" id="deleteManagerModal">
+        <div class="modal-box">
+            <div class="modal-title">Mazání záznamů</div>
+            <div class="modal-text">Nejdřív doporučuji udělat zálohu. Mazání je trvalé.</div>
+
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Smazat období od–do</label>
+            <div class="date-input-row">
+                <input type="date" id="deleteDateFrom">
+                <input type="date" id="deleteDateTo">
+            </div>
+            <button class="modal-btn btn-overwrite" onclick="deleteByDateRange()">🗑️ SMAZAT OBDOBÍ</button>
+            <button class="modal-btn btn-overwrite" style="background:#d35400" onclick="cancelGeneratedPlan()">🗑️ ZRUŠIT JEN PLÁN</button>
+
+            <div style="border-top: 1px solid #eee; margin: 18px 0 15px;"></div>
+            <button class="modal-btn btn-import" onclick="startDeleteSelectionMode()">☑️ RUČNĚ OZNAČIT DNY</button>
+            <button class="modal-btn btn-cancel" onclick="closeDeleteManager()">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="delete-toolbar" id="deleteToolbar">
+        <button style="background:var(--danger)" onclick="deleteSelectedDates()">🗑️ SMAZAT VYBRANÉ</button>
+        <button style="background:#7f8c8d" onclick="clearDeleteSelection()">ODZNAČIT</button>
+        <button style="background:#34495e" onclick="stopDeleteSelectionMode()">HOTOVO</button>
     </div>
 
     <div class="modal-overlay" id="draftModal">
@@ -532,6 +647,8 @@
         let currentMealFilter = 'all';
         let currentRatingFilter = 'all';
         let isRendering = false;
+        let deleteSelectionMode = false;
+        let selectedDeleteDates = new Set();
         let lastFocusedElement = null;
         let pendingImportData = null;
         const rates = { '🙂': '#e3f9e5', '😍': '#fff9db', '😐': '#eef2f3', '☹️': '#ffe3e3' };
@@ -555,11 +672,11 @@
         }
 
         function setMainData(data) {
-            localStorage.setItem('nutri_data_v13', JSON.stringify(data));
+            localStorage.setItem('nutri_data_v13', JSON.stringify(sortEntriesByDate(data)));
         }
 
         function readCardData(card) {
-            return {
+            const data = {
                 d: card.querySelector('.card-header').innerText.trim(),
                 m: Array.from(card.querySelectorAll('.meal-item')).map(item => ({
                     t: item.querySelector('.m-box').innerText,
@@ -568,6 +685,8 @@
                     r: item.querySelector('.rating').innerText
                 }))
             };
+            if (card.dataset.planned === 'true') data.planned = true;
+            return data;
         }
 
         function save() {
@@ -583,6 +702,7 @@
                 if (idx === -1) fullData.unshift(cardData);
                 else fullData[idx] = cardData;
                 card.dataset.originalDate = cardData.d;
+                card.dataset.planned = cardData.planned ? 'true' : 'false';
             });
 
             setMainData(fullData);
@@ -634,8 +754,8 @@
 
                 if (!dateMatches) return false;
 
-                // Když je zapnutý filtr podle smajlíka, zobrazíme jen dny, kde je alespoň jedno odpovídající jídlo.
-                if (currentRatingFilter !== 'all') {
+                // Když je zapnutý filtr podle jídla nebo smajlíka, zobrazíme jen dny, kde existuje odpovídající položka.
+                if (currentMealFilter !== 'all' || currentRatingFilter !== 'all') {
                     return (e.m || []).some((m, i) => mealMatchesFilters(m, i));
                 }
 
@@ -664,13 +784,15 @@
 
         function render(e) {
             const card = document.createElement('div');
-            card.className = 'card';
+            card.className = selectedDeleteDates.has((e.d || '').trim()) ? 'card selected-delete' : 'card';
             card.style.position = 'relative'; // DŮLEŽITÉ: aby koš neutekl z karty ven
             card.dataset.originalDate = (e.d || '').trim();
+            card.dataset.planned = e.planned ? 'true' : 'false';
 
             // Přidáme koš do hlavičky hlavní karty
-            let html = `<button onclick="delMainCard(this)" style="position:absolute; top:15px; right:15px; background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:6px; padding:6px 10px; font-size:1.1rem; cursor:pointer; z-index:10;">🗑️</button>`;
-            html += `<div class="card-header" contenteditable="true" oninput="save()" onblur="saveAndReload()">${e.d}</div>`;
+            let html = `<label class="delete-check-wrap"><input type="checkbox" class="delete-day-checkbox" ${selectedDeleteDates.has((e.d || '').trim()) ? 'checked' : ''} onchange="toggleDeleteSelection(this.closest('.card').dataset.originalDate, this)"> Vybrat</label>`;
+            html += `<button onclick="delMainCard(this)" style="position:absolute; top:15px; right:15px; background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:6px; padding:6px 10px; font-size:1.1rem; cursor:pointer; z-index:10;">🗑️</button>`;
+            html += `<div class="card-header" contenteditable="true" oninput="save()" onblur="saveAndReload()">${e.d}</div>${e.planned ? '<span class="planned-badge">PLÁN</span>' : ''}`;
 
             for (let i = 0; i < 5; i++) {
                 const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐' };
@@ -739,6 +861,136 @@
         function formatDateValue(date) {
             return date.toLocaleDateString('cs-CZ');
         }
+
+        function sortEntriesByDate(data) {
+            return (data || []).slice().sort((a, b) => {
+                const da = parseDateValue(a.d);
+                const db = parseDateValue(b.d);
+                const ta = da ? da.getTime() : 0;
+                const tb = db ? db.getTime() : 0;
+                return tb - ta;
+            });
+        }
+
+        function dateToISO(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function isoToDateValue(iso) {
+            if (!iso) return null;
+            const p = iso.split('-').map(x => parseInt(x, 10));
+            if (p.length !== 3 || !p[0] || !p[1] || !p[2]) return null;
+            return new Date(p[0], p[1] - 1, p[2]);
+        }
+
+        function openDeleteManager() {
+            const data = getMainData();
+            const today = new Date();
+            const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+            const futurePlannedDates = data
+                .filter(item => item.planned === true)
+                .map(item => parseDateValue(item.d))
+                .filter(d => d && d >= startOfToday)
+                .sort((a, b) => a - b);
+
+            const allFutureDates = data
+                .map(item => parseDateValue(item.d))
+                .filter(d => d && d >= startOfToday)
+                .sort((a, b) => a - b);
+
+            const preferredDates = futurePlannedDates.length > 0 ? futurePlannedDates : allFutureDates;
+
+            if (preferredDates.length > 0) {
+                document.getElementById('deleteDateFrom').value = dateToISO(preferredDates[0]);
+                document.getElementById('deleteDateTo').value = dateToISO(preferredDates[preferredDates.length - 1]);
+            } else {
+                const from = new Date(startOfToday);
+                from.setDate(from.getDate() + 1);
+                const to = new Date(from);
+                to.setDate(to.getDate() + 29);
+                document.getElementById('deleteDateFrom').value = dateToISO(from);
+                document.getElementById('deleteDateTo').value = dateToISO(to);
+            }
+            document.getElementById('deleteManagerModal').style.display = 'flex';
+        }
+
+        function closeDeleteManager() { document.getElementById('deleteManagerModal').style.display = 'none'; }
+
+        function deleteByDateRange() {
+            const from = isoToDateValue(document.getElementById('deleteDateFrom').value);
+            const to = isoToDateValue(document.getElementById('deleteDateTo').value);
+            if (!from || !to) { alert('Vyberte datum od i datum do.'); return; }
+            if (from > to) { alert('Datum OD nesmí být později než datum DO.'); return; }
+
+            const data = getMainData();
+            const toDelete = data.filter(item => {
+                const d = parseDateValue(item.d);
+                return d && d >= from && d <= to;
+            });
+
+            if (toDelete.length === 0) { alert('V tomto období nejsou žádné záznamy.'); return; }
+            if (!confirm(`Opravdu smazat ${toDelete.length} záznamů od ${formatDateValue(from)} do ${formatDateValue(to)}?
+
+Tuto akci nelze vrátit zpět.`)) return;
+
+            const remaining = data.filter(item => {
+                const d = parseDateValue(item.d);
+                return !(d && d >= from && d <= to);
+            });
+            setMainData(remaining);
+            closeDeleteManager();
+            load();
+            alert('Záznamy z vybraného období byly smazány.');
+        }
+
+        function startDeleteSelectionMode() {
+            selectedDeleteDates = new Set();
+            deleteSelectionMode = true;
+            document.body.classList.add('delete-mode');
+            closeDeleteManager();
+            load();
+        }
+
+        function stopDeleteSelectionMode() {
+            deleteSelectionMode = false;
+            selectedDeleteDates = new Set();
+            document.body.classList.remove('delete-mode');
+            load();
+        }
+
+        function clearDeleteSelection() {
+            selectedDeleteDates = new Set();
+            document.querySelectorAll('.card.selected-delete').forEach(card => card.classList.remove('selected-delete'));
+            document.querySelectorAll('.delete-day-checkbox').forEach(cb => cb.checked = false);
+        }
+
+        function toggleDeleteSelection(dateStr, checkbox) {
+            if (!dateStr) return;
+            if (checkbox.checked) selectedDeleteDates.add(dateStr);
+            else selectedDeleteDates.delete(dateStr);
+            const card = checkbox.closest('.card');
+            if (card) card.classList.toggle('selected-delete', checkbox.checked);
+        }
+
+        function deleteSelectedDates() {
+            if (selectedDeleteDates.size === 0) { alert('Nejdřív označte alespoň jeden den.'); return; }
+            const count = selectedDeleteDates.size;
+            if (!confirm(`Opravdu smazat ${count} ručně označených záznamů?
+
+Tuto akci nelze vrátit zpět.`)) return;
+            let data = getMainData().filter(item => !selectedDeleteDates.has((item.d || '').trim()));
+            setMainData(data);
+            deleteSelectionMode = false;
+            selectedDeleteDates = new Set();
+            document.body.classList.remove('delete-mode');
+            load();
+            alert('Označené záznamy byly smazány.');
+        }
+
 
         function normalizeFoodName(text) {
             return (text || '').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -834,7 +1086,7 @@
                     }
                 });
 
-                generated.push({ d: formatDateValue(d), m: meals });
+                generated.push({ d: formatDateValue(d), m: meals, planned: true });
             }
 
             const firstDate = generated[0].d;
@@ -846,7 +1098,7 @@
             setMainData(data);
             closePlanner();
             load();
-            alert('Návrh jídelníčku byl vytvořen. Můžete ho ručně upravit stejně jako běžné záznamy.');
+            alert('Návrh jídelníčku byl vytvořen a označen jako PLÁN. Můžete ho ručně upravit nebo později zrušit tlačítkem ZRUŠIT PLÁN.');
         }
 
         function parseSmartDate(text, currentVal) {
