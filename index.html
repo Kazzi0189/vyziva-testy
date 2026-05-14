@@ -886,6 +886,41 @@
             return new Date(p[0], p[1] - 1, p[2]);
         }
 
+        function compactFuturePlanDates(data, preferredStartDate) {
+            const today = new Date();
+            const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const startDate = preferredStartDate && preferredStartDate >= startOfToday ? new Date(preferredStartDate) : null;
+
+            const planned = (data || [])
+                .filter(item => item.planned === true)
+                .map(item => ({ item, date: parseDateValue(item.d) }))
+                .filter(x => x.date && x.date >= startOfToday)
+                .sort((a, b) => a.date - b.date);
+
+            if (planned.length === 0) return data;
+
+            const firstDate = startDate || new Date(planned[0].date);
+            const usedDates = new Set(
+                (data || [])
+                    .filter(item => item.planned !== true)
+                    .map(item => (item.d || '').trim())
+                    .filter(Boolean)
+            );
+
+            let cursor = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
+
+            planned.forEach(x => {
+                while (usedDates.has(formatDateValue(cursor))) {
+                    cursor.setDate(cursor.getDate() + 1);
+                }
+                x.item.d = formatDateValue(cursor);
+                usedDates.add(x.item.d);
+                cursor.setDate(cursor.getDate() + 1);
+            });
+
+            return data;
+        }
+
         function openDeleteManager() {
             const data = getMainData();
             const today = new Date();
@@ -937,14 +972,26 @@
 
 Tuto akci nelze vrátit zpět.`)) return;
 
-            const remaining = data.filter(item => {
+            const plannedDatesBeforeDelete = data
+                .filter(item => item.planned === true)
+                .map(item => parseDateValue(item.d))
+                .filter(Boolean)
+                .sort((a, b) => a - b);
+            const compactStart = plannedDatesBeforeDelete.length > 0 ? plannedDatesBeforeDelete[0] : null;
+
+            let remaining = data.filter(item => {
                 const d = parseDateValue(item.d);
                 return !(d && d >= from && d <= to);
             });
+
+            // Pokud po mazání zůstane část budoucího PLÁNU, automaticky ji zhuštíme za sebe.
+            // Skutečné neplánované záznamy se nikdy nepředatovávají.
+            remaining = compactFuturePlanDates(remaining, compactStart);
+
             setMainData(remaining);
             closeDeleteManager();
             load();
-            alert('Záznamy z vybraného období byly smazány.');
+            alert('Záznamy z vybraného období byly smazány. Zbývající budoucí PLÁN byl případně předatován za sebe.');
         }
 
         function startDeleteSelectionMode() {
@@ -982,13 +1029,26 @@ Tuto akci nelze vrátit zpět.`)) return;
             if (!confirm(`Opravdu smazat ${count} ručně označených záznamů?
 
 Tuto akci nelze vrátit zpět.`)) return;
-            let data = getMainData().filter(item => !selectedDeleteDates.has((item.d || '').trim()));
+            const originalData = getMainData();
+            const plannedDatesBeforeDelete = originalData
+                .filter(item => item.planned === true)
+                .map(item => parseDateValue(item.d))
+                .filter(Boolean)
+                .sort((a, b) => a - b);
+            const compactStart = plannedDatesBeforeDelete.length > 0 ? plannedDatesBeforeDelete[0] : null;
+
+            let data = originalData.filter(item => !selectedDeleteDates.has((item.d || '').trim()));
+
+            // Když smažete plánované dny na přeskáčku, zbylý budoucí PLÁN se posune tak,
+            // aby pokračoval bez mezer. Historie ani ručně vytvořené skutečné dny se nemění.
+            data = compactFuturePlanDates(data, compactStart);
+
             setMainData(data);
             deleteSelectionMode = false;
             selectedDeleteDates = new Set();
             document.body.classList.remove('delete-mode');
             load();
-            alert('Označené záznamy byly smazány.');
+            alert('Označené záznamy byly smazány. Zbývající budoucí PLÁN byl případně předatován za sebe.');
         }
 
 
