@@ -8,7 +8,6 @@
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#4a90e2">
@@ -382,6 +381,49 @@
             flex-shrink: 0;
         }
 
+        /* AI MODAL: delší okno musí být na mobilu posuvné, aby šlo vždy zavřít */
+        #aiModal {
+            align-items: flex-start;
+            overflow-y: auto;
+            padding: 10px 0;
+            box-sizing: border-box;
+        }
+
+        #aiModal .modal-box {
+            position: relative;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .ai-close-x {
+            position: sticky;
+            top: 0;
+            float: right;
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            margin: -10px -10px 6px 8px;
+            border-radius: 50%;
+            background: #95a5a6;
+            color: white;
+            font-size: 1.1rem;
+            z-index: 5;
+            flex: 0 0 auto;
+        }
+
+        @media (max-height: 720px) {
+            #aiPromptOutput {
+                min-height: 150px !important;
+            }
+
+            #aiPlanInput {
+                min-height: 130px !important;
+            }
+        }
+
+
         .delete-check-wrap {
             display: none;
             position: absolute;
@@ -664,8 +706,9 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="aiModal">
+    <div class="modal-overlay" id="aiModal" onclick="if (event.target === this) closeAiModal()">
         <div class="modal-box" style="max-width:560px;">
+            <button type="button" class="ai-close-x" onclick="closeAiModal()" aria-label="Zavřít AI okno">×</button>
             <div class="modal-title">AI podklad pro jídelníček</div>
             <div class="modal-text">Aplikace sama AI nevolá. Připraví text z historie, který zkopírujete do ChatGPT.</div>
 
