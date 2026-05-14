@@ -1094,6 +1094,19 @@ Tuto akci nelze vrátit zpět.`)) return;
             return (text || '').toLowerCase().replace(/\s+/g, ' ').trim();
         }
 
+        function isEmptyMealText(text) {
+            const normalized = normalizeFoodName(text)
+                .replace(/[.!?,;:()\[\]{}\-–—_\/\]/g, '')
+                .trim();
+            if (!normalized) return true;
+            const emptyValues = new Set([
+                'nic', 'nic nebylo', 'nic nedal', 'nic nesnedl', 'nebylo nic',
+                'zadne', 'žádné', 'zadna', 'žádná', 'bez jidla', 'bez jídla',
+                'nejedl', 'nechtel', 'nechtěl', 'odmitl', 'odmítl', '0', '-'
+            ]);
+            return emptyValues.has(normalized);
+        }
+
         function shuffleArray(arr) {
             for (let i = arr.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -1112,7 +1125,7 @@ Tuto akci nelze vrátit zpět.`)) return;
                     if (!meal || index > 4) return;
                     const text = (meal.t || '').trim();
                     const rating = (meal.r || '😐').trim();
-                    if (!text || !allowed.includes(rating) || rating === '☹️') return;
+                    if (!text || isEmptyMealText(text) || !allowed.includes(rating) || rating === '☹️') return;
                     const key = normalizeFoodName(text);
                     if (seen[index].has(key)) return;
                     seen[index].add(key);
@@ -1225,7 +1238,7 @@ Tuto akci nelze vrátit zpět.`)) return;
                 (day.m || []).forEach((meal, index) => {
                     if (!selectedIndexes.includes(index)) return;
                     const text = (meal.t || '').replace(/\s+/g, ' ').trim();
-                    if (!text) return;
+                    if (!text || isEmptyMealText(text)) return;
                     const key = normalizeFoodName(text);
                     const rating = meal.r || '😐';
                     const target = allowed.includes(rating) ? goodMaps[index] : (rating === '☹️' ? avoidMaps[index] : null);
