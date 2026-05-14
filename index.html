@@ -7,6 +7,7 @@
     <title>Výživa PRO - TEST</title>
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#4a90e2">
@@ -453,6 +454,66 @@
             font-size: 0.85rem;
         }
 
+
+
+        .child-profile-row {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr 0.8fr 1fr;
+            gap: 6px;
+            align-items: stretch;
+            background: #f8f9fa;
+            border: 1px solid #e8ecef;
+            border-radius: 10px;
+            padding: 8px;
+        }
+
+        .child-profile-field {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+        }
+
+        .child-profile-field label {
+            font-size: 0.62rem;
+            font-weight: 800;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .child-profile-field input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 7px;
+            border-radius: 8px;
+            border: 1px solid #dfe6e9;
+            background: white;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #2c3e50;
+            outline: none;
+        }
+
+        .child-age-box {
+            background: white;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
+            padding: 8px 7px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--accent);
+            min-height: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        @media (max-width: 560px) {
+            .child-profile-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         .planned-badge {
             display: inline-block;
             margin-left: 8px;
@@ -473,6 +534,24 @@
     <div class="sticky-header" id="topMenu">
         <div class="menu-content">
             <div class="app-title">Výživa PRO - TESTOVACÍ VERZE</div>
+            <div class="child-profile-row" aria-label="Údaje o dítěti">
+                <div class="child-profile-field">
+                    <label for="childBirthDate">Datum narození</label>
+                    <input id="childBirthDate" type="date" onchange="saveChildProfile()">
+                </div>
+                <div class="child-profile-field">
+                    <label for="childWeight">Váha kg</label>
+                    <input id="childWeight" type="number" inputmode="decimal" step="0.1" min="0" placeholder="např. 9,5" oninput="saveChildProfile()">
+                </div>
+                <div class="child-profile-field">
+                    <label for="childHeight">Výška cm</label>
+                    <input id="childHeight" type="number" inputmode="decimal" step="0.1" min="0" placeholder="volitelné" oninput="saveChildProfile()">
+                </div>
+                <div class="child-profile-field">
+                    <label>Věk</label>
+                    <div class="child-age-box" id="childAgeDisplay">nezadáno</div>
+                </div>
+            </div>
             <div class="btn-row">
                 <button style="background:var(--success)" onclick="addCard()">NOVÝ +</button>
                 <button id="micMain" class="btn-mic" onclick="runVoice('food')">🎤 JÍDLO</button>
@@ -694,8 +773,71 @@
         // Názvy 5 jídel
         const mealLabels = ["Snídaně", "Dop. Svačina", "Oběd", "Odp. Svačina", "Večeře"];
 
+        const CHILD_PROFILE_KEY = 'nutri_child_profile_v1';
+
+        function getChildProfile() {
+            const raw = localStorage.getItem(CHILD_PROFILE_KEY);
+            try { return raw ? JSON.parse(raw) : {}; } catch (e) { return {}; }
+        }
+
+        function loadChildProfile() {
+            const profile = getChildProfile();
+            const birthInput = document.getElementById('childBirthDate');
+            const weightInput = document.getElementById('childWeight');
+            const heightInput = document.getElementById('childHeight');
+            if (birthInput) birthInput.value = profile.birthDate || '';
+            if (weightInput) weightInput.value = profile.weight || '';
+            if (heightInput) heightInput.value = profile.height || '';
+            updateChildAgeDisplay();
+        }
+
+        function saveChildProfile() {
+            const profile = {
+                birthDate: (document.getElementById('childBirthDate')?.value || '').trim(),
+                weight: (document.getElementById('childWeight')?.value || '').trim(),
+                height: (document.getElementById('childHeight')?.value || '').trim()
+            };
+            localStorage.setItem(CHILD_PROFILE_KEY, JSON.stringify(profile));
+            updateChildAgeDisplay();
+            adjustSpacing();
+        }
+
+        function calculateAgeMonths(birthDateStr, referenceDate = new Date()) {
+            if (!birthDateStr) return null;
+            const birth = new Date(birthDateStr + 'T00:00:00');
+            if (Number.isNaN(birth.getTime()) || birth > referenceDate) return null;
+            let months = (referenceDate.getFullYear() - birth.getFullYear()) * 12 + (referenceDate.getMonth() - birth.getMonth());
+            if (referenceDate.getDate() < birth.getDate()) months--;
+            return Math.max(0, months);
+        }
+
+        function formatAgeMonths(months) {
+            if (months === null || months === undefined) return 'nezadáno';
+            if (months === 1) return '1 měsíc';
+            if (months >= 2 && months <= 4) return `${months} měsíce`;
+            return `${months} měsíců`;
+        }
+
+        function updateChildAgeDisplay() {
+            const display = document.getElementById('childAgeDisplay');
+            if (!display) return;
+            const profile = getChildProfile();
+            display.innerText = formatAgeMonths(calculateAgeMonths(profile.birthDate));
+        }
+
+        function getChildInfoForAi() {
+            const profile = getChildProfile();
+            const lines = [];
+            const ageMonths = calculateAgeMonths(profile.birthDate);
+            if (ageMonths !== null) lines.push(`- věk dítěte: ${formatAgeMonths(ageMonths)}`);
+            if (profile.weight) lines.push(`- aktuální váha: ${profile.weight} kg`);
+            if (profile.height) lines.push(`- aktuální výška: ${profile.height} cm`);
+            return lines;
+        }
+
+
         function adjustSpacing() { document.getElementById('cardContainer').style.marginTop = (topMenu.offsetHeight + 15) + "px"; }
-        window.onload = () => { load(); adjustSpacing(); };
+        window.onload = () => { loadChildProfile(); load(); adjustSpacing(); setInterval(updateChildAgeDisplay, 3600000); };
         window.onresize = adjustSpacing;
 
         document.addEventListener('click', (e) => {
@@ -1290,11 +1432,14 @@ Tuto akci nelze vrátit zpět.`)) return;
             const selectedText = mealScope === 'all' ? 'všechna denní jídla' : mealLabels[parseInt(mealScope, 10)];
             const ratingText = ratingMode === 'love' ? 'jen jídla hodnocená 😍' : (ratingMode === 'good' ? 'jídla hodnocená 😍 a 🙂' : 'jídla hodnocená 😍, 🙂 a 😐');
             const summary = summarizeMealsForAi(data, ratingMode, mealScope);
+            const childInfoLines = getChildInfoForAi();
+            const childInfoText = childInfoLines.length ? `\n\nÚdaje o dítěti pro návrh:\n${childInfoLines.join('\n')}` : '';
 
-            const prompt = `Potřebuji navrhnout jídelníček pro dítě na ${daysCount} dní.\n\nPracuj podle těchto pravidel:\n- plánuj: ${selectedText}\n- jako základ ber hlavně: ${ratingText}\n- nepoužívej jídla, která jsou uvedená v části „vyhnout se“\n- neopakuj stejné nebo velmi podobné jídlo hned po sobě\n- zachovej rozumnou pestrost\n- nenavrhuj nic riskantního, když je u jídla poznámka na alergii, zvracení nebo reakci\n- výstup napiš česky\n- výstup napiš v přesném formátu níže, aby šel později vložit zpět do aplikace\n\nFormát výstupu:\nDEN 1\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...\n\nDEN 2\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...\n\nHistorie jídel podle hodnocení:\n${summary.sections}\n\nDůležité poznámky / možné reakce:\n${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- žádné výrazné varovné poznámky nenalezeny'}\n`;
+            const prompt = `Potřebuji navrhnout jídelníček pro dítě na ${daysCount} dní.${childInfoText}\n\nPracuj podle těchto pravidel:\n- plánuj: ${selectedText}\n- jako základ ber hlavně: ${ratingText}\n- zohledni věk dítěte a dostupné údaje o váze/výšce; pokud některý údaj chybí, nevadí, pracuj s tím, co je k dispozici\n- nepoužívej jídla, která jsou uvedená v části „vyhnout se“\n- nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou bezpečnou variantu\n- neopakuj stejné nebo velmi podobné jídlo hned po sobě\n- zachovej rozumnou pestrost\n- nenavrhuj nic riskantního, když je u jídla poznámka na alergii, zvracení nebo reakci\n- výstup napiš česky\n- výstup napiš v přesném formátu níže, aby šel později vložit zpět do aplikace\n\nFormát výstupu:\nDEN 1\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...\n\nDEN 2\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...\n\nHistorie jídel podle hodnocení:\n${summary.sections}\n\nDůležité poznámky / možné reakce:\n${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- žádné výrazné varovné poznámky nenalezeny'}\n`;
 
             document.getElementById('aiPromptOutput').value = prompt;
         }
+
 
         function copyAiPrompt() {
             const box = document.getElementById('aiPromptOutput');
