@@ -392,6 +392,7 @@
                 <button id="micMain" class="btn-mic" onclick="runVoice('food')">🎤 JÍDLO</button>
                 <button id="micNote" style="background:var(--note)" class="btn-mic" onclick="runVoice('note')">🎤
                     POZNÁMKA</button>
+                <button style="background:#16a085" onclick="openPlanner()">🗓️ PLÁN</button>
             </div>
             <div class="btn-row">
                 <select id="filterSelect" onchange="setFilter(this.value)">
@@ -460,6 +461,40 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="plannerModal">
+        <div class="modal-box">
+            <div class="modal-title">Návrh jídelníčku</div>
+            <div class="modal-text">Offline návrh podle uložené historie. Nechutnalo ☹️ se nikdy nepoužije.</div>
+
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Vybírat podle hodnocení</label>
+            <select id="plannerRatingMode" style="width:100%; margin-bottom:10px;">
+                <option value="love">Jen chutnalo 😍</option>
+                <option value="good" selected>Chutnalo 😍 + dobré 🙂</option>
+                <option value="base">Chutnalo 😍 + dobré 🙂 + základ 😐</option>
+            </select>
+
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Délka návrhu</label>
+            <select id="plannerDays" style="width:100%; margin-bottom:10px;">
+                <option value="7">7 dní</option>
+                <option value="14">14 dní</option>
+                <option value="30" selected>30 dní</option>
+            </select>
+
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Co vyplnit</label>
+            <select id="plannerMealScope" style="width:100%; margin-bottom:15px;">
+                <option value="all" selected>Všechna jídla</option>
+                <option value="0">Jen snídaně</option>
+                <option value="1">Jen dopolední svačiny</option>
+                <option value="2">Jen obědy</option>
+                <option value="3">Jen odpolední svačiny</option>
+                <option value="4">Jen večeře</option>
+            </select>
+
+            <button class="modal-btn btn-merge" onclick="generateMealPlan()">✅ VYTVOŘIT NÁVRH</button>
+            <button class="modal-btn btn-cancel" onclick="closePlanner()">ZAVŘÍT</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="draftModal">
         <div class="draft-content">
             <div class="draft-header">Zpracování starých papírů</div>
@@ -496,6 +531,7 @@
         let currentFilter = 'all';
         let currentMealFilter = 'all';
         let currentRatingFilter = 'all';
+        let isRendering = false;
         let lastFocusedElement = null;
         let pendingImportData = null;
         const rates = { '🙂': '#e3f9e5', '😍': '#fff9db', '😐': '#eef2f3', '☹️': '#ffe3e3' };
@@ -513,18 +549,43 @@
             }
         }, true);
 
-        function save() {
-            const cards = Array.from(document.querySelectorAll('.card'));
-            const data = cards.map(c => ({
-                d: c.querySelector('.card-header').innerText.trim(),
-                m: Array.from(c.querySelectorAll('.meal-item')).map(item => ({
+        function getMainData() {
+            const raw = localStorage.getItem('nutri_data_v13');
+            try { return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
+        }
+
+        function setMainData(data) {
+            localStorage.setItem('nutri_data_v13', JSON.stringify(data));
+        }
+
+        function readCardData(card) {
+            return {
+                d: card.querySelector('.card-header').innerText.trim(),
+                m: Array.from(card.querySelectorAll('.meal-item')).map(item => ({
                     t: item.querySelector('.m-box').innerText,
                     w: item.querySelector('.w-box').value,
                     n: item.querySelector('.n-box').innerText,
                     r: item.querySelector('.rating').innerText
                 }))
-            }));
-            localStorage.setItem('nutri_data_v13', JSON.stringify(data));
+            };
+        }
+
+        function save() {
+            if (isRendering) return;
+            const cards = Array.from(container.querySelectorAll(':scope > .card'));
+            let fullData = getMainData();
+
+            cards.forEach(card => {
+                const originalDate = card.dataset.originalDate || '';
+                const cardData = readCardData(card);
+                let idx = fullData.findIndex(item => (item.d || '').trim() === originalDate);
+                if (idx === -1) idx = fullData.findIndex(item => (item.d || '').trim() === cardData.d);
+                if (idx === -1) fullData.unshift(cardData);
+                else fullData[idx] = cardData;
+                card.dataset.originalDate = cardData.d;
+            });
+
+            setMainData(fullData);
         }
 
         function saveAndReload() {
@@ -533,10 +594,11 @@
         }
 
         function load() {
+            isRendering = true;
             container.innerHTML = '';
             const saved = localStorage.getItem('nutri_data_v13');
-            if (!saved) { addCard(); return; }
-            let entries = JSON.parse(saved);
+            if (!saved) { isRendering = false; addCard(); return; }
+            let entries = getMainData();
             const now = new Date();
 
             // 1. Filtrace
@@ -593,15 +655,18 @@
             // 3. Vykreslení
             if (filtered.length === 0) {
                 container.innerHTML = '<div style="text-align:center; color:#95a5a6; margin-top:30px; background:white; padding:20px; border-radius:12px;">Pro zvolený filtr nejsou žádné záznamy.</div>';
+                isRendering = false;
                 return;
             }
             filtered.forEach(e => render(e));
+            isRendering = false;
         }
 
         function render(e) {
             const card = document.createElement('div');
             card.className = 'card';
             card.style.position = 'relative'; // DŮLEŽITÉ: aby koš neutekl z karty ven
+            card.dataset.originalDate = (e.d || '').trim();
 
             // Přidáme koš do hlavičky hlavní karty
             let html = `<button onclick="delMainCard(this)" style="position:absolute; top:15px; right:15px; background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:6px; padding:6px 10px; font-size:1.1rem; cursor:pointer; z-index:10;">🗑️</button>`;
@@ -626,15 +691,24 @@
             container.appendChild(card); // ZMĚNA: prepend vloží kartu na úplný začátek kontejneru
         }
 
-        function addCard() { render({ d: new Date().toLocaleDateString('cs-CZ'), m: null }); saveAndReload(); window.scrollTo(0, 0); }
+        function addCard() {
+            let data = getMainData();
+            data.unshift({ d: new Date().toLocaleDateString('cs-CZ'), m: Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐' })) });
+            setMainData(data);
+            load();
+            window.scrollTo(0, 0);
+        }
         function delMainCard(btn) {
             // Najdeme kartu, ve které je tlačítko umístěno
             const card = btn.closest('.card');
             const dateStr = card.querySelector('.card-header').innerText.trim();
 
             if (confirm(`🚨 OPRAVDU SMAZAT? \n\nChystáte se trvale odstranit celý záznam ze dne: ${dateStr}. \n\nTuto akci nelze vrátit zpět.`)) {
-                card.remove();
-                save(); // Uložíme změnu do paměti nutri_data_v13
+                let data = getMainData();
+                const originalDate = card.dataset.originalDate || dateStr;
+                data = data.filter(item => (item.d || '').trim() !== originalDate);
+                setMainData(data);
+                load();
                 alert("Záznam byl smazán.");
             }
         }
@@ -652,6 +726,128 @@
         function setFilter(v) { currentFilter = v; load(); }
         function setMealFilter(v) { currentMealFilter = v; load(); }
         function setRatingFilter(v) { currentRatingFilter = v; load(); }
+
+        function openPlanner() { document.getElementById('plannerModal').style.display = 'flex'; }
+        function closePlanner() { document.getElementById('plannerModal').style.display = 'none'; }
+
+        function parseDateValue(str) {
+            const p = (str || '').split('.').map(x => parseInt(x.trim(), 10));
+            if (p.length !== 3 || !p[0] || !p[1] || !p[2]) return null;
+            return new Date(p[2], p[1] - 1, p[0]);
+        }
+
+        function formatDateValue(date) {
+            return date.toLocaleDateString('cs-CZ');
+        }
+
+        function normalizeFoodName(text) {
+            return (text || '').toLowerCase().replace(/\s+/g, ' ').trim();
+        }
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function buildMealPool(entries, ratingMode) {
+            const allowed = ratingMode === 'love' ? ['😍'] : (ratingMode === 'good' ? ['😍', '🙂'] : ['😍', '🙂', '😐']);
+            const pools = Array.from({ length: 5 }, () => []);
+            const seen = Array.from({ length: 5 }, () => new Set());
+
+            entries.forEach(day => {
+                (day.m || []).forEach((meal, index) => {
+                    if (!meal || index > 4) return;
+                    const text = (meal.t || '').trim();
+                    const rating = (meal.r || '😐').trim();
+                    if (!text || !allowed.includes(rating) || rating === '☹️') return;
+                    const key = normalizeFoodName(text);
+                    if (seen[index].has(key)) return;
+                    seen[index].add(key);
+                    pools[index].push({
+                        t: text,
+                        w: meal.w || '',
+                        n: meal.n || '',
+                        r: rating
+                    });
+                });
+            });
+
+            pools.forEach(pool => pool.sort((a, b) => {
+                const score = { '😍': 3, '🙂': 2, '😐': 1 };
+                return (score[b.r] || 0) - (score[a.r] || 0);
+            }));
+            return pools.map(pool => shuffleArray(pool.slice()));
+        }
+
+        function pickMeal(pool, recentNames) {
+            if (!pool || pool.length === 0) return { t: '', w: '', n: '', r: '😐' };
+            let chosen = pool.find(item => !recentNames.includes(normalizeFoodName(item.t))) || pool[0];
+            pool.push(pool.shift());
+            return { t: chosen.t, w: chosen.w || '', n: chosen.n || '', r: chosen.r || '😐' };
+        }
+
+        function generateMealPlan() {
+            const ratingMode = document.getElementById('plannerRatingMode').value;
+            const daysCount = parseInt(document.getElementById('plannerDays').value, 10);
+            const mealScope = document.getElementById('plannerMealScope').value;
+            let data = getMainData();
+
+            if (data.length === 0) {
+                alert('Nejdřív musí být v deníku nějaká uložená jídla.');
+                return;
+            }
+
+            const pools = buildMealPool(data, ratingMode);
+            const selectedIndexes = mealScope === 'all' ? [0, 1, 2, 3, 4] : [parseInt(mealScope, 10)];
+            const missing = selectedIndexes.filter(i => pools[i].length === 0);
+            if (missing.length > 0) {
+                alert('Pro tato jídla nemám z historie dost vhodných záznamů: ' + missing.map(i => mealLabels[i]).join(', ') + '. Zkuste povolit i 🙂 nebo 😐.');
+                return;
+            }
+
+            let latest = null;
+            data.forEach(item => {
+                const d = parseDateValue(item.d);
+                if (d && (!latest || d > latest)) latest = d;
+            });
+            const start = latest ? new Date(latest) : new Date();
+            start.setDate(start.getDate() + 1);
+
+            const recent = Array.from({ length: 5 }, () => []);
+            const generated = [];
+
+            for (let day = 0; day < daysCount; day++) {
+                const d = new Date(start);
+                d.setDate(start.getDate() + day);
+                const meals = Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐' }));
+
+                selectedIndexes.forEach(index => {
+                    const picked = pickMeal(pools[index], recent[index]);
+                    meals[index] = picked;
+                    const name = normalizeFoodName(picked.t);
+                    if (name) {
+                        recent[index].push(name);
+                        if (recent[index].length > 3) recent[index].shift();
+                    }
+                });
+
+                generated.push({ d: formatDateValue(d), m: meals });
+            }
+
+            const firstDate = generated[0].d;
+            const lastDate = generated[generated.length - 1].d;
+            if (!confirm(`Vytvořit návrh jídelníčku od ${firstDate} do ${lastDate}?\n\nDny se stejným datem v deníku budou nahrazeny návrhem.`)) return;
+
+            const generatedMap = new Map(generated.map(item => [item.d, item]));
+            data = data.filter(item => !generatedMap.has(item.d)).concat(generated);
+            setMainData(data);
+            closePlanner();
+            load();
+            alert('Návrh jídelníčku byl vytvořen. Můžete ho ručně upravit stejně jako běžné záznamy.');
+        }
 
         function parseSmartDate(text, currentVal) {
             const monthsMap = {
