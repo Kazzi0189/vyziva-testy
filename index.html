@@ -8,6 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#4a90e2">
@@ -692,9 +693,24 @@
                 <option value="4">Jen večeře</option>
             </select>
 
-            <textarea id="aiPromptOutput" readonly style="width:100%; min-height:230px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
+            <textarea id="aiPromptOutput" readonly style="width:100%; min-height:220px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
             <button class="modal-btn btn-merge" onclick="generateAiPrompt()">🤖 VYTVOŘIT PODKLAD</button>
-            <button class="modal-btn btn-import" onclick="copyAiPrompt()">📋 KOPÍROVAT TEXT</button>
+            <button class="modal-btn btn-import" onclick="copyAiPrompt()">📋 KOPÍROVAT TEXT PRO AI</button>
+
+            <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
+            <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">Import AI jídelníčku</div>
+            <div class="modal-text" style="margin-bottom:10px;">Sem vložte jen výsledný blok jídelníčku od AI. Aplikace ho uloží jako PLÁN.</div>
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Začít plán od data</label>
+            <input type="date" id="aiImportStartDate" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px; font-weight:bold; color:#2c3e50;">
+            <textarea id="aiPlanInput" placeholder="Vložte například:
+
+DEN 1
+Snídaně: ...
+Dop. svačina: ...
+Oběd: ...
+Odp. svačina: ...
+Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
+            <button class="modal-btn btn-merge" onclick="importAiPlan()">📥 IMPORTOVAT AI PLÁN</button>
             <button class="modal-btn btn-cancel" onclick="closeAiModal()">ZAVŘÍT</button>
         </div>
     </div>
@@ -1357,6 +1373,7 @@ Tuto akci nelze vrátit zpět.`)) return;
 
         function openAiModal() {
             document.getElementById('aiModal').style.display = 'flex';
+            setDefaultAiImportStartDate();
             generateAiPrompt();
         }
 
@@ -1435,7 +1452,7 @@ Tuto akci nelze vrátit zpět.`)) return;
             const childInfoLines = getChildInfoForAi();
             const childInfoText = childInfoLines.length ? `\n\nÚdaje o dítěti pro návrh:\n${childInfoLines.join('\n')}` : '';
 
-            const prompt = `Potřebuji navrhnout jídelníček pro dítě na ${daysCount} dní.${childInfoText}\n\nPracuj podle těchto pravidel:\n- plánuj: ${selectedText}\n- jako základ ber hlavně: ${ratingText}\n- zohledni věk dítěte a dostupné údaje o váze/výšce; pokud některý údaj chybí, nevadí, pracuj s tím, co je k dispozici\n- nepoužívej jídla, která jsou uvedená v části „vyhnout se“\n- nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou bezpečnou variantu\n- neopakuj stejné nebo velmi podobné jídlo hned po sobě\n- zachovej rozumnou pestrost\n- nenavrhuj nic riskantního, když je u jídla poznámka na alergii, zvracení nebo reakci\n- výstup napiš česky\n- výstup napiš v přesném formátu níže, aby šel později vložit zpět do aplikace\n\nFormát výstupu:\nDEN 1\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...\n\nDEN 2\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...\n\nHistorie jídel podle hodnocení:\n${summary.sections}\n\nDůležité poznámky / možné reakce:\n${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- žádné výrazné varovné poznámky nenalezeny'}\n`;
+            const prompt = `Potřebuji navrhnout jídelníček pro dítě na ${daysCount} dní.${childInfoText}\n\nPracuj podle těchto pravidel:\n- plánuj: ${selectedText}\n- jako základ ber hlavně: ${ratingText}\n- zohledni věk dítěte a dostupné údaje o váze/výšce; pokud některý údaj chybí, nevadí, pracuj s tím, co je k dispozici\n- nepoužívej jídla, která jsou uvedená v části „vyhnout se“\n- nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou bezpečnou variantu\n- neopakuj stejné nebo velmi podobné jídlo hned po sobě\n- zachovej rozumnou pestrost\n- nenavrhuj nic riskantního, když je u jídla poznámka na alergii, vyrážku, zvracení nebo reakci\n- výstup napiš česky\n\nNejdřív napiš maximálně 5 krátkých vět, jak jsi postupoval.\nPotom napiš samostatný blok přesně s názvem:\n\nJÍDELNÍČEK KE ZKOPÍROVÁNÍ\n\nV tomto bloku už nesmí být žádné vysvětlivky, komentáře, odrážky ani markdown tabulka.\nPoužij přesně tento formát, aby šel výsledek vložit zpět do aplikace:\n\nDEN 1\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...\n\nDEN 2\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...\n\nHistorie jídel podle hodnocení:\n${summary.sections}\n\nDůležité poznámky / možné reakce:\n${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- žádné výrazné varovné poznámky nenalezeny'}\n`;
 
             document.getElementById('aiPromptOutput').value = prompt;
         }
@@ -1455,6 +1472,104 @@ Tuto akci nelze vrátit zpět.`)) return;
                 document.execCommand('copy');
                 alert('AI podklad byl označen a zkopírován, pokud to prohlížeč povolil.');
             }
+        }
+
+        function setDefaultAiImportStartDate() {
+            const input = document.getElementById('aiImportStartDate');
+            if (!input || input.value) return;
+            const tomorrow = new Date();
+            tomorrow.setHours(0, 0, 0, 0);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            input.value = dateToISO(tomorrow);
+        }
+
+        function normalizeAiMealLabel(label) {
+            return (label || '')
+                .toLowerCase()
+                .replace(/\s+/g, ' ')
+                .replace(/\./g, '')
+                .trim();
+        }
+
+        function mealIndexFromAiLabel(label) {
+            const l = normalizeAiMealLabel(label);
+            if (l.startsWith('snídan') || l.startsWith('snidan')) return 0;
+            if (l.startsWith('dop') || l.includes('dopoled')) return 1;
+            if (l.startsWith('oběd') || l.startsWith('obed')) return 2;
+            if (l.startsWith('odp') || l.includes('odpoled')) return 3;
+            if (l.startsWith('veče') || l.startsWith('vece')) return 4;
+            return -1;
+        }
+
+        function extractAiPlanBlock(text) {
+            let value = (text || '').replace(/\r\n/g, '\n').trim();
+            const marker = value.search(/JÍDELNÍČEK\s+KE\s+ZKOPÍROVÁNÍ|JIDELNICEK\s+KE\s+ZKOPIROVANI/i);
+            if (marker >= 0) value = value.substring(marker).trim();
+            const firstDay = value.search(/(^|\n)\s*DEN\s*\d+/i);
+            if (firstDay >= 0) value = value.substring(firstDay).trim();
+            return value;
+        }
+
+        function parseAiPlanText(text) {
+            const cleaned = extractAiPlanBlock(text);
+            if (!cleaned) return [];
+            const lines = cleaned.split('
+').map(x => x.trim()).filter(Boolean);
+            const days = [];
+            let current = null;
+
+            lines.forEach(line => {
+                if (/^DEN\s*\d+/i.test(line)) {
+                    if (current) days.push(current);
+                    current = { m: Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐' })) };
+                    return;
+                }
+                if (!current) return;
+                const match = line.match(/^([^:：]+)[:：]\s*(.*)$/);
+                if (!match) return;
+                const index = mealIndexFromAiLabel(match[1]);
+                if (index < 0) return;
+                let mealText = (match[2] || '').replace(/^[-–—]\s*/, '').trim();
+                if (!mealText || isEmptyMealText(mealText)) mealText = '';
+                current.m[index] = { t: mealText, w: '', n: '', r: '😐' };
+            });
+            if (current) days.push(current);
+            return days.filter(day => (day.m || []).some(meal => meal.t && !isEmptyMealText(meal.t)));
+        }
+
+        function importAiPlan() {
+            const input = document.getElementById('aiPlanInput');
+            const startInput = document.getElementById('aiImportStartDate');
+            const parsed = parseAiPlanText(input ? input.value : '');
+            if (parsed.length === 0) {
+                alert('Nepodařilo se najít žádný platný den jídelníčku. Vložte blok ve formátu DEN 1, Snídaně, Dop. svačina, Oběd, Odp. svačina, Večeře.');
+                return;
+            }
+
+            const startDate = isoToDateValue(startInput ? startInput.value : '');
+            if (!startDate) {
+                alert('Vyberte datum, od kdy má AI plán začít.');
+                return;
+            }
+
+            const generated = parsed.map((day, index) => {
+                const d = new Date(startDate);
+                d.setDate(startDate.getDate() + index);
+                return { d: formatDateValue(d), m: day.m, planned: true };
+            });
+
+            const firstDate = generated[0].d;
+            const lastDate = generated[generated.length - 1].d;
+            if (!confirm(`Importovat AI plán od ${firstDate} do ${lastDate}?
+
+Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná historie mimo tato data se nemění.`)) return;
+
+            const generatedMap = new Map(generated.map(item => [item.d, item]));
+            let data = getMainData().filter(item => !generatedMap.has((item.d || '').trim())).concat(generated);
+            setMainData(data);
+            closeAiModal();
+            load();
+            alert(`AI plán byl importován jako PLÁN (${generated.length} dní).`);
         }
 
 
