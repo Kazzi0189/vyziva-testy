@@ -1513,8 +1513,7 @@ Tuto akci nelze vrátit zpět.`)) return;
         function parseAiPlanText(text) {
             const cleaned = extractAiPlanBlock(text);
             if (!cleaned) return [];
-            const lines = cleaned.split('
-').map(x => x.trim()).filter(Boolean);
+            const lines = cleaned.split('\n').map(x => x.trim()).filter(Boolean);
             const days = [];
             let current = null;
 
