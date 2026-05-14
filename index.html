@@ -1096,7 +1096,7 @@ Tuto akci nelze vrátit zpět.`)) return;
 
         function isEmptyMealText(text) {
             const normalized = normalizeFoodName(text)
-                .replace(/[.!?,;:()\[\]{}\-–—_\/\]/g, '')
+                .replace(/[.!?,;:()\[\]{}\-–—_\/\\]/g, '')
                 .trim();
             if (!normalized) return true;
             const emptyValues = new Set([
