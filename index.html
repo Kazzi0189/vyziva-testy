@@ -1254,36 +1254,6 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             return parts.map(part => part.text || '').join('\n').trim();
         }
 
-        function translateGeminiErrorMessage(message) {
-            const raw = String(message || '').trim();
-            const lower = raw.toLowerCase();
-
-            if (!raw) return 'Gemini vrátilo neznámou chybu. Zkuste to prosím znovu později.';
-            if (lower.includes('high demand') || lower.includes('spikes in demand') || lower.includes('try again later')) {
-                return 'Gemini je teď hodně vytížené. Jde většinou o dočasný stav. Zkuste to prosím za chvíli znovu.';
-            }
-            if (lower.includes('api key not valid') || lower.includes('invalid api key') || lower.includes('api_key_invalid')) {
-                return 'API klíč není platný. Zkontrolujte ho ve Správě dat → Gemini AI.';
-            }
-            if (lower.includes('permission') || lower.includes('forbidden') || lower.includes('not authorized')) {
-                return 'Gemini odmítlo požadavek kvůli oprávnění. Zkontrolujte API klíč a povolení Gemini API.';
-            }
-            if (lower.includes('quota') || lower.includes('rate limit') || lower.includes('resource exhausted')) {
-                return 'Byl překročen limit Gemini API nebo kvóta. Zkuste to později, případně zkontrolujte limity v Google AI Studiu.';
-            }
-            if (lower.includes('network') || lower.includes('failed to fetch')) {
-                return 'Nepodařilo se připojit ke Gemini. Zkontrolujte internet a zkuste to znovu.';
-            }
-            if (lower.includes('model') && (lower.includes('not found') || lower.includes('not supported'))) {
-                return 'Vybraný model Gemini není dostupný. Zkuste v nastavení vybrat jiný model.';
-            }
-            return raw;
-        }
-
-        function formatGeminiError(err) {
-            return `Chyba Gemini: ${translateGeminiErrorMessage(err && err.message ? err.message : err)}`;
-        }
-
         async function callGeminiApi(promptText, statusElementId) {
             const settings = getGeminiSettings();
             if (!settings.apiKey) throw new Error('Gemini API klíč není uložený. Otevřete ⋯ DALŠÍ → Správa dat → Gemini AI.');
@@ -1328,7 +1298,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                 const text = await callGeminiApi('Odpověz pouze slovem OK.', 'geminiSettingsStatus');
                 setStatusText('geminiSettingsStatus', `Připojení funguje. Odpověď: ${text.slice(0, 80)}`);
             } catch (err) {
-                setStatusText('geminiSettingsStatus', formatGeminiError(err), true);
+                setStatusText('geminiSettingsStatus', `Chyba Gemini: ${err.message}`, true);
             }
         }
 
@@ -2507,21 +2477,40 @@ ${childInfoLines.join('\n')}` : '';
 
             const prompt = `Potřebuji navrhnout jídelníček pro dítě přesně na ${daysCount} dní.${childInfoText}
 
-Pracuj podle těchto pravidel:
+Role a bezpečnost:
+- Buď opatrný asistent pro plánování dětské stravy, ne lékař. Nedělej diagnózy ani léčebná doporučení.
+- Uvažuj podle běžných principů výživy malých dětí a podle uvedeného věku dítěte.
+- Nepiš neověřená zdravotní tvrzení, nevymýšlej speciální účinky jídel a netvrď, že je nové jídlo zaručeně bezpečné.
+- Nepředstírej znalost zdravotního stavu dítěte mimo dodané údaje. Pokud chybí věk, váha nebo výška, nehádej je.
+- Pokud si nejsi jistý, zvol jednodušší, běžnější a méně experimentální variantu.
+- Nenavrhuj alkohol, kofein, ostrá jídla, syrová riziková jídla, celé ořechy ani jiné běžně nevhodné potraviny pro malé dítě.
+
+Pravidla pro jídelníček:
 - vytvoř přesně ${daysCount} dní, ani méně, ani více
 - začni řádkem DEN 1 a skonči kompletně vyplněným dnem DEN ${daysCount}
 - plánuj: ${selectedText}
 - jako hlavní jídlo ber hlavně: ${ratingText}
-- ke každému vyplněnému jídlu přidej samostatný řádek „AI návrh [název jídla]: ...“
-- hlavní jídlo má vycházet z historie, ale AI návrh musí být NOVÁ varianta, kterou v historii níže nenajdeš doslova ani jako stejnou kombinaci surovin
-- AI návrh nesmí být pouze přejmenované nebo lehce přehozené historické jídlo; má rozšířit jídelníček o nové běžné a věku přiměřené jídlo
-- AI návrh má být opatrný nápad k vyzkoušení, ne tvrzení, že je zaručeně bezpečný
+- hlavní jídlo má být praktické, jednoduché a realistické pro rodiče
+- hlavní jídlo má vycházet hlavně z historie dítěte a z jídel, která dobře snášelo nebo mu chutnala
 - zohledni věk dítěte a dostupné údaje o váze/výšce; pokud některý údaj chybí, nevadí, pracuj s tím, co je k dispozici
 - nepoužívej jídla, která jsou uvedená v části „vyhnout se“
-- nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou bezpečnou variantu
+- nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou jednoduchou variantu
 - neopakuj stejné nebo velmi podobné jídlo hned po sobě
-- zachovej rozumnou pestrost
+- zachovej rozumnou pestrost mezi obilovinami, zeleninou, ovocem, masem/rybou/luštěninami a mléčnými výrobky, pokud jsou v historii tolerované
 - nenavrhuj hlavní jídlo ani AI návrh z jídel/surovin, které jsou v historii v části „vyhnout se“ nebo mají poznámku na konkrétní reakci dítěte (alergie, vyrážka, zvracení, nesedlo apod.)
+
+Pravidla pro řádky „AI návrh“:
+- ke každému vyplněnému jídlu přidej samostatný řádek „AI návrh [název jídla]: ...“
+- AI návrh musí být NOVÁ varianta, kterou v historii níže nenajdeš doslova ani jako stejnou kombinaci surovin
+- AI návrh nesmí být pouze přejmenované nebo lehce přehozené historické jídlo; má rozšířit jídelníček o nové běžné a věku přiměřené jídlo
+- AI návrh má být opatrný nápad k vyzkoušení, ne tvrzení, že je zaručeně bezpečný
+- AI návrhy vybírej jako jemné rozšíření toho, co dítě už zvládá, ne jako velký experiment
+- U AI návrhů nepiš dlouhé vysvětlení. Vrať jen název jídla, ne věty typu „podporuje imunitu“, „je velmi zdravé“ apod.
+
+Pravidla proti vymýšlení:
+- Nepiš, že je něco ověřené, pokud to není přímo z dodaných dat.
+- Nepřidávej zdravotní sliby ani tvrzení o léčebných účincích jídel.
+- Pokud nemáš dost dat, napiš opatrnější běžný návrh, ne konkrétní zdravotní tvrzení.
 - výstup napiš česky
 
 Nejdřív napiš maximálně 3 krátké věty, jak jsi postupoval.
@@ -2576,7 +2565,7 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
                 }
                 setStatusText('geminiAiStatus', `Gemini plán je připravený k importu (${parsed.length} dní). Zkontrolujte text a klikněte na IMPORTOVAT AI PLÁN.`);
             } catch (err) {
-                setStatusText('geminiAiStatus', formatGeminiError(err), true);
+                setStatusText('geminiAiStatus', `Chyba Gemini: ${err.message}`, true);
             }
         }
 
