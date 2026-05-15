@@ -232,6 +232,41 @@
             background: #e3f9e5;
         }
 
+
+
+        .ai-suggestion-box {
+            margin-top: 6px;
+            padding: 8px;
+            border-radius: 8px;
+            background: #f5edff;
+            border: 1px solid #d6b6ff;
+            font-size: 0.82rem;
+            color: #4a235a;
+        }
+
+        .ai-suggestion-title {
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .ai-suggestion-text {
+            margin-bottom: 6px;
+            line-height: 1.35;
+        }
+
+        .ai-use-btn {
+            background: #8e44ad;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 10px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            width: auto;
+            flex: none;
+            display: inline-flex;
+        }
+
         /* MODAL OKNA (NASTAVENÍ A IMPORT) */
         .modal-overlay {
             position: fixed;
@@ -459,43 +494,6 @@
             text-align: left;
             display: none;
             white-space: pre-wrap;
-        }
-
-
-        .ai-suggestion-box {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            background: #f4ecff;
-            border: 1px solid #d6b4ff;
-            border-radius: 8px;
-            padding: 7px 8px;
-            font-size: 0.82rem;
-            line-height: 1.35;
-            color: #4a235a;
-        }
-
-        .ai-suggestion-text {
-            flex: 1;
-            word-break: break-word;
-        }
-
-        .ai-suggestion-label {
-            font-weight: 800;
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        .btn-use-ai-suggestion {
-            flex: 0 0 auto;
-            background: #8e44ad;
-            color: white;
-            border: none;
-            border-radius: 7px;
-            padding: 7px 8px;
-            font-size: 0.7rem;
-            line-height: 1.1;
-            white-space: nowrap;
         }
 
 
@@ -1277,7 +1275,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                     generationConfig: {
                         temperature: 0.45,
                         topP: 0.9,
-                        maxOutputTokens: 8192
+                        maxOutputTokens: 32768
                     }
                 })
             });
@@ -1353,17 +1351,13 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         function readCardData(card) {
             const data = {
                 d: card.querySelector('.card-header').innerText.trim(),
-                m: Array.from(card.querySelectorAll('.meal-item')).map(item => {
-                    const meal = {
-                        t: item.querySelector('.m-box').innerText,
-                        w: item.querySelector('.w-box').value,
-                        n: item.querySelector('.n-box').innerText,
-                        r: item.querySelector('.rating').innerText
-                    };
-                    const aiAlt = item.querySelector('.ai-suggestion-text')?.dataset.aiSuggestion || '';
-                    if (aiAlt.trim()) meal.a = aiAlt.trim();
-                    return meal;
-                })
+                m: Array.from(card.querySelectorAll('.meal-item')).map(item => ({
+                    t: item.querySelector('.m-box').innerText,
+                    w: item.querySelector('.w-box').value,
+                    n: item.querySelector('.n-box').innerText,
+                    r: item.querySelector('.rating').innerText,
+                    a: item.querySelector('.ai-suggestion-text') ? item.querySelector('.ai-suggestion-text').innerText.trim() : ''
+                }))
             };
             if (card.dataset.planned === 'true') data.planned = true;
             return data;
@@ -1615,16 +1609,6 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             isRendering = false;
         }
 
-
-        function escapeHtml(value) {
-            return String(value ?? '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
         function render(e) {
             const card = document.createElement('div');
             card.className = selectedDeleteDates.has((e.d || '').trim()) ? 'card selected-delete' : 'card';
@@ -1648,22 +1632,17 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             html += `<div class="card-header" contenteditable="true" onblur="handleCardDateBlur(this)">${e.d}</div>${e.planned ? '<span class="planned-badge">PLÁN</span>' : ''}`;
 
             for (let i = 0; i < 5; i++) {
-                const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐' };
+                const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐', a: '' };
                 let bg = rates[m.r] || '#e3f9e5';
                 const hiddenClass = mealMatchesFilters(m, i) ? '' : ' meal-hidden';
-                const aiSuggestionHtml = m.a ? `
-                    <div class="ai-suggestion-box">
-                        <div class="ai-suggestion-text" data-ai-suggestion="${escapeHtml(m.a)}"><span class="ai-suggestion-label">✨ AI návrh na rozšíření</span>${escapeHtml(m.a)}</div>
-                        <button type="button" class="btn-use-ai-suggestion" onclick="useAiSuggestion(this)">POUŽÍT</button>
-                    </div>` : '';
                 html += `
             <div class="meal-item${hiddenClass}" data-index="${i}">
                 <div class="meal-label">${mealLabels[i]}</div>
                 <div class="meal-content">
                     <div class="m-box" contenteditable="true" oninput="save()" placeholder="Napište jídlo...">${m.t}</div>
-                    ${aiSuggestionHtml}
                     <input type="number" class="w-box" placeholder="Gramy (g)" value="${m.w}" oninput="save()">
                     <div class="n-box" contenteditable="true" oninput="save()" placeholder="Poznámka...">${m.n}</div>
+                    ${m.a ? `<div class="ai-suggestion-box"><div class="ai-suggestion-title">✨ AI návrh na rozšíření</div><div class="ai-suggestion-text">${m.a}</div><button type="button" class="ai-use-btn" onclick="useAiSuggestion(this)">POUŽÍT NÁVRH</button></div>` : ''}
                 </div>
                 <div class="rating" onclick="cycle(this)" style="background:${bg}">${m.r}</div>
             </div>`;
@@ -1697,14 +1676,13 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         function cycle(el) { const em = ['🙂', '😍', '😐', '☹️']; el.innerText = em[(em.indexOf(el.innerText) + 1) % em.length]; el.style.background = rates[el.innerText]; save(); }
 
         function useAiSuggestion(btn) {
-            const item = btn.closest('.meal-item');
-            if (!item) return;
-            const suggestionEl = item.querySelector('.ai-suggestion-text');
-            const suggestion = (suggestionEl?.dataset.aiSuggestion || suggestionEl?.innerText || '').replace(/^✨\s*AI návrh na rozšíření\s*/i, '').trim();
+            const mealItem = btn.closest('.meal-item');
+            if (!mealItem) return;
+            const suggestion = mealItem.querySelector('.ai-suggestion-text')?.innerText.trim() || '';
             if (!suggestion) return;
-            const box = item.querySelector('.m-box');
-            if (box) box.innerText = suggestion;
-            item.querySelector('.ai-suggestion-box')?.remove();
+            mealItem.querySelector('.m-box').innerText = suggestion;
+            const box = mealItem.querySelector('.ai-suggestion-box');
+            if (box) box.remove();
             save();
         }
 
@@ -2227,7 +2205,7 @@ Tuto akci nelze vrátit zpět.`)) return;
             const emptyValues = new Set([
                 'nic', 'nic nebylo', 'nic nedal', 'nic nesnedl', 'nebylo nic',
                 'zadne', 'žádné', 'zadna', 'žádná', 'bez jidla', 'bez jídla',
-                'nejedl', 'nechtel', 'nechtěl', 'odmitl', 'odmítl', '0', '-'
+                'nejedl', 'nechtel', 'nechtěl', 'odmitl', 'odmítl', 'ponechat prazdne', 'ponechat prázdné', '0', '-'
             ]);
             return emptyValues.has(normalized);
         }
@@ -2408,29 +2386,87 @@ Tuto akci nelze vrátit zpět.`)) return;
             };
         }
 
+        function buildAiPlanFormatTemplate(daysCount, mealScope) {
+            const days = Math.max(1, parseInt(daysCount, 10) || 7);
+            const selectedOnly = mealScope !== 'all' ? parseInt(mealScope, 10) : null;
+            const lines = [];
+            for (let day = 1; day <= days; day++) {
+                lines.push(`DEN ${day}`);
+                for (let i = 0; i < mealLabels.length; i++) {
+                    if (selectedOnly !== null && i !== selectedOnly) {
+                        lines.push(`${mealLabels[i]}: ponechat prázdné`);
+                    } else {
+                        lines.push(`${mealLabels[i]}: ...`);
+                        lines.push(`AI návrh ${mealLabels[i]}: ...`);
+                    }
+                }
+                if (day < days) lines.push('');
+            }
+            return lines.join('\n');
+        }
+
+        function getExpectedAiDaysCount() {
+            const value = document.getElementById('aiDays')?.value || '7';
+            return Math.max(1, parseInt(value, 10) || 7);
+        }
+
+        function getAiPlanCompletenessMessage(parsedCount, expectedCount) {
+            if (parsedCount === expectedCount) return '';
+            if (parsedCount < expectedCount) return `AI vrátila jen ${parsedCount} z ${expectedCount} dní. Plán je neúplný, zkuste vytvoření spustit znovu.`;
+            return `AI vrátila ${parsedCount} dní místo požadovaných ${expectedCount}. Zkontrolujte výsledek před importem.`;
+        }
+
         function generateAiPrompt() {
             const ratingMode = document.getElementById('aiRatingMode').value;
-            const daysCount = document.getElementById('aiDays').value;
+            const daysCount = getExpectedAiDaysCount();
             const mealScope = document.getElementById('aiMealScope').value;
             const data = getMainData();
             const selectedText = mealScope === 'all' ? 'všechna denní jídla' : mealLabels[parseInt(mealScope, 10)];
             const ratingText = ratingMode === 'love' ? 'jen jídla hodnocená 😍' : (ratingMode === 'good' ? 'jídla hodnocená 😍 a 🙂' : 'jídla hodnocená 😍, 🙂 a 😐');
             const summary = summarizeMealsForAi(data, ratingMode, mealScope);
             const childInfoLines = getChildInfoForAi();
-            const childInfoText = childInfoLines.length ? `\n\nÚdaje o dítěti pro návrh:\n${childInfoLines.join('\n')}` : '';
-            const dayTemplate = Array.from({ length: parseInt(daysCount, 10) || 7 }, (_, i) => `DEN ${i + 1}
-Snídaně: ...
-AI návrh: ...
-Dop. svačina: ...
-AI návrh: ...
-Oběd: ...
-AI návrh: ...
-Odp. svačina: ...
-AI návrh: ...
-Večeře: ...
-AI návrh: ...`).join('\n\n');
+            const childInfoText = childInfoLines.length ? `
 
-            const prompt = `Potřebuji navrhnout jídelníček pro dítě na ${daysCount} dní.${childInfoText}\n\nPracuj podle těchto pravidel:\n- vytvoř PŘESNĚ ${daysCount} dní, ani méně, ani více\n- v části „JÍDELNÍČEK KE ZKOPÍROVÁNÍ“ musí být všechny dny DEN 1 až DEN ${daysCount}\n- poslední den v importním bloku musí být DEN ${daysCount}\n- plánuj: ${selectedText}\n- jako hlavní jídlo v řádku Snídaně / Dop. svačina / Oběd / Odp. svačina / Večeře ber hlavně: ${ratingText}\n- pod každé hlavní jídlo přidej řádek „AI návrh:“ jako opatrný nápad na rozšíření jídelníčku podle věku dítěte\n- AI návrh má být jiné, jednoduché a věku přiměřené jídlo; má vycházet z toho, co dítě už tolerovalo, ale může jídelníček rozumně posunout dál\n- pokud není vhodné navrhnout novou variantu, napiš do řádku AI návrh podobnou bezpečnou variantu, ne „Nic“\n- zohledni věk dítěte a dostupné údaje o váze/výšce; pokud některý údaj chybí, nevadí, pracuj s tím, co je k dispozici\n- nepoužívej jídla ani suroviny, které jsou uvedené v části „vyhnout se“ nebo mají v historii konkrétní poznámku na reakci dítěte, například alergie, vyrážka, zvracení, nesedlo apod.\n- nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou bezpečnou variantu\n- neopakuj stejné nebo velmi podobné jídlo hned po sobě\n- zachovej rozumnou pestrost\n- nové AI návrhy neoznačuj jako bezpečnou jistotu, ber je jen jako opatrný návrh k vyzkoušení\n- výstup napiš česky\n\nNejdřív napiš maximálně 5 krátkých vět, jak jsi postupoval.\nPotom napiš samostatný blok přesně s názvem:\n\nJÍDELNÍČEK KE ZKOPÍROVÁNÍ\n\nV tomto bloku už nesmí být žádné vysvětlivky, komentáře, odrážky ani markdown tabulka.\nPoužij přesně tento formát pro VŠECH ${daysCount} dní, aby šel výsledek vložit zpět do aplikace:\n\n${dayTemplate}\n\nHistorie jídel podle hodnocení:\n${summary.sections}\n\nDůležité poznámky / možné reakce:\n${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\\n') : '- žádné výrazné varovné poznámky nenalezeny'}\n`;
+Údaje o dítěti pro návrh:
+${childInfoLines.join('\n')}` : '';
+            const formatTemplate = buildAiPlanFormatTemplate(daysCount, mealScope);
+
+            const prompt = `Potřebuji navrhnout jídelníček pro dítě přesně na ${daysCount} dní.${childInfoText}
+
+Pracuj podle těchto pravidel:
+- vytvoř přesně ${daysCount} dní, ani méně, ani více
+- začni řádkem DEN 1 a skonči kompletně vyplněným dnem DEN ${daysCount}
+- plánuj: ${selectedText}
+- jako hlavní jídlo ber hlavně: ${ratingText}
+- ke každému vyplněnému jídlu přidej samostatný řádek „AI návrh [název jídla]: ...“
+- hlavní jídlo má vycházet z historie, ale AI návrh musí být NOVÁ varianta, kterou v historii níže nenajdeš doslova ani jako stejnou kombinaci surovin
+- AI návrh nesmí být pouze přejmenované nebo lehce přehozené historické jídlo; má rozšířit jídelníček o nové běžné a věku přiměřené jídlo
+- AI návrh má být opatrný nápad k vyzkoušení, ne tvrzení, že je zaručeně bezpečný
+- zohledni věk dítěte a dostupné údaje o váze/výšce; pokud některý údaj chybí, nevadí, pracuj s tím, co je k dispozici
+- nepoužívej jídla, která jsou uvedená v části „vyhnout se“
+- nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou bezpečnou variantu
+- neopakuj stejné nebo velmi podobné jídlo hned po sobě
+- zachovej rozumnou pestrost
+- nenavrhuj hlavní jídlo ani AI návrh z jídel/surovin, které jsou v historii v části „vyhnout se“ nebo mají poznámku na konkrétní reakci dítěte (alergie, vyrážka, zvracení, nesedlo apod.)
+- výstup napiš česky
+
+Nejdřív napiš maximálně 3 krátké věty, jak jsi postupoval.
+Potom napiš samostatný blok přesně s názvem:
+
+JÍDELNÍČEK KE ZKOPÍROVÁNÍ
+
+V tomto bloku už nesmí být žádné vysvětlivky, komentáře, odrážky ani markdown tabulka.
+Blok musí obsahovat přesně DEN 1 až DEN ${daysCount}.
+Použij přesně tento formát pro VŠECH ${daysCount} dní:
+
+${formatTemplate}
+
+Historie jídel podle hodnocení:
+${summary.sections}
+
+Důležité poznámky / možné reakce:
+${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- žádné výrazné varovné poznámky nenalezeny'}
+`;
 
             document.getElementById('aiPromptOutput').value = prompt;
         }
@@ -2454,13 +2490,14 @@ AI návrh: ...`).join('\n\n');
                 const planBlock = extractAiPlanBlock(text);
                 if (importInput) importInput.value = planBlock;
                 const parsed = parseAiPlanText(planBlock);
+                const expectedDays = getExpectedAiDaysCount();
                 if (parsed.length === 0) {
                     setStatusText('geminiAiStatus', 'Gemini odpovědělo, ale aplikace v textu nenašla platný blok DEN 1. Odpověď je níže ke kontrole.', true);
                     return;
                 }
-                const expectedDays = parseInt(document.getElementById('aiDays')?.value || '0', 10);
-                if (expectedDays && parsed.length !== expectedDays) {
-                    setStatusText('geminiAiStatus', `Gemini vrátilo ${parsed.length} z ${expectedDays} dnů. Zkuste plán vytvořit znovu, nebo text ručně doplňte před importem.`, true);
+                const completenessMessage = getAiPlanCompletenessMessage(parsed.length, expectedDays);
+                if (completenessMessage) {
+                    setStatusText('geminiAiStatus', completenessMessage + ' Text je zobrazený níže, ale automatický import raději nepoužívejte bez opravy.', true);
                     return;
                 }
                 setStatusText('geminiAiStatus', `Gemini plán je připravený k importu (${parsed.length} dní). Zkontrolujte text a klikněte na IMPORTOVAT AI PLÁN.`);
@@ -2483,12 +2520,9 @@ AI návrh: ...`).join('\n\n');
             if (parsed.length === 0) {
                 setStatusText('geminiAiStatus', 'V odpovědi se nepodařilo najít platný plán ve formátu DEN 1.', true);
             } else {
-                const expectedDays = parseInt(document.getElementById('aiDays')?.value || '0', 10);
-                if (expectedDays && parsed.length !== expectedDays) {
-                    setStatusText('geminiAiStatus', `Odpověď obsahuje ${parsed.length} z ${expectedDays} dnů. Před importem ji doplňte, nebo nechte Gemini vytvořit plán znovu.`, true);
-                } else {
-                    setStatusText('geminiAiStatus', `Odpověď je připravená k importu (${parsed.length} dní).`);
-                }
+                const expectedDays = getExpectedAiDaysCount();
+                const completenessMessage = getAiPlanCompletenessMessage(parsed.length, expectedDays);
+                setStatusText('geminiAiStatus', completenessMessage || `Odpověď je připravená k importu (${parsed.length} dní).`, Boolean(completenessMessage));
             }
         }
 
@@ -2555,26 +2589,28 @@ AI návrh: ...`).join('\n\n');
             lines.forEach(line => {
                 if (/^DEN\s*\d+/i.test(line)) {
                     if (current) days.push(current);
-                    current = { m: Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐' })) };
+                    current = { m: Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐', a: '' })) };
                     lastMealIndex = -1;
                     return;
                 }
                 if (!current) return;
                 const match = line.match(/^([^:：]+)[:：]\s*(.*)$/);
                 if (!match) return;
-                const label = match[1] || '';
-                const normalizedLabel = normalizeAiMealLabel(label);
-                const isAiSuggestionLine = (normalizedLabel.includes('ai') && (normalizedLabel.includes('návrh') || normalizedLabel.includes('navrh'))) || normalizedLabel.includes('ai návrh') || normalizedLabel.includes('ai navrh');
-                let index = mealIndexFromAiLabel(label);
-                if (isAiSuggestionLine && index < 0) index = lastMealIndex;
-                if (index < 0) return;
+                const rawLabel = match[1] || '';
                 let mealText = (match[2] || '').replace(/^[-–—]\s*/, '').trim();
-                if (!mealText || isEmptyMealText(mealText)) mealText = '';
-                if (isAiSuggestionLine) {
-                    if (mealText) current.m[index].a = mealText;
+                const isAiSuggestion = /ai\s*n[áa]vrh|alternativa|nov[ýy]\s*n[áa]vrh/i.test(rawLabel);
+                if (isAiSuggestion) {
+                    let index = mealIndexFromAiLabel(rawLabel);
+                    if (index < 0) index = lastMealIndex;
+                    if (index >= 0 && mealText && !isEmptyMealText(mealText)) {
+                        current.m[index].a = mealText;
+                    }
                     return;
                 }
-                current.m[index] = { t: mealText, w: '', n: '', r: '😐' };
+                const index = mealIndexFromAiLabel(rawLabel);
+                if (index < 0) return;
+                if (!mealText || isEmptyMealText(mealText)) mealText = '';
+                current.m[index] = { t: mealText, w: '', n: '', r: '😐', a: current.m[index]?.a || '' };
                 lastMealIndex = index;
             });
             if (current) days.push(current);
@@ -2587,6 +2623,14 @@ AI návrh: ...`).join('\n\n');
             const parsed = parseAiPlanText(input ? input.value : '');
             if (parsed.length === 0) {
                 alert('Nepodařilo se najít žádný platný den jídelníčku. Vložte blok ve formátu DEN 1, Snídaně, Dop. svačina, Oběd, Odp. svačina, Večeře.');
+                return;
+            }
+
+            const expectedDays = getExpectedAiDaysCount();
+            const completenessMessage = getAiPlanCompletenessMessage(parsed.length, expectedDays);
+            if (completenessMessage && !confirm(`${completenessMessage}
+
+Přesto chcete tento neúplný/odlišný plán importovat?`)) {
                 return;
             }
 
@@ -2893,7 +2937,8 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                     t: item.querySelector('.m-box').innerText,
                     w: item.querySelector('.w-box').value,
                     n: item.querySelector('.n-box').innerText,
-                    r: item.querySelector('.rating').innerText
+                    r: item.querySelector('.rating').innerText,
+                    a: item.querySelector('.ai-suggestion-text') ? item.querySelector('.ai-suggestion-text').innerText.trim() : ''
                 }))
             }));
             localStorage.setItem('nutri_draft', JSON.stringify(data));
