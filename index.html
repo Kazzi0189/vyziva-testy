@@ -397,6 +397,19 @@
             text-align: center;
         }
 
+        #settingsModal {
+            align-items: flex-start;
+            overflow-y: auto;
+            padding: 10px 0;
+            box-sizing: border-box;
+        }
+
+        #settingsModal .modal-box {
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
         .ai-close-x {
             position: sticky;
             top: 0;
@@ -421,6 +434,31 @@
             #aiPlanInput {
                 min-height: 130px !important;
             }
+
+            #aiGeminiOutput {
+                min-height: 120px !important;
+            }
+        }
+
+        .small-help-text {
+            font-size: 0.78rem;
+            color: #7f8c8d;
+            line-height: 1.35;
+            text-align: left;
+            margin: 6px 0 10px;
+        }
+
+        .ai-status {
+            font-size: 0.82rem;
+            color: #2c3e50;
+            background: #f8f9fa;
+            border: 1px solid #e1e7ec;
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin: 8px 0 10px;
+            text-align: left;
+            display: none;
+            white-space: pre-wrap;
         }
 
 
@@ -846,6 +884,23 @@
             <div style="border-top: 1px solid #eee; margin-bottom: 15px;"></div>
             <button class="modal-btn btn-export" onclick="exportData()">💾 ZÁLOHA APLIKACE (.json)</button>
             <button class="modal-btn btn-import" onclick="triggerImport()">📂 OBNOVA APLIKACE (.json)</button>
+
+            <div style="border-top: 1px solid #eee; margin: 18px 0 15px;"></div>
+            <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">Gemini AI</div>
+            <div class="small-help-text">API klíč se uloží jen v tomto zařízení a není součástí záloh. U čisté HTML aplikace ale nejde klíč stoprocentně skrýt před uživatelem zařízení.</div>
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Gemini API klíč</label>
+            <input type="password" id="geminiApiKey" placeholder="AIza..." autocomplete="off" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Model</label>
+            <select id="geminiModel" style="width:100%; margin-bottom:10px;">
+                <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash</option>
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+            </select>
+            <div id="geminiSettingsStatus" class="ai-status"></div>
+            <button class="modal-btn btn-merge" onclick="saveGeminiSettings()">💾 ULOŽIT GEMINI</button>
+            <button class="modal-btn btn-import" onclick="testGeminiConnection()">🔌 OTESTOVAT GEMINI</button>
+            <button class="modal-btn btn-overwrite" onclick="deleteGeminiSettings()">🗑️ SMAZAT API KLÍČ</button>
+
             <button class="modal-btn btn-cancel" onclick="closeSettings()">ZAVŘÍT</button>
             <button class="modal-btn btn-overwrite" style="margin-top: 30px;" onclick="clearAllMainData()">🔥 SMAZAT
                 ÚPLNĚ VŠECHNA DATA</button>
@@ -903,8 +958,8 @@
     <div class="modal-overlay" id="aiModal" onclick="if (event.target === this) closeAiModal()">
         <div class="modal-box" style="max-width:560px;">
             <button type="button" class="ai-close-x" onclick="closeAiModal()" aria-label="Zavřít AI okno">×</button>
-            <div class="modal-title">AI podklad pro jídelníček</div>
-            <div class="modal-text">Aplikace sama AI nevolá. Připraví text z historie, který zkopírujete do ChatGPT.</div>
+            <div class="modal-title">AI jídelníček</div>
+            <div class="modal-text">Můžete vytvořit podklad ke zkopírování, nebo zavolat Gemini přímo přes vlastní API klíč uložený v nastavení.</div>
 
             <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Z čeho má AI vycházet</label>
             <select id="aiRatingMode" style="width:100%; margin-bottom:10px;">
@@ -933,6 +988,14 @@
             <textarea id="aiPromptOutput" readonly style="width:100%; min-height:220px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
             <button class="modal-btn btn-merge" onclick="generateAiPrompt()">🤖 VYTVOŘIT PODKLAD</button>
             <button class="modal-btn btn-import" onclick="copyAiPrompt()">📋 KOPÍROVAT TEXT PRO AI</button>
+
+            <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
+            <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">Přímé dotazování Gemini</div>
+            <div class="small-help-text">Použije se Gemini API klíč ze Správy dat. Odpověď se nejdřív zobrazí ke kontrole a zároveň se připraví pro import.</div>
+            <div id="geminiAiStatus" class="ai-status"></div>
+            <button class="modal-btn btn-merge" style="background:#8e44ad;" onclick="generatePlanWithGemini()">🤖 VYTVOŘIT PLÁN PŘES GEMINI</button>
+            <textarea id="aiGeminiOutput" readonly placeholder="Tady se zobrazí odpověď Gemini..." style="width:100%; min-height:170px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
+            <button class="modal-btn btn-import" onclick="moveGeminiResponseToImport()">⬇️ PŘIPRAVIT ODPOVĚĎ K IMPORTU</button>
 
             <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
             <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">Import AI jídelníčku</div>
@@ -1039,6 +1102,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         const mealLabels = ["Snídaně", "Dop. Svačina", "Oběd", "Odp. Svačina", "Večeře"];
 
         const CHILD_PROFILE_KEY = 'nutri_child_profile_v1';
+        const GEMINI_SETTINGS_KEY = 'nutri_gemini_settings_v1';
 
         function getChildProfile() {
             const raw = localStorage.getItem(CHILD_PROFILE_KEY);
@@ -1098,6 +1162,109 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             if (profile.weight) lines.push(`- aktuální váha: ${profile.weight} kg`);
             if (profile.height) lines.push(`- aktuální výška: ${profile.height} cm`);
             return lines;
+        }
+
+
+        function getGeminiSettings() {
+            const raw = localStorage.getItem(GEMINI_SETTINGS_KEY);
+            try {
+                const parsed = raw ? JSON.parse(raw) : {};
+                return {
+                    apiKey: parsed.apiKey || '',
+                    model: parsed.model || 'gemini-2.5-flash'
+                };
+            } catch (e) {
+                return { apiKey: '', model: 'gemini-2.5-flash' };
+            }
+        }
+
+        function setStatusText(elementId, text, isError = false) {
+            const box = document.getElementById(elementId);
+            if (!box) return;
+            box.style.display = text ? 'block' : 'none';
+            box.style.color = isError ? '#c0392b' : '#2c3e50';
+            box.style.borderColor = isError ? '#e74c3c' : '#e1e7ec';
+            box.innerText = text || '';
+        }
+
+        function loadGeminiSettings() {
+            const settings = getGeminiSettings();
+            const keyInput = document.getElementById('geminiApiKey');
+            const modelSelect = document.getElementById('geminiModel');
+            if (keyInput) keyInput.value = settings.apiKey || '';
+            if (modelSelect) modelSelect.value = settings.model || 'gemini-2.5-flash';
+            setStatusText('geminiSettingsStatus', settings.apiKey ? 'Gemini API klíč je uložený jen v tomto zařízení.' : 'Gemini API klíč zatím není uložený.');
+        }
+
+        function saveGeminiSettings() {
+            const apiKey = (document.getElementById('geminiApiKey')?.value || '').trim();
+            const model = (document.getElementById('geminiModel')?.value || 'gemini-2.5-flash').trim();
+            if (!apiKey) {
+                setStatusText('geminiSettingsStatus', 'Nejdřív vložte Gemini API klíč.', true);
+                return;
+            }
+            localStorage.setItem(GEMINI_SETTINGS_KEY, JSON.stringify({ apiKey, model }));
+            setStatusText('geminiSettingsStatus', 'Gemini nastavení bylo uloženo. Klíč se neukládá do záloh aplikace.');
+        }
+
+        function deleteGeminiSettings() {
+            if (!confirm('Smazat uložený Gemini API klíč z tohoto zařízení?')) return;
+            localStorage.removeItem(GEMINI_SETTINGS_KEY);
+            loadGeminiSettings();
+            setStatusText('geminiSettingsStatus', 'Gemini API klíč byl smazán.');
+        }
+
+        function getGeminiResponseText(responseJson) {
+            const parts = responseJson?.candidates?.[0]?.content?.parts || [];
+            return parts.map(part => part.text || '').join('\n').trim();
+        }
+
+        async function callGeminiApi(promptText, statusElementId) {
+            const settings = getGeminiSettings();
+            if (!settings.apiKey) throw new Error('Gemini API klíč není uložený. Otevřete ⋯ DALŠÍ → Správa dat → Gemini AI.');
+            const model = settings.model || 'gemini-2.5-flash';
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': settings.apiKey
+                },
+                body: JSON.stringify({
+                    contents: [
+                        {
+                            role: 'user',
+                            parts: [{ text: promptText }]
+                        }
+                    ],
+                    generationConfig: {
+                        temperature: 0.45,
+                        topP: 0.9,
+                        maxOutputTokens: 8192
+                    }
+                })
+            });
+
+            let data = null;
+            try { data = await response.json(); } catch (e) { data = null; }
+            if (!response.ok) {
+                const message = data?.error?.message || `Gemini API vrátilo chybu ${response.status}.`;
+                throw new Error(message);
+            }
+            const text = getGeminiResponseText(data);
+            if (!text) throw new Error('Gemini nevrátilo žádný textový jídelníček.');
+            return text;
+        }
+
+        async function testGeminiConnection() {
+            saveGeminiSettings();
+            setStatusText('geminiSettingsStatus', 'Testuji připojení ke Gemini...');
+            try {
+                const text = await callGeminiApi('Odpověz pouze slovem OK.', 'geminiSettingsStatus');
+                setStatusText('geminiSettingsStatus', `Připojení funguje. Odpověď: ${text.slice(0, 80)}`);
+            } catch (err) {
+                setStatusText('geminiSettingsStatus', `Chyba Gemini: ${err.message}`, true);
+            }
         }
 
 
@@ -2188,6 +2355,52 @@ Tuto akci nelze vrátit zpět.`)) return;
         }
 
 
+
+        async function generatePlanWithGemini() {
+            const output = document.getElementById('aiGeminiOutput');
+            const importInput = document.getElementById('aiPlanInput');
+            if (output) output.value = '';
+            if (!document.getElementById('aiPromptOutput')?.value.trim()) generateAiPrompt();
+            const prompt = document.getElementById('aiPromptOutput')?.value || '';
+            if (!prompt.trim()) {
+                setStatusText('geminiAiStatus', 'Nejdřív vytvořte AI podklad.', true);
+                return;
+            }
+            setStatusText('geminiAiStatus', 'Gemini vytváří jídelníček. Chvíli počkejte...');
+            try {
+                const text = await callGeminiApi(prompt, 'geminiAiStatus');
+                if (output) output.value = text;
+                const planBlock = extractAiPlanBlock(text);
+                if (importInput) importInput.value = planBlock;
+                const parsed = parseAiPlanText(planBlock);
+                if (parsed.length === 0) {
+                    setStatusText('geminiAiStatus', 'Gemini odpovědělo, ale aplikace v textu nenašla platný blok DEN 1. Odpověď je níže ke kontrole.', true);
+                    return;
+                }
+                setStatusText('geminiAiStatus', `Gemini plán je připravený k importu (${parsed.length} dní). Zkontrolujte text a klikněte na IMPORTOVAT AI PLÁN.`);
+            } catch (err) {
+                setStatusText('geminiAiStatus', `Chyba Gemini: ${err.message}`, true);
+            }
+        }
+
+        function moveGeminiResponseToImport() {
+            const output = document.getElementById('aiGeminiOutput');
+            const importInput = document.getElementById('aiPlanInput');
+            const text = output ? output.value : '';
+            if (!text.trim()) {
+                setStatusText('geminiAiStatus', 'Nejdřív vytvořte nebo vložte odpověď Gemini.', true);
+                return;
+            }
+            const planBlock = extractAiPlanBlock(text);
+            if (importInput) importInput.value = planBlock;
+            const parsed = parseAiPlanText(planBlock);
+            if (parsed.length === 0) {
+                setStatusText('geminiAiStatus', 'V odpovědi se nepodařilo najít platný plán ve formátu DEN 1.', true);
+            } else {
+                setStatusText('geminiAiStatus', `Odpověď je připravená k importu (${parsed.length} dní).`);
+            }
+        }
+
         function copyAiPrompt() {
             const box = document.getElementById('aiPromptOutput');
             if (!box.value.trim()) generateAiPrompt();
@@ -2404,7 +2617,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
         }
 
         // --- SPRÁVA DAT A MODAL OKNA ---
-        function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
+        function openSettings() { loadGeminiSettings(); document.getElementById('settingsModal').style.display = 'flex'; }
         function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
         function triggerImport() { document.getElementById('importFile').click(); closeSettings(); }
 
