@@ -1254,6 +1254,36 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             return parts.map(part => part.text || '').join('\n').trim();
         }
 
+        function translateGeminiErrorMessage(message) {
+            const raw = String(message || '').trim();
+            const lower = raw.toLowerCase();
+
+            if (!raw) return 'Gemini vrátilo neznámou chybu. Zkuste to prosím znovu později.';
+            if (lower.includes('high demand') || lower.includes('spikes in demand') || lower.includes('try again later')) {
+                return 'Gemini je teď hodně vytížené. Jde většinou o dočasný stav. Zkuste to prosím za chvíli znovu.';
+            }
+            if (lower.includes('api key not valid') || lower.includes('invalid api key') || lower.includes('api_key_invalid')) {
+                return 'API klíč není platný. Zkontrolujte ho ve Správě dat → Gemini AI.';
+            }
+            if (lower.includes('permission') || lower.includes('forbidden') || lower.includes('not authorized')) {
+                return 'Gemini odmítlo požadavek kvůli oprávnění. Zkontrolujte API klíč a povolení Gemini API.';
+            }
+            if (lower.includes('quota') || lower.includes('rate limit') || lower.includes('resource exhausted')) {
+                return 'Byl překročen limit Gemini API nebo kvóta. Zkuste to později, případně zkontrolujte limity v Google AI Studiu.';
+            }
+            if (lower.includes('network') || lower.includes('failed to fetch')) {
+                return 'Nepodařilo se připojit ke Gemini. Zkontrolujte internet a zkuste to znovu.';
+            }
+            if (lower.includes('model') && (lower.includes('not found') || lower.includes('not supported'))) {
+                return 'Vybraný model Gemini není dostupný. Zkuste v nastavení vybrat jiný model.';
+            }
+            return raw;
+        }
+
+        function formatGeminiError(err) {
+            return `Chyba Gemini: ${translateGeminiErrorMessage(err && err.message ? err.message : err)}`;
+        }
+
         async function callGeminiApi(promptText, statusElementId) {
             const settings = getGeminiSettings();
             if (!settings.apiKey) throw new Error('Gemini API klíč není uložený. Otevřete ⋯ DALŠÍ → Správa dat → Gemini AI.');
@@ -1298,7 +1328,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                 const text = await callGeminiApi('Odpověz pouze slovem OK.', 'geminiSettingsStatus');
                 setStatusText('geminiSettingsStatus', `Připojení funguje. Odpověď: ${text.slice(0, 80)}`);
             } catch (err) {
-                setStatusText('geminiSettingsStatus', `Chyba Gemini: ${err.message}`, true);
+                setStatusText('geminiSettingsStatus', formatGeminiError(err), true);
             }
         }
 
@@ -2546,7 +2576,7 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
                 }
                 setStatusText('geminiAiStatus', `Gemini plán je připravený k importu (${parsed.length} dní). Zkontrolujte text a klikněte na IMPORTOVAT AI PLÁN.`);
             } catch (err) {
-                setStatusText('geminiAiStatus', `Chyba Gemini: ${err.message}`, true);
+                setStatusText('geminiAiStatus', formatGeminiError(err), true);
             }
         }
 
