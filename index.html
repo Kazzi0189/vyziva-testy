@@ -885,6 +885,91 @@
             }
         }
 
+
+        /* UŽIVATELSKÝ MANUÁL */
+        #manualModal {
+            align-items: flex-start;
+            overflow-y: auto;
+            padding: 10px 0;
+            box-sizing: border-box;
+        }
+
+        #manualModal .modal-box {
+            position: relative;
+            max-width: 560px;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            box-sizing: border-box;
+            text-align: left;
+        }
+
+        .manual-intro {
+            background: #f0f7ff;
+            border: 1px solid #cfe6ff;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.86rem;
+            line-height: 1.45;
+            color: #2c3e50;
+            margin-bottom: 12px;
+        }
+
+        .manual-section {
+            border: 1px solid #e1e7ec;
+            border-radius: 10px;
+            background: #fff;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .manual-section summary {
+            cursor: pointer;
+            padding: 11px 12px;
+            font-weight: 800;
+            color: #2c3e50;
+            background: #f8f9fa;
+            list-style: none;
+        }
+
+        .manual-section summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .manual-section summary::after {
+            content: '＋';
+            float: right;
+            color: var(--accent);
+            font-weight: 900;
+        }
+
+        .manual-section[open] summary::after {
+            content: '−';
+        }
+
+        .manual-section-content {
+            padding: 10px 12px 12px;
+            font-size: 0.86rem;
+            line-height: 1.45;
+            color: #34495e;
+        }
+
+        .manual-section-content ul {
+            margin: 6px 0 0 18px;
+            padding: 0;
+        }
+
+        .manual-section-content li {
+            margin-bottom: 5px;
+        }
+
+        .manual-note {
+            background: #fff9db;
+            border: 1px solid #f1c40f;
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-top: 8px;
+        }
+
     </style>
 </head>
 
@@ -954,6 +1039,7 @@
                 <button class="modal-btn" style="background:#1abc9c" onclick="closeMoreMenu(); openChildModal();">👶 Údaje dítěte</button>
                 <button class="modal-btn" style="background:#d35400" onclick="closeMoreMenu(); openAvoidListModal();">🚫 Vyhnout se</button>
                 <button class="modal-btn" style="background:#27ae60" onclick="closeMoreMenu(); openOverviewModal();">📊 Přehled jídel</button>
+                <button class="modal-btn" style="background:#2980b9" onclick="closeMoreMenu(); openManualModal();">📘 Manuál</button>
                 <button class="modal-btn" style="background:#2c3e50" onclick="closeMoreMenu(); openDraft();">📥 Rozpracované zápisy</button>
                 <button class="modal-btn" style="background:#7f8c8d" onclick="closeMoreMenu(); openSettings();">⚙️ Správa dat</button>
             </div>
@@ -1006,6 +1092,195 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="manualModal">
+        <div class="modal-box manual-modal-box">
+            <button type="button" class="ai-close-x" onclick="closeManualModal()">×</button>
+            <div class="modal-title" style="text-align:center;">Manuál aplikace</div>
+            <div class="manual-intro">
+                Tento manuál popisuje hlavní funkce deníku výživy, plánování jídelníčku a práci s AI. Většinu méně častých nástrojů najdete přes tlačítko <b>⋯ DALŠÍ</b>.
+            </div>
+
+            <details class="manual-section" open>
+                <summary>🟢 Rychlé zapisování dne</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li><b>NOVÝ +</b> vytvoří nový den s dnešním datem.</li>
+                        <li><b>DNES</b> skočí na dnešní záznam. Pokud dnešek ještě neexistuje, aplikace ho nabídne vytvořit.</li>
+                        <li><b>🎤 JÍDLO</b> zapisuje nadiktované jídlo.</li>
+                        <li><b>🎤 POZNÁMKA</b> zapisuje poznámku k vybranému jídlu.</li>
+                        <li>Když klepnete do konkrétní buňky, diktování zapisuje přímo do ní.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>🔎 Filtry a zobrazení</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li><b>Období</b> filtruje záznamy podle času.</li>
+                        <li><b>Jídlo</b> zobrazí jen snídaně, svačiny, obědy nebo večeře.</li>
+                        <li><b>Hodnocení</b> zobrazí jen vybrané smajlíky.</li>
+                        <li><b>Zobrazení</b> přepíná mezi vším, skutečným deníkem a plánem.</li>
+                        <li><b>⚖️</b> zobrazí nebo skryje gramy. <b>📝</b> zobrazí nebo skryje poznámky.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>🙂 Hodnocení jídel</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Hodnocení se přepíná klepnutím na smajlíka u jídla.</li>
+                        <li><b>😍</b> znamená velmi chutnalo.</li>
+                        <li><b>🙂</b> znamená dobré.</li>
+                        <li><b>😐</b> je základní výchozí hodnocení.</li>
+                        <li><b>☹️</b> znamená nechutnalo nebo nevhodné.</li>
+                    </ul>
+                    <div class="manual-note">AI i offline plán se snaží vycházet hlavně z lepších hodnocení a vyhýbat se negativním položkám.</div>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>🗓️ Offline plán</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Najdete ho přes <b>⋯ DALŠÍ → Plán</b>.</li>
+                        <li>Plán se skládá z minulých jídel podle zvoleného hodnocení.</li>
+                        <li>Lze vytvořit plán na 7, 14 nebo 30 dní.</li>
+                        <li>Plánované dny mají štítek <b>PLÁN</b>.</li>
+                        <li>Offline plán nepoužívá internet ani API klíč.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>🤖 AI jídelníček a Gemini</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>AI najdete přes <b>⋯ DALŠÍ → AI</b>.</li>
+                        <li>Nejdřív lze vytvořit podklad pro AI a ručně ho zkopírovat.</li>
+                        <li>Po vložení Gemini API klíče ve <b>Správě dat</b> lze vytvořit plán přímo přes Gemini.</li>
+                        <li>Gemini má vracet přesný počet dní a formát vhodný pro import.</li>
+                        <li>Odpověď se zobrazí ke kontrole a teprve potom ji lze importovat jako plán.</li>
+                    </ul>
+                    <div class="manual-note">API klíč se ukládá jen v tomto zařízení a není součástí záloh. U čisté HTML aplikace ale nejde klíč stoprocentně skrýt před uživatelem zařízení.</div>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>✨ AI návrhy u jídel</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Gemini může pod hlavní jídlo přidat <b>AI návrh na rozšíření</b>.</li>
+                        <li>Hlavní jídlo vychází hlavně z historie.</li>
+                        <li>AI návrh má být nová věkově přiměřená možnost, kterou jste ještě nezkoušeli.</li>
+                        <li><b>POUŽÍT</b> přesune návrh do hlavního jídla.</li>
+                        <li><b>ZAMÍTNOUT</b> návrh odstraní.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>↕️ Přeskládání plánu</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Spustíte přes <b>⋯ DALŠÍ → Přeskládat</b>.</li>
+                        <li>Přeskládání funguje jen pro záznamy označené jako <b>PLÁN</b>.</li>
+                        <li>Kartu lze přetáhnout prstem. Při tažení k okraji se stránka posouvá.</li>
+                        <li>Jako jistota jsou u karet také tlačítka <b>⬆️</b>, <b>⬇️</b> a <b>⇄</b>.</li>
+                        <li>Po přesunu se datumy plánovaných dnů automaticky přepočítají.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>📅 Ruční změna data a prohození dnů</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Datum lze upravit přímo v hlavičce karty.</li>
+                        <li>Když cílové datum už existuje, aplikace nabídne možnosti tlačítky.</li>
+                        <li><b>Prohodit dny/karty</b> vymění obsah dvou dnů.</li>
+                        <li><b>Přepsat cílové datum</b> nahradí cílový záznam touto kartou.</li>
+                        <li>U plánovaných záznamů se při přepsání umí vytvořit prázdná plánovaná karta na původním datu, aby v plánu nevznikla mezera.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>🧹 Mazání a zrušení plánu</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Najdete přes <b>⋯ DALŠÍ → Smazat</b>.</li>
+                        <li>Lze mazat období od data do data.</li>
+                        <li>Lze zapnout ruční označování dnů a smazat vybrané karty.</li>
+                        <li><b>Zrušit jen plán</b> smaže pouze záznamy označené jako <b>PLÁN</b>.</li>
+                        <li>Skutečné historické záznamy se při zrušení plánu nemažou.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>✅ Převod plánu na skutečný den</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>U plánované karty je tlačítko <b>✅ SKUTEČNÝ DEN</b>.</li>
+                        <li>Po potvrzení se záznam přestane brát jako plán a stane se běžným deníkem.</li>
+                        <li>Je vhodné ho použít až po skutečném proběhnutí dne a případné ruční úpravě toho, co dítě opravdu snědlo.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>👶 Údaje dítěte a 🚫 Vyhnout se</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li><b>Údaje dítěte</b> slouží hlavně pro AI plánování.</li>
+                        <li>Datum narození se do AI neposílá, posílá se jen vypočtený věk v měsících.</li>
+                        <li>Váha a výška se do AI použijí jen tehdy, když jsou vyplněné.</li>
+                        <li><b>Vyhnout se</b> je ruční seznam jídel, surovin nebo kombinací, které nemá používat offline plán ani AI.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>📊 Přehled jídel</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Zobrazí nejčastější jídla, oblíbená jídla, nechutnalo, AI nápady a ruční seznam vyhnout se.</li>
+                        <li>Přehled bere jako základ hlavně skutečný deník, ne plán.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>📥 Rozpracované zápisy</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Slouží pro digitalizaci starých papírů nebo průběžné zapisování bokem.</li>
+                        <li>Zápisy lze později odeslat do hlavního deníku.</li>
+                        <li>Při shodném datu se hlavní deník může přepsat rozpracovaným záznamem.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>⚙️ Správa dat a zálohy</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li><b>Export JSON</b> vytvoří zálohu celé aplikace.</li>
+                        <li><b>Import JSON</b> obnoví nebo sloučí zálohu.</li>
+                        <li><b>CSV export/import</b> slouží pro práci s tabulkami.</li>
+                        <li>Aplikace si před rizikovými akcemi vytváří automatickou vnitřní zálohu.</li>
+                        <li><b>Obnovit poslední auto zálohu</b> vrátí poslední bezpečně uložený stav.</li>
+                    </ul>
+                    <div class="manual-note">Doporučení: před většími úpravami nebo importem si udělejte ruční JSON zálohu.</div>
+                </div>
+            </details>
+
+            <button class="modal-btn btn-cancel" onclick="closeManualModal()">ZAVŘÍT</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="settingsModal">
         <div class="modal-box">
             <div class="modal-title">Správa dat</div>
@@ -1034,6 +1309,7 @@
             <button class="modal-btn btn-import" onclick="testGeminiConnection()">🔌 OTESTOVAT GEMINI</button>
             <button class="modal-btn btn-overwrite" onclick="deleteGeminiSettings()">🗑️ SMAZAT API KLÍČ</button>
 
+            <button class="modal-btn" style="background:#2980b9" onclick="closeSettings(); openManualModal();">📘 OTEVŘÍT MANUÁL</button>
             <button class="modal-btn btn-cancel" onclick="closeSettings()">ZAVŘÍT</button>
             <button class="modal-btn btn-overwrite" style="margin-top: 30px;" onclick="clearAllMainData()">🔥 SMAZAT
                 ÚPLNĚ VŠECHNA DATA</button>
@@ -1420,6 +1696,14 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
 
         function closeOverviewModal() {
             document.getElementById('overviewModal').style.display = 'none';
+        }
+
+        function openManualModal() {
+            document.getElementById('manualModal').style.display = 'flex';
+        }
+
+        function closeManualModal() {
+            document.getElementById('manualModal').style.display = 'none';
         }
 
         function addCount(map, key) {
