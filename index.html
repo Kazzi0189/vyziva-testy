@@ -621,6 +621,7 @@
             opacity: 0.85;
             transform: scale(1.01);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+            pointer-events: none;
         }
 
         .card.plan-swap-selected {
@@ -1188,7 +1189,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                     .sort((a, b) => b.date - a.date)
                     .map(x => x.item);
 
-                container.innerHTML = '<div class="reorder-banner"><b>Režim přeskládání plánu</b><br>Plán je seřazen stejně jako běžný deník: nejnovější den nahoře. Podržte modrý pruh a přesuňte den, použijte šipky, nebo tlačítkem ⇄ vyberte dva dny k výměně. Po změně se datumy plánu automaticky přepočítají. Skutečná historie se nemění.</div>';
+                container.innerHTML = '<div class="reorder-banner"><b>Režim přeskládání plánu</b><br>Plán je seřazen stejně jako běžný deník: nejnovější den nahoře. Podržte modrý pruh a přesuňte den, případně použijte šipky nebo tlačítko ⇄ pro spolehlivou výměnu dvou dnů. Po změně se datumy plánu automaticky přepočítají. Skutečná historie se nemění.</div>';
 
                 if (plannedEntries.length === 0) {
                     container.innerHTML += '<div style="text-align:center; color:#95a5a6; margin-top:15px; background:white; padding:20px; border-radius:12px;">Není zde žádný budoucí PLÁN k přeskládání.</div>';
@@ -1563,32 +1564,40 @@ Tuto akci nelze vrátit zpět.`)) return;
             if (!handle) return;
 
             let pointerActive = false;
+            let activePointerId = null;
             let startClientY = 0;
 
             function onPointerMove(event) {
                 if (!pointerActive || !draggedPlanCard) return;
+                if (activePointerId !== null && event.pointerId !== activePointerId) return;
                 const deltaY = Math.abs(event.clientY - startClientY);
                 if (deltaY > 8) planDragMoved = true;
                 planDragLastClientX = event.clientX;
                 planDragLastClientY = event.clientY;
-                moveDraggedCardByY(event.clientY);
+                moveDraggedCardByPointer(event.clientX, event.clientY);
                 updatePlanDragAutoScroll(event.clientY);
                 event.preventDefault();
             }
 
             function finishPointerDrag(event) {
                 if (!pointerActive) return;
+                if (activePointerId !== null && event.pointerId !== activePointerId) return;
                 pointerActive = false;
                 document.removeEventListener('pointermove', onPointerMove, { passive: false });
                 document.removeEventListener('pointerup', finishPointerDrag);
                 document.removeEventListener('pointercancel', finishPointerDrag);
 
                 if (draggedPlanCard) {
-                    planDragLastClientX = event.clientX || planDragLastClientX;
-                    planDragLastClientY = event.clientY || planDragLastClientY;
-                    moveDraggedCardByY(planDragLastClientY);
+                    if (event.clientX) planDragLastClientX = event.clientX;
+                    if (event.clientY) planDragLastClientY = event.clientY;
+                    moveDraggedCardByPointer(planDragLastClientX, planDragLastClientY);
                     draggedPlanCard.classList.remove('dragging-plan');
+                    draggedPlanCard.style.pointerEvents = '';
                 }
+                if (handle.releasePointerCapture && activePointerId !== null) {
+                    try { handle.releasePointerCapture(activePointerId); } catch (err) { }
+                }
+                activePointerId = null;
                 draggedPlanCard = null;
                 stopPlanDragAutoScroll();
                 saveReorderedPlanFromDom(true);
@@ -1598,12 +1607,17 @@ Tuto akci nelze vrátit zpět.`)) return;
                 if (event.button !== undefined && event.button !== 0) return;
                 clearPlanSwapSelection();
                 pointerActive = true;
+                activePointerId = event.pointerId;
                 planDragMoved = false;
                 draggedPlanCard = card;
                 card.classList.add('dragging-plan');
+                card.style.pointerEvents = 'none';
                 startClientY = event.clientY;
                 planDragLastClientX = event.clientX;
                 planDragLastClientY = event.clientY;
+                if (handle.setPointerCapture) {
+                    try { handle.setPointerCapture(event.pointerId); } catch (err) { }
+                }
                 document.addEventListener('pointermove', onPointerMove, { passive: false });
                 document.addEventListener('pointerup', finishPointerDrag);
                 document.addEventListener('pointercancel', finishPointerDrag);
@@ -1632,7 +1646,7 @@ Tuto akci nelze vrátit zpět.`)) return;
 
             if (speed !== 0) {
                 window.scrollBy(0, speed);
-                moveDraggedCardByY(planDragLastClientY);
+                moveDraggedCardByPointer(planDragLastClientX, planDragLastClientY);
                 planDragAutoScrollFrame = requestAnimationFrame(runPlanDragAutoScroll);
             }
         }
@@ -1640,6 +1654,26 @@ Tuto akci nelze vrátit zpět.`)) return;
         function stopPlanDragAutoScroll() {
             if (planDragAutoScrollFrame) cancelAnimationFrame(planDragAutoScrollFrame);
             planDragAutoScrollFrame = null;
+        }
+
+        function moveDraggedCardByPointer(clientX, clientY) {
+            if (!draggedPlanCard) return;
+
+            const elementUnderFinger = document.elementFromPoint(clientX, clientY);
+            const targetCard = elementUnderFinger ? elementUnderFinger.closest('.card[data-planned="true"]') : null;
+
+            if (targetCard && targetCard !== draggedPlanCard && container.contains(targetCard)) {
+                const rect = targetCard.getBoundingClientRect();
+                const insertAfterTarget = clientY > rect.top + (rect.height / 2);
+                if (insertAfterTarget) {
+                    container.insertBefore(draggedPlanCard, targetCard.nextElementSibling);
+                } else {
+                    container.insertBefore(draggedPlanCard, targetCard);
+                }
+                return;
+            }
+
+            moveDraggedCardByY(clientY);
         }
 
         function moveDraggedCardByY(clientY) {
