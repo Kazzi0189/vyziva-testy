@@ -599,6 +599,13 @@
             touch-action: none;
         }
 
+        .header-icon-btn {
+            flex: 0 0 42px;
+            max-width: 42px;
+            padding: 10px 4px;
+            font-size: 1rem;
+        }
+
         .reorder-handle:active {
             cursor: grabbing;
         }
@@ -733,6 +740,8 @@
                 <button id="micMain" class="btn-mic" onclick="runVoice('food')">🎤 JÍDLO</button>
                 <button id="micNote" style="background:var(--note)" class="btn-mic" onclick="runVoice('note')">🎤 POZNÁMKA</button>
                 <button style="background:#34495e" onclick="openMoreMenu()">⋯ DALŠÍ</button>
+                <button class="header-icon-btn" style="background:#9b59b6" title="Zobrazit/skrýt gramy" onclick="document.body.classList.toggle('show-w'); adjustSpacing();">⚖️</button>
+                <button class="header-icon-btn" style="background:#f39c12" title="Zobrazit/skrýt poznámky" onclick="document.body.classList.toggle('show-n'); adjustSpacing();">📝</button>
             </div>
             <div class="reorder-active-strip">
                 <span>↕️ Přeskládání plánu je aktivní</span>
@@ -779,10 +788,8 @@
                 <button id="reorderPlanBtn" class="modal-btn" style="background:#3498db" onclick="closeMoreMenu(); togglePlanReorderMode();">↕️ Přeskládat</button>
                 <button class="modal-btn" style="background:#c0392b" onclick="closeMoreMenu(); openDeleteManager();">🧹 Smazat</button>
                 <button class="modal-btn" style="background:#1abc9c" onclick="closeMoreMenu(); openChildModal();">👶 Údaje dítěte</button>
-                <button class="modal-btn" style="background:#2c3e50" onclick="closeMoreMenu(); openDraft();">📥 Pískoviště</button>
+                <button class="modal-btn" style="background:#2c3e50" onclick="closeMoreMenu(); openDraft();">📥 Rozpracované zápisy</button>
                 <button class="modal-btn" style="background:#7f8c8d" onclick="closeMoreMenu(); openSettings();">⚙️ Správa dat</button>
-                <button class="modal-btn" style="background:#9b59b6" onclick="document.body.classList.toggle('show-w'); closeMoreMenu();">⚖️ Gramy</button>
-                <button class="modal-btn" style="background:#f39c12" onclick="document.body.classList.toggle('show-n'); closeMoreMenu();">📝 Poznámky</button>
             </div>
             <button class="modal-btn btn-cancel" onclick="closeMoreMenu()">ZAVŘÍT</button>
         </div>
@@ -960,7 +967,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
 
     <div class="modal-overlay" id="draftModal">
         <div class="draft-content">
-            <div class="draft-header">Zpracování starých papírů</div>
+            <div class="draft-header">Rozpracované zápisy</div>
             <div class="draft-controls">
                 <select id="draftYear" style="flex: 1; max-width: 80px; padding: 8px;">
                     <option value="2026">2026</option>
@@ -999,6 +1006,10 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         let selectedDeleteDates = new Set();
         let reorderPlanMode = false;
         let draggedPlanCard = null;
+        let planDragAutoScrollFrame = null;
+        let planDragLastClientY = 0;
+        const PLAN_DRAG_SCROLL_EDGE = 95;
+        const PLAN_DRAG_SCROLL_MAX_SPEED = 22;
         let lastFocusedElement = null;
         let pendingImportData = null;
         const rates = { '🙂': '#e3f9e5', '😍': '#fff9db', '😐': '#eef2f3', '☹️': '#ffe3e3' };
@@ -1528,6 +1539,7 @@ Tuto akci nelze vrátit zpět.`)) return;
             if (deleteSelectionMode) stopDeleteSelectionMode();
             reorderPlanMode = !reorderPlanMode;
             document.body.classList.toggle('reorder-mode', reorderPlanMode);
+            if (!reorderPlanMode) stopPlanDragAutoScroll();
             const btn = document.getElementById('reorderPlanBtn');
             if (btn) {
                 btn.innerText = reorderPlanMode ? '✅ HOTOVO' : '↕️ PŘESKLÁDAT';
@@ -1551,6 +1563,7 @@ Tuto akci nelze vrátit zpět.`)) return;
             handle.addEventListener('dragend', () => {
                 if (draggedPlanCard) draggedPlanCard.classList.remove('dragging-plan');
                 draggedPlanCard = null;
+                stopPlanDragAutoScroll();
                 saveReorderedPlanFromDom(true);
             });
 
@@ -1558,6 +1571,7 @@ Tuto akci nelze vrátit zpět.`)) return;
                 if (!draggedPlanCard || draggedPlanCard === card) return;
                 event.preventDefault();
                 moveDraggedCardByY(event.clientY);
+                updatePlanDragAutoScroll(event.clientY);
             });
 
             let pointerActive = false;
@@ -1566,13 +1580,16 @@ Tuto akci nelze vrátit zpět.`)) return;
                 pointerActive = true;
                 draggedPlanCard = card;
                 card.classList.add('dragging-plan');
-                handle.setPointerCapture(event.pointerId);
+                planDragLastClientY = event.clientY;
+                try { handle.setPointerCapture(event.pointerId); } catch (e) {}
                 event.preventDefault();
             });
 
             handle.addEventListener('pointermove', (event) => {
                 if (!pointerActive || !draggedPlanCard) return;
+                planDragLastClientY = event.clientY;
                 moveDraggedCardByY(event.clientY);
+                updatePlanDragAutoScroll(event.clientY);
                 event.preventDefault();
             });
 
@@ -1581,12 +1598,44 @@ Tuto akci nelze vrátit zpět.`)) return;
                 pointerActive = false;
                 if (draggedPlanCard) draggedPlanCard.classList.remove('dragging-plan');
                 draggedPlanCard = null;
+                stopPlanDragAutoScroll();
                 try { handle.releasePointerCapture(event.pointerId); } catch (e) {}
                 saveReorderedPlanFromDom(true);
             }
 
             handle.addEventListener('pointerup', finishPointerDrag);
             handle.addEventListener('pointercancel', finishPointerDrag);
+        }
+
+        function updatePlanDragAutoScroll(clientY) {
+            planDragLastClientY = clientY;
+            if (!draggedPlanCard || planDragAutoScrollFrame) return;
+            planDragAutoScrollFrame = requestAnimationFrame(runPlanDragAutoScroll);
+        }
+
+        function runPlanDragAutoScroll() {
+            planDragAutoScrollFrame = null;
+            if (!draggedPlanCard) return;
+
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+            let speed = 0;
+
+            if (planDragLastClientY < PLAN_DRAG_SCROLL_EDGE) {
+                speed = -Math.ceil(((PLAN_DRAG_SCROLL_EDGE - planDragLastClientY) / PLAN_DRAG_SCROLL_EDGE) * PLAN_DRAG_SCROLL_MAX_SPEED);
+            } else if (planDragLastClientY > viewportHeight - PLAN_DRAG_SCROLL_EDGE) {
+                speed = Math.ceil(((planDragLastClientY - (viewportHeight - PLAN_DRAG_SCROLL_EDGE)) / PLAN_DRAG_SCROLL_EDGE) * PLAN_DRAG_SCROLL_MAX_SPEED);
+            }
+
+            if (speed !== 0) {
+                window.scrollBy(0, speed);
+                moveDraggedCardByY(planDragLastClientY);
+                planDragAutoScrollFrame = requestAnimationFrame(runPlanDragAutoScroll);
+            }
+        }
+
+        function stopPlanDragAutoScroll() {
+            if (planDragAutoScrollFrame) cancelAnimationFrame(planDragAutoScrollFrame);
+            planDragAutoScrollFrame = null;
         }
 
         function moveDraggedCardByY(clientY) {
@@ -2342,7 +2391,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
         function clearAllDrafts() {
             let data = getDraftData();
             if (data.length === 0) {
-                alert("Pískoviště je už prázdné.");
+                alert("Rozpracované zápisy jsou už prázdné.");
                 return;
             }
 
@@ -2372,7 +2421,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
             renderDraftList();
         }
 
-        // Chytrý mikrofon reagující uvnitř Pískoviště
+        // Chytrý mikrofon reagující uvnitř rozpracovaných zápisů
         function runDraftVoice() {
             const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!Rec) return alert("Hlas není podporován");
