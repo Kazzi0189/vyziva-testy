@@ -2348,8 +2348,9 @@ Tuto akci nelze vrátit zpět.`)) return;
             const summary = summarizeMealsForAi(data, ratingMode, mealScope);
             const childInfoLines = getChildInfoForAi();
             const childInfoText = childInfoLines.length ? `\n\nÚdaje o dítěti pro návrh:\n${childInfoLines.join('\n')}` : '';
+            const dayTemplate = Array.from({ length: parseInt(daysCount, 10) || 7 }, (_, i) => `DEN ${i + 1}\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...`).join('\n\n');
 
-            const prompt = `Potřebuji navrhnout jídelníček pro dítě na ${daysCount} dní.${childInfoText}\n\nPracuj podle těchto pravidel:\n- plánuj: ${selectedText}\n- jako základ ber hlavně: ${ratingText}\n- zohledni věk dítěte a dostupné údaje o váze/výšce; pokud některý údaj chybí, nevadí, pracuj s tím, co je k dispozici\n- nepoužívej jídla, která jsou uvedená v části „vyhnout se“\n- nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou bezpečnou variantu\n- neopakuj stejné nebo velmi podobné jídlo hned po sobě\n- zachovej rozumnou pestrost\n- nenavrhuj nic riskantního, když je u jídla poznámka na alergii, vyrážku, zvracení nebo reakci\n- výstup napiš česky\n\nNejdřív napiš maximálně 5 krátkých vět, jak jsi postupoval.\nPotom napiš samostatný blok přesně s názvem:\n\nJÍDELNÍČEK KE ZKOPÍROVÁNÍ\n\nV tomto bloku už nesmí být žádné vysvětlivky, komentáře, odrážky ani markdown tabulka.\nPoužij přesně tento formát, aby šel výsledek vložit zpět do aplikace:\n\nDEN 1\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...\n\nDEN 2\nSnídaně: ...\nDop. svačina: ...\nOběd: ...\nOdp. svačina: ...\nVečeře: ...\n\nHistorie jídel podle hodnocení:\n${summary.sections}\n\nDůležité poznámky / možné reakce:\n${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- žádné výrazné varovné poznámky nenalezeny'}\n`;
+            const prompt = `Potřebuji navrhnout jídelníček pro dítě na ${daysCount} dní.${childInfoText}\n\nPracuj podle těchto pravidel:\n- vytvoř PŘESNĚ ${daysCount} dní, ani méně, ani více\n- v části „JÍDELNÍČEK KE ZKOPÍROVÁNÍ“ musí být všechny dny DEN 1 až DEN ${daysCount}\n- poslední den v importním bloku musí být DEN ${daysCount}\n- plánuj: ${selectedText}\n- jako základ ber hlavně: ${ratingText}\n- zohledni věk dítěte a dostupné údaje o váze/výšce; pokud některý údaj chybí, nevadí, pracuj s tím, co je k dispozici\n- nepoužívej jídla, která jsou uvedená v části „vyhnout se“\n- nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou bezpečnou variantu\n- neopakuj stejné nebo velmi podobné jídlo hned po sobě\n- zachovej rozumnou pestrost\n- nenavrhuj nic riskantního, když je u jídla poznámka na alergii, vyrážku, zvracení nebo reakci\n- výstup napiš česky\n\nNejdřív napiš maximálně 5 krátkých vět, jak jsi postupoval.\nPotom napiš samostatný blok přesně s názvem:\n\nJÍDELNÍČEK KE ZKOPÍROVÁNÍ\n\nV tomto bloku už nesmí být žádné vysvětlivky, komentáře, odrážky ani markdown tabulka.\nPoužij přesně tento formát pro VŠECH ${daysCount} dní, aby šel výsledek vložit zpět do aplikace:\n\n${dayTemplate}\n\nHistorie jídel podle hodnocení:\n${summary.sections}\n\nDůležité poznámky / možné reakce:\n${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- žádné výrazné varovné poznámky nenalezeny'}\n`;
 
             document.getElementById('aiPromptOutput').value = prompt;
         }
@@ -2377,6 +2378,11 @@ Tuto akci nelze vrátit zpět.`)) return;
                     setStatusText('geminiAiStatus', 'Gemini odpovědělo, ale aplikace v textu nenašla platný blok DEN 1. Odpověď je níže ke kontrole.', true);
                     return;
                 }
+                const expectedDays = parseInt(document.getElementById('aiDays')?.value || '0', 10);
+                if (expectedDays && parsed.length !== expectedDays) {
+                    setStatusText('geminiAiStatus', `Gemini vrátilo ${parsed.length} z ${expectedDays} dnů. Zkuste plán vytvořit znovu, nebo text ručně doplňte před importem.`, true);
+                    return;
+                }
                 setStatusText('geminiAiStatus', `Gemini plán je připravený k importu (${parsed.length} dní). Zkontrolujte text a klikněte na IMPORTOVAT AI PLÁN.`);
             } catch (err) {
                 setStatusText('geminiAiStatus', `Chyba Gemini: ${err.message}`, true);
@@ -2397,7 +2403,12 @@ Tuto akci nelze vrátit zpět.`)) return;
             if (parsed.length === 0) {
                 setStatusText('geminiAiStatus', 'V odpovědi se nepodařilo najít platný plán ve formátu DEN 1.', true);
             } else {
-                setStatusText('geminiAiStatus', `Odpověď je připravená k importu (${parsed.length} dní).`);
+                const expectedDays = parseInt(document.getElementById('aiDays')?.value || '0', 10);
+                if (expectedDays && parsed.length !== expectedDays) {
+                    setStatusText('geminiAiStatus', `Odpověď obsahuje ${parsed.length} z ${expectedDays} dnů. Před importem ji doplňte, nebo nechte Gemini vytvořit plán znovu.`, true);
+                } else {
+                    setStatusText('geminiAiStatus', `Odpověď je připravená k importu (${parsed.length} dní).`);
+                }
             }
         }
 
