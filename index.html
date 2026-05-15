@@ -267,6 +267,76 @@
             display: inline-flex;
         }
 
+
+        .ai-suggestion-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .ai-reject-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 10px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            width: auto;
+            flex: none;
+            display: inline-flex;
+        }
+
+        .plan-confirm-btn {
+            position: absolute;
+            top: 52px;
+            right: 15px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 10px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            width: auto;
+            flex: none;
+            z-index: 10;
+        }
+
+        .overview-box {
+            text-align: left;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 0.84rem;
+            line-height: 1.45;
+        }
+
+        .overview-box h4 {
+            margin: 0 0 6px;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        .overview-box ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .avoid-list-textarea {
+            width: 100%;
+            min-height: 210px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            resize: vertical;
+        }
+
         /* MODAL OKNA (NASTAVENÍ A IMPORT) */
         .modal-overlay {
             position: fixed;
@@ -825,6 +895,7 @@
             <div class="app-title">Výživa PRO - TESTOVACÍ VERZE</div>
             <div class="btn-row main-action-row">
                 <button style="background:var(--success)" onclick="addCard()">NOVÝ +</button>
+                <button style="background:#1abc9c" onclick="goToToday()">DNES</button>
                 <button id="micMain" class="btn-mic" onclick="runVoice('food')">🎤 JÍDLO</button>
                 <button id="micNote" style="background:var(--note)" class="btn-mic" onclick="runVoice('note')">🎤 POZNÁMKA</button>
                 <button style="background:#34495e" onclick="openMoreMenu()">⋯ DALŠÍ</button>
@@ -858,6 +929,11 @@
                     <option value="😐">Jen základ 😐</option>
                     <option value="☹️">Jen nechutnalo ☹️</option>
                 </select>
+                <select id="viewFilterSelect" onchange="setViewFilter(this.value)">
+                    <option value="all">Zobrazení: VŠE</option>
+                    <option value="real">Jen deník</option>
+                    <option value="plan">Jen plán</option>
+                </select>
             </div>
         </div>
     </div>
@@ -876,6 +952,8 @@
                 <button id="reorderPlanBtn" class="modal-btn" style="background:#3498db" onclick="closeMoreMenu(); togglePlanReorderMode();">↕️ Přeskládat</button>
                 <button class="modal-btn" style="background:#c0392b" onclick="closeMoreMenu(); openDeleteManager();">🧹 Smazat</button>
                 <button class="modal-btn" style="background:#1abc9c" onclick="closeMoreMenu(); openChildModal();">👶 Údaje dítěte</button>
+                <button class="modal-btn" style="background:#d35400" onclick="closeMoreMenu(); openAvoidListModal();">🚫 Vyhnout se</button>
+                <button class="modal-btn" style="background:#27ae60" onclick="closeMoreMenu(); openOverviewModal();">📊 Přehled jídel</button>
                 <button class="modal-btn" style="background:#2c3e50" onclick="closeMoreMenu(); openDraft();">📥 Rozpracované zápisy</button>
                 <button class="modal-btn" style="background:#7f8c8d" onclick="closeMoreMenu(); openSettings();">⚙️ Správa dat</button>
             </div>
@@ -909,6 +987,25 @@
         </div>
     </div>
 
+
+    <div class="modal-overlay" id="avoidListModal">
+        <div class="modal-box" style="max-width:430px; text-align:left;">
+            <div class="modal-title" style="text-align:center;">Vyhnout se</div>
+            <div class="modal-text" style="text-align:left;">Sem napište potraviny, jídla nebo kombinace, které se nemají používat v offline plánu ani v AI promptu. Každý řádek jedna položka.</div>
+            <textarea id="avoidListText" class="avoid-list-textarea" placeholder="např. vejce\nkousky mrkve\nkonkrétní sklenička..."></textarea>
+            <button class="modal-btn btn-merge" style="margin-top:12px;" onclick="saveAvoidListFromModal()">💾 ULOŽIT</button>
+            <button class="modal-btn btn-cancel" onclick="closeAvoidListModal()">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="overviewModal">
+        <div class="modal-box" style="max-width:460px; text-align:left;">
+            <div class="modal-title" style="text-align:center;">Přehled jídel</div>
+            <div id="overviewContent"></div>
+            <button class="modal-btn btn-cancel" onclick="closeOverviewModal()">ZAVŘÍT</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="settingsModal">
         <div class="modal-box">
             <div class="modal-title">Správa dat</div>
@@ -919,6 +1016,7 @@
             <div style="border-top: 1px solid #eee; margin-bottom: 15px;"></div>
             <button class="modal-btn btn-export" onclick="exportData()">💾 ZÁLOHA APLIKACE (.json)</button>
             <button class="modal-btn btn-import" onclick="triggerImport()">📂 OBNOVA APLIKACE (.json)</button>
+            <button class="modal-btn" style="background:#16a085" onclick="restoreLastAutoBackup()">↩️ OBNOVIT POSLEDNÍ AUTO ZÁLOHU</button>
 
             <div style="border-top: 1px solid #eee; margin: 18px 0 15px;"></div>
             <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">Gemini AI</div>
@@ -1114,6 +1212,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         let currentFilter = 'all';
         let currentMealFilter = 'all';
         let currentRatingFilter = 'all';
+        let currentViewFilter = 'all';
         let isRendering = false;
         let deleteSelectionMode = false;
         let selectedDeleteDates = new Set();
@@ -1138,6 +1237,9 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
 
         const CHILD_PROFILE_KEY = 'nutri_child_profile_v1';
         const GEMINI_SETTINGS_KEY = 'nutri_gemini_settings_v1';
+        const AVOID_LIST_KEY = 'nutri_avoid_list_v1';
+        const AUTO_BACKUP_KEY = 'nutri_last_auto_backup_v1';
+        const DATA_VERSION = 3;
 
         function getChildProfile() {
             const raw = localStorage.getItem(CHILD_PROFILE_KEY);
@@ -1200,6 +1302,192 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         }
 
 
+
+        function getAvoidList() {
+            const raw = localStorage.getItem(AVOID_LIST_KEY) || '';
+            return raw.split('\n').map(x => x.trim()).filter(Boolean);
+        }
+
+        function setAvoidList(items) {
+            const text = (items || []).map(x => (x || '').trim()).filter(Boolean).join('\n');
+            localStorage.setItem(AVOID_LIST_KEY, text);
+        }
+
+        function openAvoidListModal() {
+            const box = document.getElementById('avoidListText');
+            if (box) box.value = getAvoidList().join('\n');
+            document.getElementById('avoidListModal').style.display = 'flex';
+        }
+
+        function closeAvoidListModal() {
+            document.getElementById('avoidListModal').style.display = 'none';
+        }
+
+        function saveAvoidListFromModal() {
+            const box = document.getElementById('avoidListText');
+            setAvoidList((box ? box.value : '').split('\n'));
+            closeAvoidListModal();
+            alert('Seznam „Vyhnout se“ byl uložen. Použije se pro offline plán i pro AI prompt.');
+        }
+
+        function textMatchesAvoidList(text) {
+            const normalized = normalizeFoodName(text);
+            if (!normalized) return false;
+            return getAvoidList().some(item => {
+                const avoid = normalizeFoodName(item);
+                return avoid && (normalized.includes(avoid) || avoid.includes(normalized));
+            });
+        }
+
+        function createAutoBackup(reason) {
+            try {
+                const backup = {
+                    dataVersion: DATA_VERSION,
+                    createdAt: new Date().toISOString(),
+                    reason: reason || 'automatická záloha',
+                    entries: getMainData(),
+                    childProfile: getChildProfile(),
+                    avoidList: getAvoidList(),
+                    draft: getDraftData ? getDraftData() : []
+                };
+                localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(backup));
+                return true;
+            } catch (err) {
+                console.warn('Auto záloha se nepodařila:', err);
+                return false;
+            }
+        }
+
+        function restoreLastAutoBackup() {
+            const raw = localStorage.getItem(AUTO_BACKUP_KEY);
+            if (!raw) {
+                alert('Žádná automatická záloha zatím není uložená.');
+                return;
+            }
+            let backup = null;
+            try { backup = JSON.parse(raw); } catch (err) { backup = null; }
+            if (!backup || !Array.isArray(backup.entries)) {
+                alert('Automatická záloha je poškozená nebo v neznámém formátu.');
+                return;
+            }
+            const when = backup.createdAt ? new Date(backup.createdAt).toLocaleString('cs-CZ') : 'neznámý čas';
+            if (!confirm(`Obnovit poslední automatickou zálohu?\n\nVytvořeno: ${when}\nDůvod: ${backup.reason || 'neuvedeno'}\n\nAktuální data budou nahrazena touto zálohou.`)) return;
+            localStorage.setItem('nutri_data_v13', JSON.stringify(normalizeAllEntries(backup.entries)));
+            if (backup.childProfile) localStorage.setItem(CHILD_PROFILE_KEY, JSON.stringify(backup.childProfile));
+            if (Array.isArray(backup.avoidList)) setAvoidList(backup.avoidList);
+            if (Array.isArray(backup.draft)) localStorage.setItem('nutri_draft', JSON.stringify(backup.draft));
+            closeSettings();
+            loadChildProfile();
+            load();
+            alert('Automatická záloha byla obnovena.');
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function normalizeEntry(item) {
+            const entry = item && typeof item === 'object' ? Object.assign({}, item) : {};
+            entry.d = (entry.d || '').trim();
+            const meals = Array.isArray(entry.m) ? entry.m.slice(0, 5) : [];
+            while (meals.length < 5) meals.push({ t: '', w: '', n: '', r: '😐', a: '' });
+            entry.m = meals.map(m => ({
+                t: (m && m.t) ? String(m.t) : '',
+                w: (m && m.w) ? String(m.w) : '',
+                n: (m && m.n) ? String(m.n) : '',
+                r: (m && m.r) ? String(m.r) : '😐',
+                a: (m && m.a) ? String(m.a) : ''
+            }));
+            if (entry.planned === true) entry.planned = true;
+            else delete entry.planned;
+            return entry;
+        }
+
+        function normalizeAllEntries(data) {
+            return (Array.isArray(data) ? data : []).map(normalizeEntry).filter(item => item.d);
+        }
+
+        function openOverviewModal() {
+            const content = document.getElementById('overviewContent');
+            if (content) content.innerHTML = buildOverviewHtml();
+            document.getElementById('overviewModal').style.display = 'flex';
+        }
+
+        function closeOverviewModal() {
+            document.getElementById('overviewModal').style.display = 'none';
+        }
+
+        function addCount(map, key) {
+            if (!key) return;
+            map.set(key, (map.get(key) || 0) + 1);
+        }
+
+        function topListHtml(map, limit = 8) {
+            const rows = Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, limit);
+            if (rows.length === 0) return '<div style="color:#95a5a6;">Zatím žádná data.</div>';
+            return '<ul>' + rows.map(([name, count]) => `<li>${escapeHtml(name)} <b>${count}×</b></li>`).join('') + '</ul>';
+        }
+
+        function buildOverviewHtml() {
+            const data = getMainData().filter(item => item.planned !== true);
+            const loved = new Map();
+            const disliked = new Map();
+            const frequent = new Map();
+            const aiIdeas = new Map();
+            data.forEach(day => (day.m || []).forEach(meal => {
+                const text = (meal.t || '').trim();
+                if (text && !isEmptyMealText(text)) {
+                    addCount(frequent, text);
+                    if ((meal.r || '').trim() === '😍') addCount(loved, text);
+                    if ((meal.r || '').trim() === '☹️') addCount(disliked, text);
+                }
+                const idea = (meal.a || '').trim();
+                if (idea && !isEmptyMealText(idea)) addCount(aiIdeas, idea);
+            }));
+            const avoid = getAvoidList();
+            return `
+                <div class="overview-box"><h4>😍 Nejčastější oblíbená jídla</h4>${topListHtml(loved)}</div>
+                <div class="overview-box"><h4>📌 Nejčastější jídla celkově</h4>${topListHtml(frequent)}</div>
+                <div class="overview-box"><h4>☹️ Jídla, která nechutnala</h4>${topListHtml(disliked)}</div>
+                <div class="overview-box"><h4>✨ AI nápady k vyzkoušení</h4>${topListHtml(aiIdeas)}</div>
+                <div class="overview-box"><h4>🚫 Ruční seznam Vyhnout se</h4>${avoid.length ? '<ul>' + avoid.map(x => `<li>${escapeHtml(x)}</li>`).join('') + '</ul>' : '<div style="color:#95a5a6;">Seznam je prázdný.</div>'}</div>
+            `;
+        }
+
+        function buildPlanWarnings(generated) {
+            const warnings = [];
+            const data = Array.isArray(generated) ? generated : [];
+            const counts = new Map();
+            data.forEach(day => (day.m || []).forEach(meal => {
+                const text = (meal.t || '').trim();
+                if (text && !isEmptyMealText(text)) addCount(counts, normalizeFoodName(text));
+            }));
+            const frequent = Array.from(counts.entries()).filter(([, count]) => count >= 4).sort((a, b) => b[1] - a[1]);
+            if (frequent.length) warnings.push('Některá jídla se v plánu opakují častěji: ' + frequent.slice(0, 4).map(([name, count]) => `${name} ${count}×`).join(', ') + '.');
+            for (let dayIndex = 1; dayIndex < data.length; dayIndex++) {
+                for (let mealIndex = 0; mealIndex < 5; mealIndex++) {
+                    const prev = normalizeFoodName(data[dayIndex - 1]?.m?.[mealIndex]?.t || '');
+                    const current = normalizeFoodName(data[dayIndex]?.m?.[mealIndex]?.t || '');
+                    if (prev && current && prev === current) {
+                        warnings.push(`Stejné jídlo je dva dny po sobě: ${mealLabels[mealIndex]} – ${current}.`);
+                        return warnings;
+                    }
+                }
+            }
+            return warnings;
+        }
+
+        function appendPlanWarningsToMessage(baseMessage, generated) {
+            const warnings = buildPlanWarnings(generated);
+            if (!warnings.length) return baseMessage;
+            return baseMessage + '\n\nKontrola plánu:\n- ' + warnings.join('\n- ');
+        }
+
         function getGeminiSettings() {
             const raw = localStorage.getItem(GEMINI_SETTINGS_KEY);
             try {
@@ -1254,6 +1542,36 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             return parts.map(part => part.text || '').join('\n').trim();
         }
 
+        function translateGeminiErrorMessage(message) {
+            const raw = String(message || '').trim();
+            const lower = raw.toLowerCase();
+
+            if (!raw) return 'Gemini vrátilo neznámou chybu. Zkuste to prosím znovu později.';
+            if (lower.includes('high demand') || lower.includes('spikes in demand') || lower.includes('try again later')) {
+                return 'Gemini je teď hodně vytížené. Jde většinou o dočasný stav. Zkuste to prosím za chvíli znovu.';
+            }
+            if (lower.includes('api key not valid') || lower.includes('invalid api key') || lower.includes('api_key_invalid')) {
+                return 'API klíč není platný. Zkontrolujte ho ve Správě dat → Gemini AI.';
+            }
+            if (lower.includes('permission') || lower.includes('forbidden') || lower.includes('not authorized')) {
+                return 'Gemini odmítlo požadavek kvůli oprávnění. Zkontrolujte API klíč a povolení Gemini API.';
+            }
+            if (lower.includes('quota') || lower.includes('rate limit') || lower.includes('resource exhausted')) {
+                return 'Byl překročen limit Gemini API nebo kvóta. Zkuste to později, případně zkontrolujte limity v Google AI Studiu.';
+            }
+            if (lower.includes('network') || lower.includes('failed to fetch')) {
+                return 'Nepodařilo se připojit ke Gemini. Zkontrolujte internet a zkuste to znovu.';
+            }
+            if (lower.includes('model') && (lower.includes('not found') || lower.includes('not supported'))) {
+                return 'Vybraný model Gemini není dostupný. Zkuste v nastavení vybrat jiný model.';
+            }
+            return raw;
+        }
+
+        function formatGeminiError(err) {
+            return `Chyba Gemini: ${translateGeminiErrorMessage(err && err.message ? err.message : err)}`;
+        }
+
         async function callGeminiApi(promptText, statusElementId) {
             const settings = getGeminiSettings();
             if (!settings.apiKey) throw new Error('Gemini API klíč není uložený. Otevřete ⋯ DALŠÍ → Správa dat → Gemini AI.');
@@ -1298,7 +1616,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                 const text = await callGeminiApi('Odpověz pouze slovem OK.', 'geminiSettingsStatus');
                 setStatusText('geminiSettingsStatus', `Připojení funguje. Odpověď: ${text.slice(0, 80)}`);
             } catch (err) {
-                setStatusText('geminiSettingsStatus', `Chyba Gemini: ${err.message}`, true);
+                setStatusText('geminiSettingsStatus', formatGeminiError(err), true);
             }
         }
 
@@ -1330,7 +1648,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
 
 
         function adjustSpacing() { document.getElementById('cardContainer').style.marginTop = (topMenu.offsetHeight + 15) + "px"; }
-        window.onload = () => { loadChildProfile(); load(); adjustSpacing(); setInterval(updateChildAgeDisplay, 3600000); };
+        window.onload = () => { migrateStoredDataIfNeeded(); loadChildProfile(); load(); adjustSpacing(); setInterval(updateChildAgeDisplay, 3600000); };
         window.onresize = adjustSpacing;
 
         document.addEventListener('click', (e) => {
@@ -1341,11 +1659,23 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
 
         function getMainData() {
             const raw = localStorage.getItem('nutri_data_v13');
-            try { return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
+            try { return normalizeAllEntries(raw ? JSON.parse(raw) : []); } catch (e) { return []; }
         }
 
         function setMainData(data) {
-            localStorage.setItem('nutri_data_v13', JSON.stringify(sortEntriesByDate(data)));
+            localStorage.setItem('nutri_data_v13', JSON.stringify(sortEntriesByDate(normalizeAllEntries(data))));
+        }
+
+        function migrateStoredDataIfNeeded() {
+            const raw = localStorage.getItem('nutri_data_v13');
+            if (!raw) return;
+            try {
+                const parsed = JSON.parse(raw);
+                const normalized = normalizeAllEntries(parsed);
+                if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+                    localStorage.setItem('nutri_data_v13', JSON.stringify(sortEntriesByDate(normalized)));
+                }
+            } catch (err) { }
         }
 
         function readCardData(card) {
@@ -1483,6 +1813,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             }
 
             if (targetIdx === -1 || targetIdx === currentIdx) {
+                createAutoBackup('ruční změna data');
                 data[currentIdx] = currentCardData;
                 setMainData(data);
                 load();
@@ -1495,6 +1826,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             const choice = await chooseDateConflictAction(oldDate, newDate, currentIsPlan, targetIsPlan);
 
             if (choice === 'swap') {
+                createAutoBackup('prohození data karet');
                 const swappedTarget = Object.assign({}, targetItem, { d: oldDate });
                 data[currentIdx] = currentCardData;
                 data[targetIdx] = swappedTarget;
@@ -1504,6 +1836,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             }
 
             if (choice === 'overwrite') {
+                createAutoBackup('přepsání cílového data');
                 const emptyReplacement = currentIsPlan ? createEmptyPlanCard(oldDate) : null;
                 data.splice(targetIdx, 1);
                 const adjustedCurrentIdx = targetIdx < currentIdx ? currentIdx - 1 : currentIdx;
@@ -1580,6 +1913,8 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                 }
 
                 if (!dateMatches) return false;
+                if (currentViewFilter === 'real' && e.planned === true) return false;
+                if (currentViewFilter === 'plan' && e.planned !== true) return false;
 
                 // Když je zapnutý filtr podle jídla nebo smajlíka, zobrazíme jen dny, kde existuje odpovídající položka.
                 if (currentMealFilter !== 'all' || currentRatingFilter !== 'all') {
@@ -1630,6 +1965,9 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                 html += `<button onclick="delMainCard(this)" style="position:absolute; top:15px; right:15px; background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:6px; padding:6px 10px; font-size:1.1rem; cursor:pointer; z-index:10;">🗑️</button>`;
             }
             html += `<div class="card-header" contenteditable="true" onblur="handleCardDateBlur(this)">${e.d}</div>${e.planned ? '<span class="planned-badge">PLÁN</span>' : ''}`;
+            if (!reorderPlanMode && e.planned) {
+                html += `<button type="button" class="plan-confirm-btn" onclick="confirmPlannedDay(this)">✅ SKUTEČNÝ DEN</button>`;
+            }
 
             for (let i = 0; i < 5; i++) {
                 const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐', a: '' };
@@ -1642,7 +1980,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                     <div class="m-box" contenteditable="true" oninput="save()" placeholder="Napište jídlo...">${m.t}</div>
                     <input type="number" class="w-box" placeholder="Gramy (g)" value="${m.w}" oninput="save()">
                     <div class="n-box" contenteditable="true" oninput="save()" placeholder="Poznámka...">${m.n}</div>
-                    ${m.a ? `<div class="ai-suggestion-box"><div class="ai-suggestion-title">✨ AI návrh na rozšíření</div><div class="ai-suggestion-text">${m.a}</div><button type="button" class="ai-use-btn" onclick="useAiSuggestion(this)">POUŽÍT NÁVRH</button></div>` : ''}
+                    ${m.a ? `<div class="ai-suggestion-box"><div class="ai-suggestion-title">✨ AI návrh na rozšíření</div><div class="ai-suggestion-text">${m.a}</div><div class="ai-suggestion-actions"><button type="button" class="ai-use-btn" onclick="useAiSuggestion(this)">POUŽÍT</button><button type="button" class="ai-reject-btn" onclick="rejectAiSuggestion(this)">ZAMÍTNOUT</button></div></div>` : ''}
                 </div>
                 <div class="rating" onclick="cycle(this)" style="background:${bg}">${m.r}</div>
             </div>`;
@@ -1652,7 +1990,35 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             if (reorderPlanMode && e.planned) setupPlanDragHandle(card);
         }
 
+
+        function goToToday() {
+            const todayText = new Date().toLocaleDateString('cs-CZ');
+            let data = getMainData();
+            let existing = data.find(item => (item.d || '').trim() === todayText);
+            if (!existing) {
+                if (!confirm('Dnešní záznam zatím neexistuje. Vytvořit nový den?')) return;
+                createAutoBackup('vytvoření dnešního záznamu');
+                existing = { d: todayText, m: createEmptyMealSet() };
+                data.unshift(existing);
+                setMainData(data);
+            }
+            currentFilter = 'all';
+            currentMealFilter = 'all';
+            currentRatingFilter = 'all';
+            currentViewFilter = 'all';
+            const f1 = document.getElementById('filterSelect'); if (f1) f1.value = 'all';
+            const f2 = document.getElementById('mealFilterSelect'); if (f2) f2.value = 'all';
+            const f3 = document.getElementById('ratingFilterSelect'); if (f3) f3.value = 'all';
+            const f4 = document.getElementById('viewFilterSelect'); if (f4) f4.value = 'all';
+            load();
+            setTimeout(() => {
+                const card = Array.from(container.querySelectorAll(':scope > .card')).find(c => (c.dataset.originalDate || '').trim() === todayText);
+                if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
+        }
+
         function addCard() {
+            createAutoBackup('vytvoření nového dne');
             let data = getMainData();
             data.unshift({ d: new Date().toLocaleDateString('cs-CZ'), m: Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐' })) });
             setMainData(data);
@@ -1667,6 +2033,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             if (confirm(`🚨 OPRAVDU SMAZAT? \n\nChystáte se trvale odstranit celý záznam ze dne: ${dateStr}. \n\nTuto akci nelze vrátit zpět.`)) {
                 let data = getMainData();
                 const originalDate = card.dataset.originalDate || dateStr;
+                createAutoBackup('smazání jednoho záznamu');
                 data = data.filter(item => (item.d || '').trim() !== originalDate);
                 setMainData(data);
                 load();
@@ -1686,6 +2053,33 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             save();
         }
 
+        function rejectAiSuggestion(btn) {
+            const box = btn.closest('.ai-suggestion-box');
+            if (!box) return;
+            box.remove();
+            save();
+        }
+
+        function confirmPlannedDay(btn) {
+            const card = btn.closest('.card');
+            if (!card) return;
+            const dateText = card.querySelector('.card-header')?.innerText.trim() || card.dataset.originalDate || '';
+            if (!confirm(`Převést plánovaný den ${dateText} na skutečný záznam?
+
+Štítek PLÁN se odstraní. AI návrhy, které nejsou použité jako hlavní jídlo, se ze skutečného dne smažou.`)) return;
+            createAutoBackup('převod plánu na skutečný den');
+            let data = getMainData();
+            const idx = data.findIndex(item => (item.d || '').trim() === (card.dataset.originalDate || dateText).trim());
+            const item = readCardData(card);
+            delete item.planned;
+            item.m = (item.m || []).map(meal => Object.assign({}, meal, { a: '' }));
+            if (idx >= 0) data[idx] = item;
+            else data.push(item);
+            setMainData(data);
+            load();
+            alert('Den byl převeden na skutečný záznam.');
+        }
+
         function mealMatchesFilters(m, index) {
             if (currentMealFilter !== 'all' && currentMealFilter !== String(index)) return false;
             if (currentRatingFilter !== 'all') {
@@ -1698,6 +2092,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         function setFilter(v) { currentFilter = v; load(); }
         function setMealFilter(v) { currentMealFilter = v; load(); }
         function setRatingFilter(v) { currentRatingFilter = v; load(); }
+        function setViewFilter(v) { currentViewFilter = v; load(); }
 
         function openPlanner() { document.getElementById('plannerModal').style.display = 'flex'; }
         function closePlanner() { document.getElementById('plannerModal').style.display = 'none'; }
@@ -1825,6 +2220,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
 
                 if (!confirm(`Nenašel jsem žádný budoucí PLÁN od dneška dál, ale existuje ${plannedAll.length} starších záznamů označených jako PLÁN.\n\nChcete smazat všechny záznamy označené jako PLÁN?`)) return;
 
+                createAutoBackup('zrušení všech plánů');
                 setMainData(data.filter(item => item.planned !== true));
                 closePlanner();
                 closeDeleteManager();
@@ -1836,6 +2232,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
 
             if (!confirm(`Opravdu zrušit budoucí plán?\n\nBude smazáno ${plannedFuture.length} plánovaných záznamů od dneška dál. Skutečná historie bez štítku PLÁN zůstane zachovaná.`)) return;
 
+            createAutoBackup('zrušení budoucího plánu');
             const remaining = data.filter(item => {
                 const d = parseDateValue(item.d);
                 return !(item.planned === true && d && d >= startOfToday);
@@ -1865,6 +2262,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             if (!confirm(`Opravdu smazat ${toDelete.length} záznamů od ${formatDateValue(from)} do ${formatDateValue(to)}?
 
 Tuto akci nelze vrátit zpět.`)) return;
+            createAutoBackup('smazání období');
 
             const plannedDatesBeforeDelete = data
                 .filter(item => item.planned === true)
@@ -1923,6 +2321,7 @@ Tuto akci nelze vrátit zpět.`)) return;
             if (!confirm(`Opravdu smazat ${count} ručně označených záznamů?
 
 Tuto akci nelze vrátit zpět.`)) return;
+            createAutoBackup('smazání ručně označených záznamů');
             const originalData = getMainData();
             const plannedDatesBeforeDelete = originalData
                 .filter(item => item.planned === true)
@@ -2233,6 +2632,7 @@ Tuto akci nelze vrátit zpět.`)) return;
                 return x.item;
             });
 
+            createAutoBackup('přeskládání plánu');
             setMainData(fullData.concat(reorderedItems));
             if (reloadAfterSave) load();
         }
@@ -2272,7 +2672,7 @@ Tuto akci nelze vrátit zpět.`)) return;
                     if (!meal || index > 4) return;
                     const text = (meal.t || '').trim();
                     const rating = (meal.r || '😐').trim();
-                    if (!text || isEmptyMealText(text) || !allowed.includes(rating) || rating === '☹️') return;
+                    if (!text || isEmptyMealText(text) || textMatchesAvoidList(text) || !allowed.includes(rating) || rating === '☹️') return;
                     const key = normalizeFoodName(text);
                     if (seen[index].has(key)) return;
                     seen[index].add(key);
@@ -2351,12 +2751,13 @@ Tuto akci nelze vrátit zpět.`)) return;
             const lastDate = generated[generated.length - 1].d;
             if (!confirm(`Vytvořit návrh jídelníčku od ${firstDate} do ${lastDate}?\n\nDny se stejným datem v deníku budou nahrazeny návrhem.`)) return;
 
+            createAutoBackup('vytvoření offline plánu');
             const generatedMap = new Map(generated.map(item => [item.d, item]));
             data = data.filter(item => !generatedMap.has(item.d)).concat(generated);
             setMainData(data);
             closePlanner();
             load();
-            alert('Návrh jídelníčku byl vytvořen a označen jako PLÁN. Můžete ho ručně upravit nebo později zrušit tlačítkem ZRUŠIT PLÁN.');
+            alert(appendPlanWarningsToMessage('Návrh jídelníčku byl vytvořen a označen jako PLÁN. Můžete ho ručně upravit nebo později zrušit tlačítkem ZRUŠIT PLÁN.', generated));
         }
 
 
@@ -2389,7 +2790,8 @@ Tuto akci nelze vrátit zpět.`)) return;
                     if (!text || isEmptyMealText(text)) return;
                     const key = normalizeFoodName(text);
                     const rating = meal.r || '😐';
-                    const target = allowed.includes(rating) ? goodMaps[index] : (rating === '☹️' ? avoidMaps[index] : null);
+                    const isManualAvoid = textMatchesAvoidList(text);
+                    const target = isManualAvoid ? avoidMaps[index] : (allowed.includes(rating) ? goodMaps[index] : (rating === '☹️' ? avoidMaps[index] : null));
                     if (target) {
                         const current = target.get(key) || { t: text, count: 0, ratings: {}, lastDate: day.d, notes: [] };
                         current.count++;
@@ -2477,40 +2879,21 @@ ${childInfoLines.join('\n')}` : '';
 
             const prompt = `Potřebuji navrhnout jídelníček pro dítě přesně na ${daysCount} dní.${childInfoText}
 
-Role a bezpečnost:
-- Buď opatrný asistent pro plánování dětské stravy, ne lékař. Nedělej diagnózy ani léčebná doporučení.
-- Uvažuj podle běžných principů výživy malých dětí a podle uvedeného věku dítěte.
-- Nepiš neověřená zdravotní tvrzení, nevymýšlej speciální účinky jídel a netvrď, že je nové jídlo zaručeně bezpečné.
-- Nepředstírej znalost zdravotního stavu dítěte mimo dodané údaje. Pokud chybí věk, váha nebo výška, nehádej je.
-- Pokud si nejsi jistý, zvol jednodušší, běžnější a méně experimentální variantu.
-- Nenavrhuj alkohol, kofein, ostrá jídla, syrová riziková jídla, celé ořechy ani jiné běžně nevhodné potraviny pro malé dítě.
-
-Pravidla pro jídelníček:
+Pracuj podle těchto pravidel:
 - vytvoř přesně ${daysCount} dní, ani méně, ani více
 - začni řádkem DEN 1 a skonči kompletně vyplněným dnem DEN ${daysCount}
 - plánuj: ${selectedText}
 - jako hlavní jídlo ber hlavně: ${ratingText}
-- hlavní jídlo má být praktické, jednoduché a realistické pro rodiče
-- hlavní jídlo má vycházet hlavně z historie dítěte a z jídel, která dobře snášelo nebo mu chutnala
-- zohledni věk dítěte a dostupné údaje o váze/výšce; pokud některý údaj chybí, nevadí, pracuj s tím, co je k dispozici
-- nepoužívej jídla, která jsou uvedená v části „vyhnout se“
-- nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou jednoduchou variantu
-- neopakuj stejné nebo velmi podobné jídlo hned po sobě
-- zachovej rozumnou pestrost mezi obilovinami, zeleninou, ovocem, masem/rybou/luštěninami a mléčnými výrobky, pokud jsou v historii tolerované
-- nenavrhuj hlavní jídlo ani AI návrh z jídel/surovin, které jsou v historii v části „vyhnout se“ nebo mají poznámku na konkrétní reakci dítěte (alergie, vyrážka, zvracení, nesedlo apod.)
-
-Pravidla pro řádky „AI návrh“:
 - ke každému vyplněnému jídlu přidej samostatný řádek „AI návrh [název jídla]: ...“
-- AI návrh musí být NOVÁ varianta, kterou v historii níže nenajdeš doslova ani jako stejnou kombinaci surovin
+- hlavní jídlo má vycházet z historie, ale AI návrh musí být NOVÁ varianta, kterou v historii níže nenajdeš doslova ani jako stejnou kombinaci surovin
 - AI návrh nesmí být pouze přejmenované nebo lehce přehozené historické jídlo; má rozšířit jídelníček o nové běžné a věku přiměřené jídlo
 - AI návrh má být opatrný nápad k vyzkoušení, ne tvrzení, že je zaručeně bezpečný
-- AI návrhy vybírej jako jemné rozšíření toho, co dítě už zvládá, ne jako velký experiment
-- U AI návrhů nepiš dlouhé vysvětlení. Vrať jen název jídla, ne věty typu „podporuje imunitu“, „je velmi zdravé“ apod.
-
-Pravidla proti vymýšlení:
-- Nepiš, že je něco ověřené, pokud to není přímo z dodaných dat.
-- Nepřidávej zdravotní sliby ani tvrzení o léčebných účincích jídel.
-- Pokud nemáš dost dat, napiš opatrnější běžný návrh, ne konkrétní zdravotní tvrzení.
+- zohledni věk dítěte a dostupné údaje o váze/výšce; pokud některý údaj chybí, nevadí, pracuj s tím, co je k dispozici
+- nepoužívej jídla ani suroviny, která jsou uvedená v ručním seznamu „Vyhnout se“ nebo v části „vyhnout se“ z historie
+- nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou bezpečnou variantu
+- neopakuj stejné nebo velmi podobné jídlo hned po sobě
+- zachovej rozumnou pestrost
+- nenavrhuj hlavní jídlo ani AI návrh z jídel/surovin, které jsou v historii v části „vyhnout se“ nebo mají poznámku na konkrétní reakci dítěte (alergie, vyrážka, zvracení, nesedlo apod.)
 - výstup napiš česky
 
 Nejdřív napiš maximálně 3 krátké věty, jak jsi postupoval.
@@ -2526,6 +2909,9 @@ ${formatTemplate}
 
 Historie jídel podle hodnocení:
 ${summary.sections}
+
+Ruční seznam Vyhnout se:
+${getAvoidList().length ? getAvoidList().map(x => '- ' + x).join('\n') : '- není vyplněn'}
 
 Důležité poznámky / možné reakce:
 ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- žádné výrazné varovné poznámky nenalezeny'}
@@ -2565,7 +2951,7 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
                 }
                 setStatusText('geminiAiStatus', `Gemini plán je připravený k importu (${parsed.length} dní). Zkontrolujte text a klikněte na IMPORTOVAT AI PLÁN.`);
             } catch (err) {
-                setStatusText('geminiAiStatus', `Chyba Gemini: ${err.message}`, true);
+                setStatusText('geminiAiStatus', formatGeminiError(err), true);
             }
         }
 
@@ -2715,12 +3101,13 @@ Přesto chcete tento neúplný/odlišný plán importovat?`)) {
 
 Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná historie mimo tato data se nemění.`)) return;
 
+            createAutoBackup('import AI plánu');
             const generatedMap = new Map(generated.map(item => [item.d, item]));
             let data = getMainData().filter(item => !generatedMap.has((item.d || '').trim())).concat(generated);
             setMainData(data);
             closeAiModal();
             load();
-            alert(`AI plán byl importován jako PLÁN (${generated.length} dní).`);
+            alert(appendPlanWarningsToMessage(`AI plán byl importován jako PLÁN (${generated.length} dní).`, generated));
         }
 
 
@@ -2831,8 +3218,14 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
         function triggerImport() { document.getElementById('importFile').click(); closeSettings(); }
 
         function exportData() {
-            const data = localStorage.getItem('nutri_data_v13');
-            const blob = new Blob([data], { type: 'application/json' });
+            const exportObject = {
+                dataVersion: DATA_VERSION,
+                exportedAt: new Date().toISOString(),
+                entries: getMainData(),
+                childProfile: getChildProfile(),
+                avoidList: getAvoidList()
+            };
+            const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
             a.download = `vyziva_zaloha_${new Date().toISOString().slice(0, 10)}.json`; a.click(); closeSettings();
         }
@@ -2868,26 +3261,34 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
             document.getElementById('importModal').style.display = 'none';
             if (!pendingImportData) return;
             try {
-                let imported = JSON.parse(pendingImportData);
+                let importedRaw = JSON.parse(pendingImportData);
+                if (importedRaw && !Array.isArray(importedRaw) && Array.isArray(importedRaw.entries)) {
+                    if (importedRaw.childProfile) localStorage.setItem(CHILD_PROFILE_KEY, JSON.stringify(importedRaw.childProfile));
+                    if (Array.isArray(importedRaw.avoidList)) setAvoidList(importedRaw.avoidList);
+                    importedRaw = importedRaw.entries;
+                }
+                let imported = importedRaw;
                 if (!Array.isArray(imported)) throw new Error("Neplatný formát");
 
                 // Převod starých dat (v12 - 4 jídla) na nová data (v13 - 5 jídel)
                 imported = imported.map(item => {
-                    if (item.m.length === 4) {
-                        return { d: item.d, m: [item.m[0], { t: '', w: '', n: '', r: '😐' }, item.m[1], item.m[2], item.m[3]] };
+                    const meals = Array.isArray(item.m) ? item.m : [];
+                    if (meals.length === 4) {
+                        return { d: item.d, m: [meals[0], { t: '', w: '', n: '', r: '😐' }, meals[1], meals[2], meals[3]], planned: item.planned === true };
                     }
                     return item;
                 });
 
+                createAutoBackup(mode === 'overwrite' ? 'import JSON přepsáním' : 'import JSON sloučením');
                 if (mode === 'overwrite') {
-                    localStorage.setItem('nutri_data_v13', JSON.stringify(imported));
+                    localStorage.setItem('nutri_data_v13', JSON.stringify(normalizeAllEntries(imported)));
                 } else if (mode === 'merge') {
                     let currentRaw = localStorage.getItem('nutri_data_v13');
                     let current = currentRaw ? JSON.parse(currentRaw) : [];
                     let dataMap = new Map();
                     current.forEach(item => dataMap.set(item.d, item));
                     imported.forEach(item => dataMap.set(item.d, item));
-                    localStorage.setItem('nutri_data_v13', JSON.stringify(Array.from(dataMap.values())));
+                    localStorage.setItem('nutri_data_v13', JSON.stringify(normalizeAllEntries(Array.from(dataMap.values()))));
                 }
 
                 // ZMĚNA: Zde nesmíme volat save(), jinak si přepíšeme nahraná data tou starou obrazovkou!
