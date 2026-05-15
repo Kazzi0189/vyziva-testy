@@ -623,6 +623,11 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
         }
 
+        .card.plan-swap-selected {
+            border-color: #f39c12 !important;
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.22);
+        }
+
         .planned-badge {
             display: inline-block;
             margin-left: 8px;
@@ -1008,8 +1013,11 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         let draggedPlanCard = null;
         let planDragAutoScrollFrame = null;
         let planDragLastClientY = 0;
-        const PLAN_DRAG_SCROLL_EDGE = 95;
-        const PLAN_DRAG_SCROLL_MAX_SPEED = 22;
+        let planDragLastClientX = 0;
+        let planDragMoved = false;
+        let selectedPlanCardForSwap = null;
+        const PLAN_DRAG_SCROLL_EDGE = 120;
+        const PLAN_DRAG_SCROLL_MAX_SPEED = 34;
         let lastFocusedElement = null;
         let pendingImportData = null;
         const rates = { '🙂': '#e3f9e5', '😍': '#fff9db', '😐': '#eef2f3', '☹️': '#ffe3e3' };
@@ -1177,10 +1185,10 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                     .filter(e => e.planned === true)
                     .map(e => ({ item: e, date: parseDateValue(e.d) }))
                     .filter(x => x.date && x.date >= startOfToday)
-                    .sort((a, b) => a.date - b.date)
+                    .sort((a, b) => b.date - a.date)
                     .map(x => x.item);
 
-                container.innerHTML = '<div class="reorder-banner"><b>Režim přeskládání plánu</b><br>Vidíte jen budoucí záznamy označené jako PLÁN. Podržte modrý pruh a přesuňte den prstem, nebo použijte šipky. Po změně se datumy plánu automaticky přepočítají. Skutečná historie se nemění.</div>';
+                container.innerHTML = '<div class="reorder-banner"><b>Režim přeskládání plánu</b><br>Plán je seřazen stejně jako běžný deník: nejnovější den nahoře. Podržte modrý pruh a přesuňte den, použijte šipky, nebo tlačítkem ⇄ vyberte dva dny k výměně. Po změně se datumy plánu automaticky přepočítají. Skutečná historie se nemění.</div>';
 
                 if (plannedEntries.length === 0) {
                     container.innerHTML += '<div style="text-align:center; color:#95a5a6; margin-top:15px; background:white; padding:20px; border-radius:12px;">Není zde žádný budoucí PLÁN k přeskládání.</div>';
@@ -1266,7 +1274,8 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             if (reorderPlanMode && e.planned) {
                 html += `<div class="reorder-controls">
                     <button type="button" class="reorder-small-btn" onclick="movePlanCard(this, -1)">⬆️</button>
-                    <div class="reorder-handle" draggable="true" title="Podržte a přesuňte den">☰ PODRŽ A PŘESUŇ</div>
+                    <div class="reorder-handle" title="Podržte a přesuňte den">☰ PODRŽ A PŘESUŇ</div>
+                    <button type="button" class="reorder-small-btn" onclick="selectOrSwapPlanCard(this)" title="Vybrat a vyměnit s jiným dnem">⇄</button>
                     <button type="button" class="reorder-small-btn" onclick="movePlanCard(this, 1)">⬇️</button>
                 </div>`;
             } else {
@@ -1539,7 +1548,7 @@ Tuto akci nelze vrátit zpět.`)) return;
             if (deleteSelectionMode) stopDeleteSelectionMode();
             reorderPlanMode = !reorderPlanMode;
             document.body.classList.toggle('reorder-mode', reorderPlanMode);
-            if (!reorderPlanMode) stopPlanDragAutoScroll();
+            if (!reorderPlanMode) { stopPlanDragAutoScroll(); clearPlanSwapSelection(); }
             const btn = document.getElementById('reorderPlanBtn');
             if (btn) {
                 btn.innerText = reorderPlanMode ? '✅ HOTOVO' : '↕️ PŘESKLÁDAT';
@@ -1553,58 +1562,53 @@ Tuto akci nelze vrátit zpět.`)) return;
             const handle = card.querySelector('.reorder-handle');
             if (!handle) return;
 
-            handle.addEventListener('dragstart', (event) => {
-                draggedPlanCard = card;
-                card.classList.add('dragging-plan');
-                event.dataTransfer.effectAllowed = 'move';
-                event.dataTransfer.setData('text/plain', card.dataset.originalDate || '');
-            });
-
-            handle.addEventListener('dragend', () => {
-                if (draggedPlanCard) draggedPlanCard.classList.remove('dragging-plan');
-                draggedPlanCard = null;
-                stopPlanDragAutoScroll();
-                saveReorderedPlanFromDom(true);
-            });
-
-            card.addEventListener('dragover', (event) => {
-                if (!draggedPlanCard || draggedPlanCard === card) return;
-                event.preventDefault();
-                moveDraggedCardByY(event.clientY);
-                updatePlanDragAutoScroll(event.clientY);
-            });
-
             let pointerActive = false;
-            handle.addEventListener('pointerdown', (event) => {
-                if (event.button !== undefined && event.button !== 0) return;
-                pointerActive = true;
-                draggedPlanCard = card;
-                card.classList.add('dragging-plan');
-                planDragLastClientY = event.clientY;
-                try { handle.setPointerCapture(event.pointerId); } catch (e) {}
-                event.preventDefault();
-            });
+            let startClientY = 0;
 
-            handle.addEventListener('pointermove', (event) => {
+            function onPointerMove(event) {
                 if (!pointerActive || !draggedPlanCard) return;
+                const deltaY = Math.abs(event.clientY - startClientY);
+                if (deltaY > 8) planDragMoved = true;
+                planDragLastClientX = event.clientX;
                 planDragLastClientY = event.clientY;
                 moveDraggedCardByY(event.clientY);
                 updatePlanDragAutoScroll(event.clientY);
                 event.preventDefault();
-            });
+            }
 
             function finishPointerDrag(event) {
                 if (!pointerActive) return;
                 pointerActive = false;
-                if (draggedPlanCard) draggedPlanCard.classList.remove('dragging-plan');
+                document.removeEventListener('pointermove', onPointerMove, { passive: false });
+                document.removeEventListener('pointerup', finishPointerDrag);
+                document.removeEventListener('pointercancel', finishPointerDrag);
+
+                if (draggedPlanCard) {
+                    planDragLastClientX = event.clientX || planDragLastClientX;
+                    planDragLastClientY = event.clientY || planDragLastClientY;
+                    moveDraggedCardByY(planDragLastClientY);
+                    draggedPlanCard.classList.remove('dragging-plan');
+                }
                 draggedPlanCard = null;
                 stopPlanDragAutoScroll();
-                try { handle.releasePointerCapture(event.pointerId); } catch (e) {}
                 saveReorderedPlanFromDom(true);
             }
 
-            handle.addEventListener('pointerup', finishPointerDrag);
-            handle.addEventListener('pointercancel', finishPointerDrag);
+            handle.addEventListener('pointerdown', (event) => {
+                if (event.button !== undefined && event.button !== 0) return;
+                clearPlanSwapSelection();
+                pointerActive = true;
+                planDragMoved = false;
+                draggedPlanCard = card;
+                card.classList.add('dragging-plan');
+                startClientY = event.clientY;
+                planDragLastClientX = event.clientX;
+                planDragLastClientY = event.clientY;
+                document.addEventListener('pointermove', onPointerMove, { passive: false });
+                document.addEventListener('pointerup', finishPointerDrag);
+                document.addEventListener('pointercancel', finishPointerDrag);
+                event.preventDefault();
+            });
         }
 
         function updatePlanDragAutoScroll(clientY) {
@@ -1656,7 +1660,38 @@ Tuto akci nelze vrátit zpět.`)) return;
             else container.appendChild(draggedPlanCard);
         }
 
+        function clearPlanSwapSelection() {
+            if (selectedPlanCardForSwap) selectedPlanCardForSwap.classList.remove('plan-swap-selected');
+            selectedPlanCardForSwap = null;
+        }
+
+        function selectOrSwapPlanCard(button) {
+            const card = button.closest('.card');
+            if (!card) return;
+            if (!selectedPlanCardForSwap) {
+                selectedPlanCardForSwap = card;
+                card.classList.add('plan-swap-selected');
+                return;
+            }
+            if (selectedPlanCardForSwap === card) {
+                clearPlanSwapSelection();
+                return;
+            }
+
+            const first = selectedPlanCardForSwap;
+            const second = card;
+            const placeholder = document.createElement('div');
+            container.insertBefore(placeholder, first);
+            container.insertBefore(first, second);
+            container.insertBefore(second, placeholder);
+            placeholder.remove();
+
+            clearPlanSwapSelection();
+            saveReorderedPlanFromDom(true);
+        }
+
         function movePlanCard(button, direction) {
+            clearPlanSwapSelection();
             const card = button.closest('.card');
             if (!card) return;
             if (direction < 0) {
@@ -1699,15 +1734,19 @@ Tuto akci nelze vrátit zpět.`)) return;
             let fullData = getMainData().filter(item => !originalDates.has((item.d || '').trim()));
             const usedDates = new Set(fullData.map(item => (item.d || '').trim()).filter(Boolean));
             let cursor = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-
-            const reorderedItems = orderedPlan.map(x => {
-                while (usedDates.has(formatDateValue(cursor))) {
-                    cursor.setDate(cursor.getDate() + 1);
-                }
-                x.item.d = formatDateValue(cursor);
-                x.item.planned = true;
-                usedDates.add(x.item.d);
+            const dateSlots = [];
+            while (dateSlots.length < orderedPlan.length) {
+                const dateText = formatDateValue(cursor);
+                if (!usedDates.has(dateText)) dateSlots.push(dateText);
                 cursor.setDate(cursor.getDate() + 1);
+            }
+            // V režimu přeskládání zobrazujeme plán stejně jako celý deník: nejnovější nahoře.
+            // Proto horní karta dostane nejpozdější volné datum a spodní nejbližší volné datum.
+            const visibleOrderDateSlots = dateSlots.slice().reverse();
+
+            const reorderedItems = orderedPlan.map((x, index) => {
+                x.item.d = visibleOrderDateSlots[index];
+                x.item.planned = true;
                 return x.item;
             });
 
