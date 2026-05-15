@@ -628,43 +628,117 @@
             vertical-align: middle;
         }
 
+        /* KOMPAKTNÍ HLAVIČKA PRO MOBIL */
+        .menu-content.compact-menu {
+            gap: 7px;
+            padding: 8px 15px 10px;
+        }
+
+        .compact-menu .app-title {
+            font-size: 0.78rem;
+            line-height: 1.1;
+        }
+
+        .main-action-row button {
+            min-width: 0;
+            padding: 10px 4px;
+            font-size: 0.72rem;
+        }
+
+        .filter-row select {
+            flex: 1 1 30%;
+            min-width: 105px;
+            padding: 10px 7px;
+            font-size: 0.78rem;
+        }
+
+        .child-summary-pill {
+            flex: 1 1 100%;
+            background: #ecf0f1;
+            color: #2c3e50;
+            border-radius: 10px;
+            padding: 10px;
+            font-weight: 800;
+            font-size: 0.82rem;
+            text-align: center;
+        }
+
+        .more-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .more-grid .modal-btn {
+            margin-bottom: 0;
+            min-height: 48px;
+            padding: 10px 7px;
+            line-height: 1.2;
+        }
+
+        .reorder-active-strip {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: #eafaf1;
+            border: 1px solid #82e0aa;
+            border-radius: 10px;
+            padding: 6px 8px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #1e8449;
+        }
+
+        body.reorder-mode .reorder-active-strip {
+            display: flex;
+        }
+
+        .reorder-active-strip span {
+            flex: 1;
+        }
+
+        .reorder-active-strip button {
+            flex: 0 0 auto;
+            padding: 7px 12px;
+            font-size: 0.75rem;
+            background: #27ae60;
+        }
+
+        @media (max-width: 420px) {
+            .main-action-row button {
+                font-size: 0.68rem;
+                padding: 9px 3px;
+            }
+            .filter-row select {
+                min-width: 0;
+                font-size: 0.74rem;
+                padding: 9px 5px;
+            }
+            .more-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
     </style>
 </head>
 
 <body>
 
     <div class="sticky-header" id="topMenu">
-        <div class="menu-content">
+        <div class="menu-content compact-menu">
             <div class="app-title">Výživa PRO - TESTOVACÍ VERZE</div>
-            <div class="child-profile-row" aria-label="Údaje o dítěti">
-                <div class="child-profile-field">
-                    <label for="childBirthDate">Datum narození</label>
-                    <input id="childBirthDate" type="date" onchange="saveChildProfile()">
-                </div>
-                <div class="child-profile-field">
-                    <label for="childWeight">Váha kg</label>
-                    <input id="childWeight" type="number" inputmode="decimal" step="0.1" min="0" placeholder="např. 9,5" oninput="saveChildProfile()">
-                </div>
-                <div class="child-profile-field">
-                    <label for="childHeight">Výška cm</label>
-                    <input id="childHeight" type="number" inputmode="decimal" step="0.1" min="0" placeholder="volitelné" oninput="saveChildProfile()">
-                </div>
-                <div class="child-profile-field">
-                    <label>Věk</label>
-                    <div class="child-age-box" id="childAgeDisplay">nezadáno</div>
-                </div>
-            </div>
-            <div class="btn-row">
+            <div class="btn-row main-action-row">
                 <button style="background:var(--success)" onclick="addCard()">NOVÝ +</button>
                 <button id="micMain" class="btn-mic" onclick="runVoice('food')">🎤 JÍDLO</button>
-                <button id="micNote" style="background:var(--note)" class="btn-mic" onclick="runVoice('note')">🎤
-                    POZNÁMKA</button>
-                <button style="background:#16a085" onclick="openPlanner()">🗓️ PLÁN</button>
-                <button style="background:#8e44ad" onclick="openAiModal()">🤖 AI</button>
-                <button style="background:#c0392b" onclick="openDeleteManager()">🧹 SMAZAT</button>
-                <button id="reorderPlanBtn" style="background:#3498db" onclick="togglePlanReorderMode()">↕️ PŘESKLÁDAT</button>
+                <button id="micNote" style="background:var(--note)" class="btn-mic" onclick="runVoice('note')">🎤 POZNÁMKA</button>
+                <button style="background:#34495e" onclick="openMoreMenu()">⋯ DALŠÍ</button>
             </div>
-            <div class="btn-row">
+            <div class="reorder-active-strip">
+                <span>↕️ Přeskládání plánu je aktivní</span>
+                <button type="button" onclick="togglePlanReorderMode()">✅ HOTOVO</button>
+            </div>
+            <div class="btn-row filter-row">
                 <select id="filterSelect" onchange="setFilter(this.value)">
                     <option value="all">Období: VŠE</option>
                     <option value="currentWeek">Aktuální týden</option>
@@ -687,19 +761,57 @@
                     <option value="😐">Jen základ 😐</option>
                     <option value="☹️">Jen nechutnalo ☹️</option>
                 </select>
-                <button style="background:#7f8c8d; max-width: 45px; font-size: 1.1rem;"
-                    onclick="openSettings()">⚙️</button>
-                <button style="background:#2c3e50; max-width: 45px; font-size: 1.1rem;"
-                    onclick="openDraft()">📥</button>
-                <button style="background:#9b59b6; max-width: 45px; font-size: 1.1rem;"
-                    onclick="document.body.classList.toggle('show-w')">⚖️</button>
-                <button style="background:#f39c12; max-width: 45px; font-size: 1.1rem;"
-                    onclick="document.body.classList.toggle('show-n')">📝</button>
             </div>
         </div>
     </div>
 
     <div class="content-area" id="cardContainer">
+    </div>
+
+
+    <div class="modal-overlay" id="moreMenuModal">
+        <div class="modal-box">
+            <div class="modal-title">Další funkce</div>
+            <div class="modal-text">Méně časté nástroje jsou schované tady, aby deník při listování nezabíral tolik místa.</div>
+            <div class="more-grid">
+                <button class="modal-btn" style="background:#16a085" onclick="closeMoreMenu(); openPlanner();">🗓️ Plán</button>
+                <button class="modal-btn" style="background:#8e44ad" onclick="closeMoreMenu(); openAiModal();">🤖 AI</button>
+                <button id="reorderPlanBtn" class="modal-btn" style="background:#3498db" onclick="closeMoreMenu(); togglePlanReorderMode();">↕️ Přeskládat</button>
+                <button class="modal-btn" style="background:#c0392b" onclick="closeMoreMenu(); openDeleteManager();">🧹 Smazat</button>
+                <button class="modal-btn" style="background:#1abc9c" onclick="closeMoreMenu(); openChildModal();">👶 Údaje dítěte</button>
+                <button class="modal-btn" style="background:#2c3e50" onclick="closeMoreMenu(); openDraft();">📥 Pískoviště</button>
+                <button class="modal-btn" style="background:#7f8c8d" onclick="closeMoreMenu(); openSettings();">⚙️ Správa dat</button>
+                <button class="modal-btn" style="background:#9b59b6" onclick="document.body.classList.toggle('show-w'); closeMoreMenu();">⚖️ Gramy</button>
+                <button class="modal-btn" style="background:#f39c12" onclick="document.body.classList.toggle('show-n'); closeMoreMenu();">📝 Poznámky</button>
+            </div>
+            <button class="modal-btn btn-cancel" onclick="closeMoreMenu()">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="childProfileModal">
+        <div class="modal-box">
+            <div class="modal-title">Údaje dítěte</div>
+            <div class="modal-text">Údaje se použijí hlavně pro AI podklad. Do AI se neposílá datum narození, jen vypočtený věk.</div>
+            <div class="child-profile-row" aria-label="Údaje o dítěti">
+                <div class="child-profile-field">
+                    <label for="childBirthDate">Datum narození</label>
+                    <input id="childBirthDate" type="date" onchange="saveChildProfile()">
+                </div>
+                <div class="child-profile-field">
+                    <label for="childWeight">Váha kg</label>
+                    <input id="childWeight" type="number" inputmode="decimal" step="0.1" min="0" placeholder="např. 9,5" oninput="saveChildProfile()">
+                </div>
+                <div class="child-profile-field">
+                    <label for="childHeight">Výška cm</label>
+                    <input id="childHeight" type="number" inputmode="decimal" step="0.1" min="0" placeholder="volitelné" oninput="saveChildProfile()">
+                </div>
+                <div class="child-profile-field">
+                    <label>Věk</label>
+                    <div class="child-age-box" id="childAgeDisplay">nezadáno</div>
+                </div>
+            </div>
+            <button class="modal-btn btn-merge" style="margin-top:15px;" onclick="closeChildModal()">ULOŽIT A ZAVŘÍT</button>
+        </div>
     </div>
 
     <div class="modal-overlay" id="settingsModal">
@@ -954,6 +1066,32 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             if (profile.weight) lines.push(`- aktuální váha: ${profile.weight} kg`);
             if (profile.height) lines.push(`- aktuální výška: ${profile.height} cm`);
             return lines;
+        }
+
+
+        function updateChildSummary() {
+            // Údaje o dítěti jsou schované v modalu; souhrn zatím nezobrazujeme v pevné hlavičce, aby zůstala co nejnižší.
+            updateChildAgeDisplay();
+        }
+
+        function openMoreMenu() {
+            document.getElementById('moreMenuModal').style.display = 'flex';
+        }
+
+        function closeMoreMenu() {
+            document.getElementById('moreMenuModal').style.display = 'none';
+        }
+
+        function openChildModal() {
+            loadChildProfile();
+            document.getElementById('childProfileModal').style.display = 'flex';
+            adjustSpacing();
+        }
+
+        function closeChildModal() {
+            saveChildProfile();
+            document.getElementById('childProfileModal').style.display = 'none';
+            adjustSpacing();
         }
 
 
