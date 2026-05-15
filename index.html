@@ -1184,6 +1184,94 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             load();
         }
 
+        function normalizeDateText(dateText) {
+            const parsed = parseDateValue(dateText);
+            return parsed ? formatDateValue(parsed) : (dateText || '').trim();
+        }
+
+        function handleCardDateBlur(headerEl) {
+            const card = headerEl.closest('.card');
+            if (!card) return;
+
+            const oldDate = (card.dataset.originalDate || '').trim();
+            const typedDate = (headerEl.innerText || '').trim();
+            const newDate = normalizeDateText(typedDate);
+
+            if (!newDate) {
+                alert('Datum nesmí být prázdné.');
+                headerEl.innerText = oldDate;
+                return;
+            }
+
+            headerEl.innerText = newDate;
+
+            if (!oldDate || oldDate === newDate) {
+                saveAndReload();
+                return;
+            }
+
+            let data = getMainData();
+            const currentIdx = data.findIndex(item => (item.d || '').trim() === oldDate);
+            const targetIdx = data.findIndex(item => (item.d || '').trim() === newDate);
+            const currentCardData = readCardData(card);
+            currentCardData.d = newDate;
+            if (card.dataset.planned === 'true') currentCardData.planned = true;
+            else delete currentCardData.planned;
+
+            if (currentIdx === -1) {
+                saveAndReload();
+                return;
+            }
+
+            if (targetIdx === -1 || targetIdx === currentIdx) {
+                data[currentIdx] = currentCardData;
+                setMainData(data);
+                load();
+                return;
+            }
+
+            const targetItem = data[targetIdx];
+            const currentIsPlan = currentCardData.planned === true;
+            const targetIsPlan = targetItem && targetItem.planned === true;
+
+            let message = `Na datu ${newDate} už existuje jiný záznam.\n\n` +
+                `Zadejte číslo volby:\n` +
+                `1 = prohodit dny/karty mezi sebou\n` +
+                `2 = přepsat záznam na datu ${newDate} touto kartou\n` +
+                `0 = zrušit změnu data`;
+
+            if (!currentIsPlan || !targetIsPlan) {
+                message += '\n\nPozor: aspoň jeden záznam není označený jako PLÁN. U skutečné historie buďte opatrní.';
+            }
+
+            const choice = prompt(message, currentIsPlan && targetIsPlan ? '1' : '0');
+
+            if (choice === '1') {
+                const swappedTarget = Object.assign({}, targetItem, { d: oldDate });
+                data[currentIdx] = currentCardData;
+                data[targetIdx] = swappedTarget;
+                setMainData(data);
+                load();
+                return;
+            }
+
+            if (choice === '2') {
+                if (!confirm(`Opravdu přepsat záznam na datu ${newDate}?\n\nPůvodní karta na tomto datu bude nahrazena touto kartou.`)) {
+                    headerEl.innerText = oldDate;
+                    return;
+                }
+                data.splice(targetIdx, 1);
+                const adjustedCurrentIdx = targetIdx < currentIdx ? currentIdx - 1 : currentIdx;
+                data[adjustedCurrentIdx] = currentCardData;
+                setMainData(data);
+                load();
+                return;
+            }
+
+            headerEl.innerText = oldDate;
+            load();
+        }
+
         function load() {
             isRendering = true;
             container.innerHTML = '';
@@ -1295,7 +1383,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                 html += `<label class="delete-check-wrap"><input type="checkbox" class="delete-day-checkbox" ${selectedDeleteDates.has((e.d || '').trim()) ? 'checked' : ''} onchange="toggleDeleteSelection(this.closest('.card').dataset.originalDate, this)"> Vybrat</label>`;
                 html += `<button onclick="delMainCard(this)" style="position:absolute; top:15px; right:15px; background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:6px; padding:6px 10px; font-size:1.1rem; cursor:pointer; z-index:10;">🗑️</button>`;
             }
-            html += `<div class="card-header" contenteditable="true" oninput="save()" onblur="saveAndReload()">${e.d}</div>${e.planned ? '<span class="planned-badge">PLÁN</span>' : ''}`;
+            html += `<div class="card-header" contenteditable="true" onblur="handleCardDateBlur(this)">${e.d}</div>${e.planned ? '<span class="planned-badge">PLÁN</span>' : ''}`;
 
             for (let i = 0; i < 5; i++) {
                 const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐' };
@@ -2209,8 +2297,9 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
 
                 // Hlasové Datum
                 if (lastFocusedElement && lastFocusedElement.classList.contains('card-header')) {
-                    targetCard.querySelector('.card-header').innerText = parseSmartDate(res, targetCard.querySelector('.card-header').innerText);
-                    saveAndReload(); return;
+                    const header = targetCard.querySelector('.card-header');
+                    header.innerText = parseSmartDate(res, header.innerText);
+                    handleCardDateBlur(header); return;
                 }
 
                 // PRIORITA 1: Přímý zápis do vybrané buňky (pokud v ní zrovna bliká kurzor)
