@@ -1189,7 +1189,63 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             return parsed ? formatDateValue(parsed) : (dateText || '').trim();
         }
 
-        function handleCardDateBlur(headerEl) {
+        function createEmptyMealSet() {
+            return mealLabels.map(() => ({ t: '', w: '', n: '', r: '😐' }));
+        }
+
+        function createEmptyPlanCard(dateText) {
+            return { d: dateText, m: createEmptyMealSet(), planned: true };
+        }
+
+        function closeDateConflictModal(result) {
+            const overlay = document.getElementById('dateConflictModalDynamic');
+            if (!overlay) return;
+            const resolver = overlay._resolveChoice;
+            overlay.remove();
+            if (typeof resolver === 'function') resolver(result);
+        }
+
+        function chooseDateConflictAction(oldDate, newDate, currentIsPlan, targetIsPlan) {
+            return new Promise(resolve => {
+                const previous = document.getElementById('dateConflictModalDynamic');
+                if (previous) previous.remove();
+
+                const overlay = document.createElement('div');
+                overlay.id = 'dateConflictModalDynamic';
+                overlay.className = 'modal-overlay';
+                overlay.style.display = 'flex';
+                overlay._resolveChoice = resolve;
+
+                const warningHtml = (!currentIsPlan || !targetIsPlan)
+                    ? '<div style="background:#fff3cd; border:1px solid #f1c40f; color:#7d6608; border-radius:8px; padding:10px; margin:10px 0; font-size:0.82rem; text-align:left;"><b>Pozor:</b> aspoň jeden záznam není označený jako PLÁN. U skutečné historie buďte opatrní.</div>'
+                    : '';
+
+                const emptyCardNote = currentIsPlan
+                    ? `<div style="font-size:0.78rem; color:#7f8c8d; margin-top:4px;">Na původním datu ${oldDate} se automaticky vytvoří prázdná plánovaná karta, aby v plánu nevznikla mezera.</div>`
+                    : '';
+
+                overlay.innerHTML = `
+                    <div class="modal-box" style="max-width:430px; text-align:left;">
+                        <div class="modal-title" style="text-align:center;">Datum už existuje</div>
+                        <div class="modal-text" style="text-align:left; margin-bottom:12px;">
+                            Na datu <b>${newDate}</b> už je jiný záznam. Co chcete udělat s kartou z data <b>${oldDate}</b>?
+                        </div>
+                        ${warningHtml}
+                        <button class="modal-btn btn-merge" style="text-align:center;" onclick="closeDateConflictModal('swap')">⇄ PROHODIT DNY / KARTY</button>
+                        <button class="modal-btn btn-overwrite" style="text-align:center;" onclick="closeDateConflictModal('overwrite')">PŘEPSAT CÍLOVÉ DATUM</button>
+                        ${emptyCardNote}
+                        <button class="modal-btn btn-cancel" style="text-align:center; margin-top:14px;" onclick="closeDateConflictModal('cancel')">ZRUŠIT ZMĚNU DATA</button>
+                    </div>`;
+
+                overlay.addEventListener('click', (ev) => {
+                    if (ev.target === overlay) closeDateConflictModal('cancel');
+                });
+
+                document.body.appendChild(overlay);
+            });
+        }
+
+        async function handleCardDateBlur(headerEl) {
             const card = headerEl.closest('.card');
             if (!card) return;
 
@@ -1233,20 +1289,9 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             const targetItem = data[targetIdx];
             const currentIsPlan = currentCardData.planned === true;
             const targetIsPlan = targetItem && targetItem.planned === true;
+            const choice = await chooseDateConflictAction(oldDate, newDate, currentIsPlan, targetIsPlan);
 
-            let message = `Na datu ${newDate} už existuje jiný záznam.\n\n` +
-                `Zadejte číslo volby:\n` +
-                `1 = prohodit dny/karty mezi sebou\n` +
-                `2 = přepsat záznam na datu ${newDate} touto kartou\n` +
-                `0 = zrušit změnu data`;
-
-            if (!currentIsPlan || !targetIsPlan) {
-                message += '\n\nPozor: aspoň jeden záznam není označený jako PLÁN. U skutečné historie buďte opatrní.';
-            }
-
-            const choice = prompt(message, currentIsPlan && targetIsPlan ? '1' : '0');
-
-            if (choice === '1') {
+            if (choice === 'swap') {
                 const swappedTarget = Object.assign({}, targetItem, { d: oldDate });
                 data[currentIdx] = currentCardData;
                 data[targetIdx] = swappedTarget;
@@ -1255,14 +1300,12 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                 return;
             }
 
-            if (choice === '2') {
-                if (!confirm(`Opravdu přepsat záznam na datu ${newDate}?\n\nPůvodní karta na tomto datu bude nahrazena touto kartou.`)) {
-                    headerEl.innerText = oldDate;
-                    return;
-                }
+            if (choice === 'overwrite') {
+                const emptyReplacement = currentIsPlan ? createEmptyPlanCard(oldDate) : null;
                 data.splice(targetIdx, 1);
                 const adjustedCurrentIdx = targetIdx < currentIdx ? currentIdx - 1 : currentIdx;
                 data[adjustedCurrentIdx] = currentCardData;
+                if (emptyReplacement) data.push(emptyReplacement);
                 setMainData(data);
                 load();
                 return;
