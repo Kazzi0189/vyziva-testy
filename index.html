@@ -1805,6 +1805,50 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
 
         function closeDeleteManager() { document.getElementById('deleteManagerModal').style.display = 'none'; }
 
+        function cancelGeneratedPlan() {
+            const data = getMainData();
+            const today = new Date();
+            const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+            const plannedFuture = data.filter(item => {
+                const d = parseDateValue(item.d);
+                return item.planned === true && d && d >= startOfToday;
+            });
+
+            const plannedAll = data.filter(item => item.planned === true);
+
+            if (plannedFuture.length === 0) {
+                if (plannedAll.length === 0) {
+                    alert('V aplikaci teď nejsou žádné záznamy označené jako PLÁN.');
+                    return;
+                }
+
+                if (!confirm(`Nenašel jsem žádný budoucí PLÁN od dneška dál, ale existuje ${plannedAll.length} starších záznamů označených jako PLÁN.\n\nChcete smazat všechny záznamy označené jako PLÁN?`)) return;
+
+                setMainData(data.filter(item => item.planned !== true));
+                closePlanner();
+                closeDeleteManager();
+                if (reorderPlanMode) togglePlanReorderMode();
+                else load();
+                alert('Všechny záznamy označené jako PLÁN byly smazány.');
+                return;
+            }
+
+            if (!confirm(`Opravdu zrušit budoucí plán?\n\nBude smazáno ${plannedFuture.length} plánovaných záznamů od dneška dál. Skutečná historie bez štítku PLÁN zůstane zachovaná.`)) return;
+
+            const remaining = data.filter(item => {
+                const d = parseDateValue(item.d);
+                return !(item.planned === true && d && d >= startOfToday);
+            });
+
+            setMainData(remaining);
+            closePlanner();
+            closeDeleteManager();
+            if (reorderPlanMode) togglePlanReorderMode();
+            else load();
+            alert('Budoucí PLÁN byl zrušen. Historické záznamy zůstaly zachované.');
+        }
+
         function deleteByDateRange() {
             const from = isoToDateValue(document.getElementById('deleteDateFrom').value);
             const to = isoToDateValue(document.getElementById('deleteDateTo').value);
