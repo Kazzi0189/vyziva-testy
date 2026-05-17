@@ -817,6 +817,86 @@
             font-size: 0.78rem;
         }
 
+        .filter-row input[type="search"],
+        .filter-row .filter-menu-btn {
+            flex: 1 1 30%;
+            min-width: 105px;
+            padding: 10px 7px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            font-size: 0.78rem;
+            font-weight: bold;
+            color: #2c3e50;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .filter-row input[type="search"] {
+            flex: 1 1 100%;
+            min-width: 180px;
+        }
+
+        .filter-row .filter-menu-btn {
+            color: #2c3e50;
+            text-align: left;
+            justify-content: flex-start;
+            background: #f8f9fa;
+        }
+
+        .meal-type-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            text-align: left;
+            margin: 12px 0;
+        }
+
+        .meal-type-list label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #e1e7ec;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .meal-type-list input {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent);
+        }
+
+        .day-note-box {
+            display: none;
+            margin: 8px 0 12px;
+            padding: 8px 10px;
+            background: #fff9db;
+            border: 1px solid #f1c40f;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            color: #2c3e50;
+            outline: none;
+            min-height: 22px;
+            font-style: italic;
+        }
+
+        body.show-n .day-note-box,
+        .day-note-box.has-content,
+        .card.word-filter-hit .day-note-box {
+            display: block;
+        }
+
+        .word-hit {
+            outline: 2px solid #f1c40f;
+            background: #fffdf0 !important;
+        }
+
         .child-summary-pill {
             flex: 1 1 100%;
             background: #ecf0f1;
@@ -880,94 +960,15 @@
                 font-size: 0.74rem;
                 padding: 9px 5px;
             }
+            .filter-row input[type="search"],
+            .filter-row .filter-menu-btn {
+                min-width: 0;
+                font-size: 0.74rem;
+                padding: 9px 5px;
+            }
             .more-grid {
                 grid-template-columns: 1fr;
             }
-        }
-
-
-        /* UŽIVATELSKÝ MANUÁL */
-        #manualModal {
-            align-items: flex-start;
-            overflow-y: auto;
-            padding: 10px 0;
-            box-sizing: border-box;
-        }
-
-        #manualModal .modal-box {
-            position: relative;
-            max-width: 560px;
-            max-height: calc(100vh - 20px);
-            overflow-y: auto;
-            box-sizing: border-box;
-            text-align: left;
-        }
-
-        .manual-intro {
-            background: #f0f7ff;
-            border: 1px solid #cfe6ff;
-            border-radius: 10px;
-            padding: 10px 12px;
-            font-size: 0.86rem;
-            line-height: 1.45;
-            color: #2c3e50;
-            margin-bottom: 12px;
-        }
-
-        .manual-section {
-            border: 1px solid #e1e7ec;
-            border-radius: 10px;
-            background: #fff;
-            margin-bottom: 8px;
-            overflow: hidden;
-        }
-
-        .manual-section summary {
-            cursor: pointer;
-            padding: 11px 12px;
-            font-weight: 800;
-            color: #2c3e50;
-            background: #f8f9fa;
-            list-style: none;
-        }
-
-        .manual-section summary::-webkit-details-marker {
-            display: none;
-        }
-
-        .manual-section summary::after {
-            content: '＋';
-            float: right;
-            color: var(--accent);
-            font-weight: 900;
-        }
-
-        .manual-section[open] summary::after {
-            content: '−';
-        }
-
-        .manual-section-content {
-            padding: 10px 12px 12px;
-            font-size: 0.86rem;
-            line-height: 1.45;
-            color: #34495e;
-        }
-
-        .manual-section-content ul {
-            margin: 6px 0 0 18px;
-            padding: 0;
-        }
-
-        .manual-section-content li {
-            margin-bottom: 5px;
-        }
-
-        .manual-note {
-            background: #fff9db;
-            border: 1px solid #f1c40f;
-            border-radius: 8px;
-            padding: 8px 10px;
-            margin-top: 8px;
         }
 
     </style>
@@ -999,14 +1000,7 @@
                     <option value="14days">Posledních 14 dní</option>
                     <option value="lastMonth">Minulý měsíc</option>
                 </select>
-                <select id="mealFilterSelect" onchange="setMealFilter(this.value)">
-                    <option value="all">Jídlo: VŠE</option>
-                    <option value="0">Pouze snídaně</option>
-                    <option value="1">Pouze dop. svačina</option>
-                    <option value="2">Pouze oběd</option>
-                    <option value="3">Pouze odp. svačina</option>
-                    <option value="4">Pouze večeře</option>
-                </select>
+                <button type="button" id="mealFilterButton" class="filter-menu-btn" onclick="openMealTypeFilterModal()">Jídlo: VŠE</button>
                 <select id="ratingFilterSelect" onchange="setRatingFilter(this.value)">
                     <option value="all">Hodnocení: VŠE</option>
                     <option value="😍">Jen chutnalo 😍</option>
@@ -1019,6 +1013,7 @@
                     <option value="real">Jen deník</option>
                     <option value="plan">Jen plán</option>
                 </select>
+                <input id="wordFilterInput" type="search" placeholder="Hledat slovo v jídle/poznámkách..." oninput="setWordFilter(this.value)">
             </div>
         </div>
     </div>
@@ -1039,11 +1034,27 @@
                 <button class="modal-btn" style="background:#1abc9c" onclick="closeMoreMenu(); openChildModal();">👶 Údaje dítěte</button>
                 <button class="modal-btn" style="background:#d35400" onclick="closeMoreMenu(); openAvoidListModal();">🚫 Vyhnout se</button>
                 <button class="modal-btn" style="background:#27ae60" onclick="closeMoreMenu(); openOverviewModal();">📊 Přehled jídel</button>
-                <button class="modal-btn" style="background:#2980b9" onclick="closeMoreMenu(); openManualModal();">📘 Manuál</button>
                 <button class="modal-btn" style="background:#2c3e50" onclick="closeMoreMenu(); openDraft();">📥 Rozpracované zápisy</button>
                 <button class="modal-btn" style="background:#7f8c8d" onclick="closeMoreMenu(); openSettings();">⚙️ Správa dat</button>
             </div>
             <button class="modal-btn btn-cancel" onclick="closeMoreMenu()">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="mealTypeFilterModal" onclick="if (event.target === this) closeMealTypeFilterModal()">
+        <div class="modal-box" style="max-width:390px;">
+            <div class="modal-title">Filtrovat druhy jídel</div>
+            <div class="modal-text">Vyberte jeden nebo více typů jídel. Například snídaně + svačiny, nebo oběd + svačiny.</div>
+            <div class="meal-type-list">
+                <label><input type="checkbox" class="meal-type-filter-check" value="0"> Snídaně</label>
+                <label><input type="checkbox" class="meal-type-filter-check" value="1"> Dop. svačina</label>
+                <label><input type="checkbox" class="meal-type-filter-check" value="2"> Oběd</label>
+                <label><input type="checkbox" class="meal-type-filter-check" value="3"> Odp. svačina</label>
+                <label><input type="checkbox" class="meal-type-filter-check" value="4"> Večeře</label>
+            </div>
+            <button class="modal-btn btn-merge" onclick="applyMealTypeFilterFromModal()">✅ POUŽÍT FILTR</button>
+            <button class="modal-btn btn-import" onclick="clearMealTypeFilter()">ZOBRAZIT VŠECHNA JÍDLA</button>
+            <button class="modal-btn btn-cancel" onclick="closeMealTypeFilterModal()">ZAVŘÍT</button>
         </div>
     </div>
 
@@ -1092,195 +1103,6 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="manualModal">
-        <div class="modal-box manual-modal-box">
-            <button type="button" class="ai-close-x" onclick="closeManualModal()">×</button>
-            <div class="modal-title" style="text-align:center;">Manuál aplikace</div>
-            <div class="manual-intro">
-                Tento manuál popisuje hlavní funkce deníku výživy, plánování jídelníčku a práci s AI. Většinu méně častých nástrojů najdete přes tlačítko <b>⋯ DALŠÍ</b>.
-            </div>
-
-            <details class="manual-section" open>
-                <summary>🟢 Rychlé zapisování dne</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li><b>NOVÝ +</b> vytvoří nový den s dnešním datem.</li>
-                        <li><b>DNES</b> skočí na dnešní záznam. Pokud dnešek ještě neexistuje, aplikace ho nabídne vytvořit.</li>
-                        <li><b>🎤 JÍDLO</b> zapisuje nadiktované jídlo.</li>
-                        <li><b>🎤 POZNÁMKA</b> zapisuje poznámku k vybranému jídlu.</li>
-                        <li>Když klepnete do konkrétní buňky, diktování zapisuje přímo do ní.</li>
-                    </ul>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>🔎 Filtry a zobrazení</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li><b>Období</b> filtruje záznamy podle času.</li>
-                        <li><b>Jídlo</b> zobrazí jen snídaně, svačiny, obědy nebo večeře.</li>
-                        <li><b>Hodnocení</b> zobrazí jen vybrané smajlíky.</li>
-                        <li><b>Zobrazení</b> přepíná mezi vším, skutečným deníkem a plánem.</li>
-                        <li><b>⚖️</b> zobrazí nebo skryje gramy. <b>📝</b> zobrazí nebo skryje poznámky.</li>
-                    </ul>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>🙂 Hodnocení jídel</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li>Hodnocení se přepíná klepnutím na smajlíka u jídla.</li>
-                        <li><b>😍</b> znamená velmi chutnalo.</li>
-                        <li><b>🙂</b> znamená dobré.</li>
-                        <li><b>😐</b> je základní výchozí hodnocení.</li>
-                        <li><b>☹️</b> znamená nechutnalo nebo nevhodné.</li>
-                    </ul>
-                    <div class="manual-note">AI i offline plán se snaží vycházet hlavně z lepších hodnocení a vyhýbat se negativním položkám.</div>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>🗓️ Offline plán</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li>Najdete ho přes <b>⋯ DALŠÍ → Plán</b>.</li>
-                        <li>Plán se skládá z minulých jídel podle zvoleného hodnocení.</li>
-                        <li>Lze vytvořit plán na 7, 14 nebo 30 dní.</li>
-                        <li>Plánované dny mají štítek <b>PLÁN</b>.</li>
-                        <li>Offline plán nepoužívá internet ani API klíč.</li>
-                    </ul>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>🤖 AI jídelníček a Gemini</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li>AI najdete přes <b>⋯ DALŠÍ → AI</b>.</li>
-                        <li>Nejdřív lze vytvořit podklad pro AI a ručně ho zkopírovat.</li>
-                        <li>Po vložení Gemini API klíče ve <b>Správě dat</b> lze vytvořit plán přímo přes Gemini.</li>
-                        <li>Gemini má vracet přesný počet dní a formát vhodný pro import.</li>
-                        <li>Odpověď se zobrazí ke kontrole a teprve potom ji lze importovat jako plán.</li>
-                    </ul>
-                    <div class="manual-note">API klíč se ukládá jen v tomto zařízení a není součástí záloh. U čisté HTML aplikace ale nejde klíč stoprocentně skrýt před uživatelem zařízení.</div>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>✨ AI návrhy u jídel</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li>Gemini může pod hlavní jídlo přidat <b>AI návrh na rozšíření</b>.</li>
-                        <li>Hlavní jídlo vychází hlavně z historie.</li>
-                        <li>AI návrh má být nová věkově přiměřená možnost, kterou jste ještě nezkoušeli.</li>
-                        <li><b>POUŽÍT</b> přesune návrh do hlavního jídla.</li>
-                        <li><b>ZAMÍTNOUT</b> návrh odstraní.</li>
-                    </ul>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>↕️ Přeskládání plánu</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li>Spustíte přes <b>⋯ DALŠÍ → Přeskládat</b>.</li>
-                        <li>Přeskládání funguje jen pro záznamy označené jako <b>PLÁN</b>.</li>
-                        <li>Kartu lze přetáhnout prstem. Při tažení k okraji se stránka posouvá.</li>
-                        <li>Jako jistota jsou u karet také tlačítka <b>⬆️</b>, <b>⬇️</b> a <b>⇄</b>.</li>
-                        <li>Po přesunu se datumy plánovaných dnů automaticky přepočítají.</li>
-                    </ul>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>📅 Ruční změna data a prohození dnů</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li>Datum lze upravit přímo v hlavičce karty.</li>
-                        <li>Když cílové datum už existuje, aplikace nabídne možnosti tlačítky.</li>
-                        <li><b>Prohodit dny/karty</b> vymění obsah dvou dnů.</li>
-                        <li><b>Přepsat cílové datum</b> nahradí cílový záznam touto kartou.</li>
-                        <li>U plánovaných záznamů se při přepsání umí vytvořit prázdná plánovaná karta na původním datu, aby v plánu nevznikla mezera.</li>
-                    </ul>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>🧹 Mazání a zrušení plánu</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li>Najdete přes <b>⋯ DALŠÍ → Smazat</b>.</li>
-                        <li>Lze mazat období od data do data.</li>
-                        <li>Lze zapnout ruční označování dnů a smazat vybrané karty.</li>
-                        <li><b>Zrušit jen plán</b> smaže pouze záznamy označené jako <b>PLÁN</b>.</li>
-                        <li>Skutečné historické záznamy se při zrušení plánu nemažou.</li>
-                    </ul>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>✅ Převod plánu na skutečný den</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li>U plánované karty je tlačítko <b>✅ SKUTEČNÝ DEN</b>.</li>
-                        <li>Po potvrzení se záznam přestane brát jako plán a stane se běžným deníkem.</li>
-                        <li>Je vhodné ho použít až po skutečném proběhnutí dne a případné ruční úpravě toho, co dítě opravdu snědlo.</li>
-                    </ul>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>👶 Údaje dítěte a 🚫 Vyhnout se</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li><b>Údaje dítěte</b> slouží hlavně pro AI plánování.</li>
-                        <li>Datum narození se do AI neposílá, posílá se jen vypočtený věk v měsících.</li>
-                        <li>Váha a výška se do AI použijí jen tehdy, když jsou vyplněné.</li>
-                        <li><b>Vyhnout se</b> je ruční seznam jídel, surovin nebo kombinací, které nemá používat offline plán ani AI.</li>
-                    </ul>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>📊 Přehled jídel</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li>Zobrazí nejčastější jídla, oblíbená jídla, nechutnalo, AI nápady a ruční seznam vyhnout se.</li>
-                        <li>Přehled bere jako základ hlavně skutečný deník, ne plán.</li>
-                    </ul>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>📥 Rozpracované zápisy</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li>Slouží pro digitalizaci starých papírů nebo průběžné zapisování bokem.</li>
-                        <li>Zápisy lze později odeslat do hlavního deníku.</li>
-                        <li>Při shodném datu se hlavní deník může přepsat rozpracovaným záznamem.</li>
-                    </ul>
-                </div>
-            </details>
-
-            <details class="manual-section">
-                <summary>⚙️ Správa dat a zálohy</summary>
-                <div class="manual-section-content">
-                    <ul>
-                        <li><b>Export JSON</b> vytvoří zálohu celé aplikace.</li>
-                        <li><b>Import JSON</b> obnoví nebo sloučí zálohu.</li>
-                        <li><b>CSV export/import</b> slouží pro práci s tabulkami.</li>
-                        <li>Aplikace si před rizikovými akcemi vytváří automatickou vnitřní zálohu.</li>
-                        <li><b>Obnovit poslední auto zálohu</b> vrátí poslední bezpečně uložený stav.</li>
-                    </ul>
-                    <div class="manual-note">Doporučení: před většími úpravami nebo importem si udělejte ruční JSON zálohu.</div>
-                </div>
-            </details>
-
-            <button class="modal-btn btn-cancel" onclick="closeManualModal()">ZAVŘÍT</button>
-        </div>
-    </div>
-
     <div class="modal-overlay" id="settingsModal">
         <div class="modal-box">
             <div class="modal-title">Správa dat</div>
@@ -1309,7 +1131,6 @@
             <button class="modal-btn btn-import" onclick="testGeminiConnection()">🔌 OTESTOVAT GEMINI</button>
             <button class="modal-btn btn-overwrite" onclick="deleteGeminiSettings()">🗑️ SMAZAT API KLÍČ</button>
 
-            <button class="modal-btn" style="background:#2980b9" onclick="closeSettings(); openManualModal();">📘 OTEVŘÍT MANUÁL</button>
             <button class="modal-btn btn-cancel" onclick="closeSettings()">ZAVŘÍT</button>
             <button class="modal-btn btn-overwrite" style="margin-top: 30px;" onclick="clearAllMainData()">🔥 SMAZAT
                 ÚPLNĚ VŠECHNA DATA</button>
@@ -1487,6 +1308,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         const topMenu = document.getElementById('topMenu');
         let currentFilter = 'all';
         let currentMealFilter = 'all';
+        let currentWordFilter = '';
         let currentRatingFilter = 'all';
         let currentViewFilter = 'all';
         let isRendering = false;
@@ -1515,7 +1337,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         const GEMINI_SETTINGS_KEY = 'nutri_gemini_settings_v1';
         const AVOID_LIST_KEY = 'nutri_avoid_list_v1';
         const AUTO_BACKUP_KEY = 'nutri_last_auto_backup_v1';
-        const DATA_VERSION = 3;
+        const DATA_VERSION = 4;
 
         function getChildProfile() {
             const raw = localStorage.getItem(CHILD_PROFILE_KEY);
@@ -1670,6 +1492,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         function normalizeEntry(item) {
             const entry = item && typeof item === 'object' ? Object.assign({}, item) : {};
             entry.d = (entry.d || '').trim();
+            entry.dn = (entry.dn || entry.dayNote || '').toString();
             const meals = Array.isArray(entry.m) ? entry.m.slice(0, 5) : [];
             while (meals.length < 5) meals.push({ t: '', w: '', n: '', r: '😐', a: '' });
             entry.m = meals.map(m => ({
@@ -1696,14 +1519,6 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
 
         function closeOverviewModal() {
             document.getElementById('overviewModal').style.display = 'none';
-        }
-
-        function openManualModal() {
-            document.getElementById('manualModal').style.display = 'flex';
-        }
-
-        function closeManualModal() {
-            document.getElementById('manualModal').style.display = 'none';
         }
 
         function addCount(map, key) {
@@ -1965,6 +1780,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         function readCardData(card) {
             const data = {
                 d: card.querySelector('.card-header').innerText.trim(),
+                dn: card.querySelector('.day-note-box') ? card.querySelector('.day-note-box').innerText.trim() : '',
                 m: Array.from(card.querySelectorAll('.meal-item')).map(item => ({
                     t: item.querySelector('.m-box').innerText,
                     w: item.querySelector('.w-box').value,
@@ -2007,11 +1823,11 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         }
 
         function createEmptyMealSet() {
-            return mealLabels.map(() => ({ t: '', w: '', n: '', r: '😐' }));
+            return mealLabels.map(() => ({ t: '', w: '', n: '', r: '😐', a: '' }));
         }
 
         function createEmptyPlanCard(dateText) {
-            return { d: dateText, m: createEmptyMealSet(), planned: true };
+            return { d: dateText, dn: '', m: createEmptyMealSet(), planned: true };
         }
 
         function closeDateConflictModal(result) {
@@ -2200,9 +2016,11 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                 if (currentViewFilter === 'real' && e.planned === true) return false;
                 if (currentViewFilter === 'plan' && e.planned !== true) return false;
 
-                // Když je zapnutý filtr podle jídla nebo smajlíka, zobrazíme jen dny, kde existuje odpovídající položka.
-                if (currentMealFilter !== 'all' || currentRatingFilter !== 'all') {
-                    return (e.m || []).some((m, i) => mealMatchesFilters(m, i));
+                if (currentWordFilter && !entryMatchesWordFilter(e)) return false;
+
+                // Když je zapnutý filtr podle jídla, smajlíka nebo slova, zobrazíme jen dny, kde existuje odpovídající položka.
+                if (currentMealFilter !== 'all' || currentRatingFilter !== 'all' || currentWordFilter) {
+                    return (e.m || []).some((m, i) => mealMatchesFilters(m, i, e)) || (currentWordFilter && (textMatchesWord(e.d || '') || textMatchesWord(e.dn || '')));
                 }
 
                 return true;
@@ -2230,7 +2048,9 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
 
         function render(e) {
             const card = document.createElement('div');
+            const cardWordHit = currentWordFilter && entryMatchesWordFilter(e);
             card.className = selectedDeleteDates.has((e.d || '').trim()) ? 'card selected-delete' : 'card';
+            if (cardWordHit) card.className += ' word-filter-hit';
             card.style.position = 'relative'; // DŮLEŽITÉ: aby koš neutekl z karty ven
             card.dataset.originalDate = (e.d || '').trim();
             card.dataset.planned = e.planned ? 'true' : 'false';
@@ -2248,7 +2068,10 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                 html += `<label class="delete-check-wrap"><input type="checkbox" class="delete-day-checkbox" ${selectedDeleteDates.has((e.d || '').trim()) ? 'checked' : ''} onchange="toggleDeleteSelection(this.closest('.card').dataset.originalDate, this)"> Vybrat</label>`;
                 html += `<button onclick="delMainCard(this)" style="position:absolute; top:15px; right:15px; background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:6px; padding:6px 10px; font-size:1.1rem; cursor:pointer; z-index:10;">🗑️</button>`;
             }
-            html += `<div class="card-header" contenteditable="true" onblur="handleCardDateBlur(this)">${e.d}</div>${e.planned ? '<span class="planned-badge">PLÁN</span>' : ''}`;
+            html += `<div class="card-header" contenteditable="true" onblur="handleCardDateBlur(this)">${escapeHtml(e.d)}</div>${e.planned ? '<span class="planned-badge">PLÁN</span>' : ''}`;
+            const dayNote = (e.dn || '').trim();
+            const dayNoteHit = currentWordFilter && textMatchesWord(dayNote);
+            html += `<div class="day-note-box${dayNote ? ' has-content' : ''}${dayNoteHit ? ' word-hit' : ''}" contenteditable="true" oninput="save()" placeholder="Denní poznámka...">${escapeHtml(dayNote)}</div>`;
             if (!reorderPlanMode && e.planned) {
                 html += `<button type="button" class="plan-confirm-btn" onclick="confirmPlannedDay(this)">✅ SKUTEČNÝ DEN</button>`;
             }
@@ -2256,9 +2079,11 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             for (let i = 0; i < 5; i++) {
                 const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐', a: '' };
                 let bg = rates[m.r] || '#e3f9e5';
-                const hiddenClass = mealMatchesFilters(m, i) ? '' : ' meal-hidden';
+                const mealWordHit = currentWordFilter && mealMatchesWordFilter(m);
+                const hiddenClass = mealMatchesFilters(m, i, e) ? '' : ' meal-hidden';
+                const wordHitClass = mealWordHit ? ' word-hit' : '';
                 html += `
-            <div class="meal-item${hiddenClass}" data-index="${i}">
+            <div class="meal-item${hiddenClass}${wordHitClass}" data-index="${i}">
                 <div class="meal-label">${mealLabels[i]}</div>
                 <div class="meal-content">
                     <div class="m-box" contenteditable="true" oninput="save()" placeholder="Napište jídlo...">${m.t}</div>
@@ -2282,16 +2107,18 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             if (!existing) {
                 if (!confirm('Dnešní záznam zatím neexistuje. Vytvořit nový den?')) return;
                 createAutoBackup('vytvoření dnešního záznamu');
-                existing = { d: todayText, m: createEmptyMealSet() };
+                existing = { d: todayText, dn: '', m: createEmptyMealSet() };
                 data.unshift(existing);
                 setMainData(data);
             }
             currentFilter = 'all';
             currentMealFilter = 'all';
+            currentWordFilter = '';
             currentRatingFilter = 'all';
             currentViewFilter = 'all';
             const f1 = document.getElementById('filterSelect'); if (f1) f1.value = 'all';
-            const f2 = document.getElementById('mealFilterSelect'); if (f2) f2.value = 'all';
+            updateMealFilterButtonLabel();
+            const wf = document.getElementById('wordFilterInput'); if (wf) wf.value = '';
             const f3 = document.getElementById('ratingFilterSelect'); if (f3) f3.value = 'all';
             const f4 = document.getElementById('viewFilterSelect'); if (f4) f4.value = 'all';
             load();
@@ -2304,7 +2131,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         function addCard() {
             createAutoBackup('vytvoření nového dne');
             let data = getMainData();
-            data.unshift({ d: new Date().toLocaleDateString('cs-CZ'), m: Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐' })) });
+            data.unshift({ d: new Date().toLocaleDateString('cs-CZ'), dn: '', m: Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐' })) });
             setMainData(data);
             load();
             window.scrollTo(0, 0);
@@ -2364,17 +2191,90 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             alert('Den byl převeden na skutečný záznam.');
         }
 
-        function mealMatchesFilters(m, index) {
-            if (currentMealFilter !== 'all' && currentMealFilter !== String(index)) return false;
+        function getSelectedMealIndexes() {
+            if (!currentMealFilter || currentMealFilter === 'all') return null;
+            const indexes = currentMealFilter.split(',').map(x => x.trim()).filter(Boolean);
+            return indexes.length ? indexes : null;
+        }
+
+        function normalizeSearchText(text) {
+            return String(text || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+        }
+
+        function textMatchesWord(text) {
+            const needle = normalizeSearchText(currentWordFilter);
+            if (!needle) return true;
+            return normalizeSearchText(text).includes(needle);
+        }
+
+        function mealMatchesWordFilter(m) {
+            if (!currentWordFilter) return true;
+            return textMatchesWord(`${m?.t || ''} ${m?.n || ''} ${m?.a || ''}`);
+        }
+
+        function entryMatchesWordFilter(entry) {
+            if (!currentWordFilter) return true;
+            if (textMatchesWord(entry?.d || '') || textMatchesWord(entry?.dn || '')) return true;
+            return (entry?.m || []).some(meal => mealMatchesWordFilter(meal));
+        }
+
+        function mealMatchesFilters(m, index, entry) {
+            const selectedIndexes = getSelectedMealIndexes();
+            if (selectedIndexes && !selectedIndexes.includes(String(index))) return false;
             if (currentRatingFilter !== 'all') {
                 const rating = (m && m.r) ? m.r.trim() : '😐';
-                return rating === currentRatingFilter;
+                if (rating !== currentRatingFilter) return false;
+            }
+            if (currentWordFilter) {
+                const dayLevelHit = entry && (textMatchesWord(entry.d || '') || textMatchesWord(entry.dn || ''));
+                if (!dayLevelHit && !mealMatchesWordFilter(m)) return false;
             }
             return true;
         }
 
+        function updateMealFilterButtonLabel() {
+            const btn = document.getElementById('mealFilterButton');
+            if (!btn) return;
+            const selected = getSelectedMealIndexes();
+            if (!selected) {
+                btn.textContent = 'Jídlo: VŠE';
+                return;
+            }
+            const labels = selected.map(i => mealLabels[Number(i)] || i);
+            btn.textContent = labels.length > 2 ? `Jídla: ${labels.length} vybraná` : `Jídla: ${labels.join(' + ')}`;
+        }
+
+        function openMealTypeFilterModal() {
+            const selected = getSelectedMealIndexes();
+            document.querySelectorAll('.meal-type-filter-check').forEach(cb => {
+                cb.checked = !selected ? false : selected.includes(cb.value);
+            });
+            document.getElementById('mealTypeFilterModal').style.display = 'flex';
+        }
+
+        function closeMealTypeFilterModal() {
+            document.getElementById('mealTypeFilterModal').style.display = 'none';
+        }
+
+        function applyMealTypeFilterFromModal() {
+            const selected = Array.from(document.querySelectorAll('.meal-type-filter-check:checked')).map(cb => cb.value);
+            currentMealFilter = selected.length === 0 || selected.length === 5 ? 'all' : selected.join(',');
+            updateMealFilterButtonLabel();
+            closeMealTypeFilterModal();
+            load();
+        }
+
+        function clearMealTypeFilter() {
+            currentMealFilter = 'all';
+            document.querySelectorAll('.meal-type-filter-check').forEach(cb => cb.checked = false);
+            updateMealFilterButtonLabel();
+            closeMealTypeFilterModal();
+            load();
+        }
+
         function setFilter(v) { currentFilter = v; load(); }
-        function setMealFilter(v) { currentMealFilter = v; load(); }
+        function setMealFilter(v) { currentMealFilter = v; updateMealFilterButtonLabel(); load(); }
+        function setWordFilter(v) { currentWordFilter = (v || '').trim(); load(); }
         function setRatingFilter(v) { currentRatingFilter = v; load(); }
         function setViewFilter(v) { currentViewFilter = v; load(); }
 
@@ -3515,14 +3415,15 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
         }
 
         function exportCSV() {
-            let csv = "\uFEFFDatum;Snídaně;Gramy;Poznámka;Hodnocení;Dop.Svačina;Gramy;Poznámka;Hodnocení;Oběd;Gramy;Poznámka;Hodnocení;Odp.Svačina;Gramy;Poznámka;Hodnocení;Večeře;Gramy;Poznámka;Hodnocení\n";
+            const csvCell = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+            let csv = "\uFEFFDatum;Denní poznámka;Snídaně;Gramy;Poznámka;Hodnocení;Dop.Svačina;Gramy;Poznámka;Hodnocení;Oběd;Gramy;Poznámka;Hodnocení;Odp.Svačina;Gramy;Poznámka;Hodnocení;Večeře;Gramy;Poznámka;Hodnocení\n";
             const saved = localStorage.getItem('nutri_data_v13');
             if (saved) {
-                JSON.parse(saved).forEach(d => {
-                    let row = `"${d.d}"`;
+                getMainData().forEach(d => {
+                    let row = `${csvCell(d.d)};${csvCell(d.dn || '')}`;
                     for (let i = 0; i < 5; i++) {
                         let m = d.m[i] || { t: '', w: '', n: '', r: '😐' };
-                        row += `;"${m.t}";"${m.w}";"${m.n}";"${m.r}"`;
+                        row += `;${csvCell(m.t)};${csvCell(m.w)};${csvCell(m.n)};${csvCell(m.r)}`;
                     }
                     csv += row + "\n";
                 });
@@ -3558,7 +3459,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                 imported = imported.map(item => {
                     const meals = Array.isArray(item.m) ? item.m : [];
                     if (meals.length === 4) {
-                        return { d: item.d, m: [meals[0], { t: '', w: '', n: '', r: '😐' }, meals[1], meals[2], meals[3]], planned: item.planned === true };
+                        return { d: item.d, dn: item.dn || '', m: [meals[0], { t: '', w: '', n: '', r: '😐', a: '' }, meals[1], meals[2], meals[3]], planned: item.planned === true };
                     }
                     return item;
                 });
@@ -3622,10 +3523,12 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
 
                     let dValue = cols[0].replace(/^"|"$/g, '').trim();
                     if (!dValue) continue;
+                    const hasDailyNoteColumn = cols.length >= 22;
+                    const dailyNoteValue = hasDailyNoteColumn ? (cols[1] || '').replace(/^"|"$/g, '').trim() : '';
 
                     let meals = [];
                     for (let j = 0; j < 5; j++) {
-                        let offset = 1 + (j * 4);
+                        let offset = (hasDailyNoteColumn ? 2 : 1) + (j * 4);
                         meals.push({
                             // Pokud políčko v Excelu chybí (undefined), dosadí se prázdný řetězec nebo smajlík
                             t: cols[offset] ? cols[offset].replace(/^"|"$/g, '').trim() : '',
@@ -3635,7 +3538,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                         });
                     }
 
-                    importedData.push({ d: dValue, m: meals });
+                    importedData.push({ d: dValue, dn: dailyNoteValue, m: meals });
                 }
 
                 if (importedData.length === 0) {
