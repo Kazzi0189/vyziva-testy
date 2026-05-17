@@ -359,6 +359,11 @@
             max-width: 350px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-height: calc(100vh - 28px);
+            overflow-y: auto;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
         }
 
         .modal-title {
@@ -878,6 +883,19 @@
             padding: 8px;
         }
 
+        .filter-modal-box {
+            padding-bottom: 18px;
+        }
+
+        .filter-modal-actions {
+            position: sticky;
+            bottom: -1px;
+            background: white;
+            padding-top: 10px;
+            margin-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
         .day-note-wrap {
             margin: 10px 0 12px;
             background: #f7fbff;
@@ -1102,7 +1120,7 @@
     </div>
 
     <div class="modal-overlay" id="filterModal">
-        <div class="modal-box" style="max-width:430px; text-align:left;">
+        <div class="modal-box filter-modal-box" style="max-width:430px; text-align:left;">
             <div class="modal-title" style="text-align:center;">Filtry záznamů</div>
             <div class="modal-text" style="text-align:left;">Vyberte, co chcete v deníku zobrazit. Filtry se dají kombinovat.</div>
             <div class="filter-grid">
@@ -1150,9 +1168,11 @@
                     </select>
                 </div>
             </div>
-            <button class="modal-btn btn-merge" style="margin-top:14px;" onclick="applyFilterModal(true)">✅ POUŽÍT A ZAVŘÍT</button>
-            <button class="modal-btn" style="background:#3498db" onclick="resetAllFilters()">🔄 VYNULOVAT FILTRY</button>
-            <button class="modal-btn btn-cancel" onclick="closeFilterModal()">ZAVŘÍT</button>
+            <div class="filter-modal-actions">
+                <button class="modal-btn btn-merge" onclick="applyFilterModal(true)">✅ POUŽÍT A ZAVŘÍT</button>
+                <button class="modal-btn" style="background:#3498db" onclick="resetAllFilters()">🔄 VYNULOVAT FILTRY</button>
+                <button class="modal-btn btn-cancel" onclick="closeFilterModal()">ZAVŘÍT</button>
+            </div>
         </div>
     </div>
 
