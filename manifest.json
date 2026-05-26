@@ -15,9 +15,10 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "./index.html",
+  "start_url": "./index.html?v=2026-05-26-bezpecnost",
   "background_color": "#f4f7f6",
   "display": "standalone",
   "scope": "./",
-  "theme_color": "#4a90e2"
+  "theme_color": "#4a90e2",
+  "id": "./?app=vyziva-pro-test"
 }
