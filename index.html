@@ -1397,7 +1397,8 @@
                 <summary>📊 Přehled jídel</summary>
                 <div class="manual-section-content">
                     <ul>
-                        <li>Zobrazí nejčastější jídla, oblíbená jídla, nechutnalo, AI nápady a ruční seznam vyhnout se.</li>
+                        <li>Zobrazí nejčastější jídla, oblíbená jídla, nechutnalo/rizikové položky, AI nápady a ruční seznam vyhnout se.</li>
+                        <li>Nově hlídá i riziková slova v denní poznámce a poznámkách u jídel, například vyrážka, alergie nebo zvracení.</li>
                         <li>Přehled bere jako základ hlavně skutečný deník, ne plán.</li>
                     </ul>
                 </div>
@@ -1870,27 +1871,120 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             return '<ul>' + rows.map(([name, count]) => `<li>${escapeHtml(name)} <b>${count}×</b></li>`).join('') + '</ul>';
         }
 
+        function hasRiskWords(value) {
+            return /alerg|vyráž|vyraz|zvracen|zvracení|reakc|průjem|prujem|bolest|nevol|osyp|dušen|dusil|kašel|kasel/i.test(value || '');
+        }
+
+        function getRiskReason(value) {
+            const text = String(value || '').toLowerCase();
+            const hits = [];
+            if (/alerg/.test(text)) hits.push('alergie');
+            if (/vyráž|vyraz|osyp/.test(text)) hits.push('vyrážka/osypání');
+            if (/zvracen|zvracení/.test(text)) hits.push('zvracení');
+            if (/průjem|prujem/.test(text)) hits.push('průjem');
+            if (/bolest|nevol/.test(text)) hits.push('bolest/nevolnost');
+            if (/dušen|dusil|kašel|kasel/.test(text)) hits.push('kašel/dušení');
+            if (/reakc/.test(text)) hits.push('reakce');
+            return hits.length ? hits.join(', ') : 'riziková poznámka';
+        }
+
+        function normalizeAvoidCandidate(value) {
+            return String(value || '').replace(/\s+/g, ' ').trim();
+        }
+
+        function addAvoidFromOverview(encodedValue) {
+            const value = normalizeAvoidCandidate(decodeURIComponent(encodedValue || ''));
+            if (!value) return;
+            const current = getAvoidList();
+            const exists = current.some(item => normalizeFoodName(item) === normalizeFoodName(value));
+            if (exists) {
+                alert('Tato položka už v seznamu „Vyhnout se“ je.');
+                return;
+            }
+            setAvoidList([...current, value]);
+            alert('Přidáno do seznamu „Vyhnout se“: ' + value);
+            openOverviewModal();
+        }
+
+        function riskItemsHtml(items) {
+            if (!items.length) {
+                return '<div style="color:#27ae60; font-weight:bold;">Nenašel jsem žádné poznámky s rizikovými slovy.</div>';
+            }
+            return '<div style="display:flex; flex-direction:column; gap:10px;">' + items.map(item => {
+                const alreadyAvoided = item.food && getAvoidList().some(x => normalizeFoodName(x) === normalizeFoodName(item.food));
+                const addButton = item.food && !alreadyAvoided
+                    ? `<button type="button" class="modal-btn" style="background:#d35400; margin-top:8px; padding:8px;" onclick="addAvoidFromOverview('${encodeURIComponent(item.food)}')">🚫 Přidat jídlo do Vyhnout se</button>`
+                    : '<div style="color:#7f8c8d; margin-top:8px; font-size:0.8rem;">Už je v seznamu „Vyhnout se“ nebo chybí název jídla.</div>';
+                const ratingWarning = item.rating && item.rating !== '☹️'
+                    ? `<div style="margin-top:6px; color:#c0392b;"><b>Rozpor:</b> hodnocení je ${escapeHtml(item.rating)}, ale poznámka obsahuje riziko.</div>`
+                    : '';
+                return `
+                    <div style="border:1px solid #f5c6cb; background:#fff5f5; border-radius:8px; padding:10px;">
+                        <div><b>${escapeHtml(item.date)}</b> – ${escapeHtml(item.mealLabel)}</div>
+                        ${item.food ? `<div><b>Jídlo:</b> ${escapeHtml(item.food)}</div>` : ''}
+                        <div><b>Důvod:</b> ${escapeHtml(item.reason)}</div>
+                        <div><b>Poznámka:</b> ${escapeHtml(item.note)}</div>
+                        ${ratingWarning}
+                        ${addButton}
+                    </div>`;
+            }).join('') + '</div>';
+        }
+
         function buildOverviewHtml() {
             const data = getMainData().filter(item => item.planned !== true);
             const loved = new Map();
             const disliked = new Map();
             const frequent = new Map();
             const aiIdeas = new Map();
-            data.forEach(day => (day.m || []).forEach(meal => {
-                const text = (meal.t || '').trim();
-                if (text && !isEmptyMealText(text)) {
-                    addCount(frequent, text);
-                    if ((meal.r || '').trim() === '😍') addCount(loved, text);
-                    if ((meal.r || '').trim() === '☹️') addCount(disliked, text);
+            const riskItems = [];
+
+            data.forEach(day => {
+                const dayNote = (day.dn || '').trim();
+                if (hasRiskWords(dayNote)) {
+                    riskItems.push({
+                        date: day.d || '',
+                        mealLabel: 'Denní poznámka',
+                        food: '',
+                        note: dayNote,
+                        rating: '',
+                        reason: getRiskReason(dayNote)
+                    });
                 }
-                const idea = (meal.a || '').trim();
-                if (idea && !isEmptyMealText(idea)) addCount(aiIdeas, idea);
-            }));
+
+                (day.m || []).forEach((meal, index) => {
+                    const text = (meal.t || '').replace(/\s+/g, ' ').trim();
+                    const note = (meal.n || '').replace(/\s+/g, ' ').trim();
+                    const rating = (meal.r || '').trim();
+                    const mealIsRisky = hasRiskWords(note);
+
+                    if (text && !isEmptyMealText(text)) {
+                        addCount(frequent, text);
+                        if (rating === '😍' && !mealIsRisky) addCount(loved, text);
+                        if (rating === '☹️' || mealIsRisky) addCount(disliked, text);
+                    }
+
+                    const idea = (meal.a || '').trim();
+                    if (idea && !isEmptyMealText(idea)) addCount(aiIdeas, idea);
+
+                    if (mealIsRisky) {
+                        riskItems.push({
+                            date: day.d || '',
+                            mealLabel: mealLabels[index] || 'Jídlo',
+                            food: text,
+                            note,
+                            rating,
+                            reason: getRiskReason(note)
+                        });
+                    }
+                });
+            });
+
             const avoid = getAvoidList();
             return `
+                <div class="overview-box"><h4>⚠️ Možné reakce a rizikové poznámky</h4>${riskItemsHtml(riskItems)}</div>
                 <div class="overview-box"><h4>😍 Nejčastější oblíbená jídla</h4>${topListHtml(loved)}</div>
                 <div class="overview-box"><h4>📌 Nejčastější jídla celkově</h4>${topListHtml(frequent)}</div>
-                <div class="overview-box"><h4>☹️ Jídla, která nechutnala</h4>${topListHtml(disliked)}</div>
+                <div class="overview-box"><h4>☹️ Nechutnalo nebo rizikové</h4>${topListHtml(disliked)}</div>
                 <div class="overview-box"><h4>✨ AI nápady k vyzkoušení</h4>${topListHtml(aiIdeas)}</div>
                 <div class="overview-box"><h4>🚫 Ruční seznam Vyhnout se</h4>${avoid.length ? '<ul>' + avoid.map(x => `<li>${escapeHtml(x)}</li>`).join('') + '</ul>' : '<div style="color:#95a5a6;">Seznam je prázdný.</div>'}</div>
             `;
@@ -3208,7 +3302,7 @@ Tuto akci nelze vrátit zpět.`)) return;
                     if (!meal || index > 4) return;
                     const text = (meal.t || '').trim();
                     const rating = (meal.r || '😐').trim();
-                    if (!text || isEmptyMealText(text) || textMatchesAvoidList(text) || !allowed.includes(rating) || rating === '☹️') return;
+                    if (!text || isEmptyMealText(text) || textMatchesAvoidList(text) || hasRiskWords(meal.n || '') || !allowed.includes(rating) || rating === '☹️') return;
                     const key = normalizeFoodName(text);
                     if (seen[index].has(key)) return;
                     seen[index].add(key);
@@ -3326,8 +3420,10 @@ Tuto akci nelze vrátit zpět.`)) return;
                     if (!text || isEmptyMealText(text)) return;
                     const key = normalizeFoodName(text);
                     const rating = meal.r || '😐';
+                    const note = (meal.n || '').trim();
                     const isManualAvoid = textMatchesAvoidList(text);
-                    const target = isManualAvoid ? avoidMaps[index] : (allowed.includes(rating) ? goodMaps[index] : (rating === '☹️' ? avoidMaps[index] : null));
+                    const isRiskyNote = hasRiskWords(note);
+                    const target = (isManualAvoid || isRiskyNote || rating === '☹️') ? avoidMaps[index] : (allowed.includes(rating) ? goodMaps[index] : null);
                     if (target) {
                         const current = target.get(key) || { t: text, count: 0, ratings: {}, lastDate: day.d, notes: [] };
                         current.count++;
@@ -3336,8 +3432,7 @@ Tuto akci nelze vrátit zpět.`)) return;
                         if (meal.n && current.notes.length < 2) current.notes.push(meal.n.replace(/\s+/g, ' ').trim());
                         target.set(key, current);
                     }
-                    const note = (meal.n || '').trim();
-                    if (note && /alerg|vyráž|zvracen|reakc|průjem|bolest|nevol|osyp/i.test(note)) {
+                    if (note && hasRiskWords(note)) {
                         noteItems.push(`${day.d} – ${mealLabels[index]}: ${text} | poznámka: ${note}`);
                     }
                 });
