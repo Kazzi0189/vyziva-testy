@@ -1284,6 +1284,30 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="watchListModal">
+        <div class="modal-box" style="max-width:430px; text-align:left;">
+            <div class="modal-title" style="text-align:center;">Sledovat</div>
+            <div class="modal-text" style="text-align:left;">Sem napište podezřelé potraviny, jídla nebo kombinace, které ještě nejsou jistě zakázané, ale mají být vidět v přehledu a v AI podkladu. Každý řádek jedna položka.</div>
+            <textarea id="watchListText" class="avoid-list-textarea" placeholder="např. cottage
+sardinky
+květák..."></textarea>
+            <button class="modal-btn btn-merge" style="margin-top:12px; background:#e67e22;" onclick="saveWatchListFromModal()">💾 ULOŽIT</button>
+            <button class="modal-btn btn-cancel" onclick="closeWatchListModal()">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="riskActionModal" onclick="if (event.target === this) closeRiskActionModal()">
+        <div class="modal-box" style="max-width:430px; text-align:left;">
+            <div class="modal-title" id="riskActionTitle" style="text-align:center;">Co přidat?</div>
+            <div class="modal-text" id="riskActionText" style="text-align:left; margin-bottom:12px;"></div>
+            <div id="riskActionChoices" class="risk-choice-list"></div>
+            <label style="display:block; font-size:0.8rem; font-weight:800; margin:12px 0 5px; color:#2c3e50;">Nebo vlastní text</label>
+            <input id="riskActionCustom" type="text" placeholder="např. jen sardinky" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:12px;">
+            <button class="modal-btn btn-merge" onclick="confirmRiskActionChoice()">✅ PŘIDAT VYBRANÉ</button>
+            <button class="modal-btn btn-cancel" onclick="closeRiskActionModal()">ZAVŘÍT</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="overviewModal">
         <div class="modal-box" style="max-width:460px; text-align:left;">
             <div class="modal-title" style="text-align:center;">Přehled jídel</div>
@@ -1812,6 +1836,34 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             alert('Seznam „Vyhnout se“ byl uložen. Použije se pro offline plán i pro AI prompt.');
         }
 
+
+        function getWatchList() {
+            const raw = localStorage.getItem(WATCH_LIST_KEY) || '';
+            return raw.split('\n').map(x => x.trim()).filter(Boolean);
+        }
+
+        function setWatchList(items) {
+            const text = (items || []).map(x => (x || '').trim()).filter(Boolean).join('\n');
+            localStorage.setItem(WATCH_LIST_KEY, text);
+        }
+
+        function openWatchListModal() {
+            const box = document.getElementById('watchListText');
+            if (box) box.value = getWatchList().join('\n');
+            document.getElementById('watchListModal').style.display = 'flex';
+        }
+
+        function closeWatchListModal() {
+            document.getElementById('watchListModal').style.display = 'none';
+        }
+
+        function saveWatchListFromModal() {
+            const box = document.getElementById('watchListText');
+            setWatchList((box ? box.value : '').split('\n'));
+            closeWatchListModal();
+            alert('Seznam „Sledovat“ byl uložen. Použije se jako upozornění v přehledu a v AI podkladu.');
+        }
+
         function textMatchesAvoidList(text) {
             const normalized = normalizeFoodName(text);
             if (!normalized) return false;
@@ -1963,7 +2015,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             };
 
             add(food);
-            food.split(/\s*(?:,|;|\+|a|s|se|plus|nebo|\(|\))\s*/i).forEach(add);
+            food.split(/\s*(?:,|;|\+|\ba\b|\bs\b|\bse\b|\bplus\b|\bnebo\b|\(|\))\s*/i).forEach(add);
 
             return candidates.slice(0, 10);
         }
