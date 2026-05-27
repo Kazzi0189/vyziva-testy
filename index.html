@@ -1411,6 +1411,7 @@ květák..."></textarea>
                         <li>AI návrh má být nová věkově přiměřená možnost, kterou jste ještě nezkoušeli.</li>
                         <li><b>POUŽÍT</b> přesune návrh do hlavního jídla.</li>
                         <li><b>ZAMÍTNOUT</b> návrh odstraní.</li>
+                        <li>V AI okně je také režim <b>✨ 3 návrhy pro pestrost</b>, který nevytváří celý plán, ale jen tři opatrné nápady podle historie, rizik, seznamu „Vyhnout se“ a seznamu „Sledovat“.</li>
                     </ul>
                 </div>
             </details>
@@ -1631,6 +1632,41 @@ květák..."></textarea>
                 <option value="3">Jen odpolední svačiny</option>
                 <option value="4">Jen večeře</option>
             </select>
+
+            <div style="border-top:1px solid #eee; margin:16px 0 14px;"></div>
+            <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">✨ 3 návrhy pro pestrost</div>
+            <div class="small-help-text">Rychlá inspirace místo celého jídelníčku. Návrhy respektují „Vyhnout se“, „Sledovat“ a rizikové poznámky. Nejde o lékařské doporučení, vždy rozhoduje rodič.</div>
+
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Typ návrhů</label>
+            <select id="aiIdeasStyle" style="width:100%; margin-bottom:10px;">
+                <option value="safe" selected>Bezpečné kombinace ze známých surovin</option>
+                <option value="variety">Rozšířit pestrost jídelníčku</option>
+                <option value="oneNew">Opatrně jedna nová / méně používaná surovina</option>
+            </select>
+
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Pro jaké jídlo</label>
+            <select id="aiIdeasMealScope" style="width:100%; margin-bottom:10px;">
+                <option value="all" selected>Libovolné denní jídlo</option>
+                <option value="0">Snídaně</option>
+                <option value="1">Dop. svačina</option>
+                <option value="2">Oběd</option>
+                <option value="3">Odp. svačina</option>
+                <option value="4">Večeře</option>
+            </select>
+
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Období pro rozbor</label>
+            <select id="aiIdeasPeriod" style="width:100%; margin-bottom:12px;">
+                <option value="14" selected>Posledních 14 dní</option>
+                <option value="7">Posledních 7 dní</option>
+                <option value="30">Posledních 30 dní</option>
+                <option value="all">Celá historie</option>
+            </select>
+
+            <button class="modal-btn" style="background:#e67e22" onclick="generateAiIdeasPrompt()">✨ VYTVOŘIT PODKLAD PRO 3 NÁVRHY</button>
+            <button class="modal-btn" style="background:#d35400" onclick="generateIdeasWithGemini()">🤖 3 NÁVRHY PŘES GEMINI</button>
+
+            <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
+            <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">🗓️ AI plán jídelníčku</div>
 
             <textarea id="aiPromptOutput" readonly style="width:100%; min-height:220px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
             <button class="modal-btn btn-merge" onclick="generateAiPrompt()">🤖 VYTVOŘIT PODKLAD</button>
@@ -3798,6 +3834,160 @@ Tuto akci nelze vrátit zpět.`)) return;
             if (parsedCount === expectedCount) return '';
             if (parsedCount < expectedCount) return `AI vrátila jen ${parsedCount} z ${expectedCount} dní. Plán je neúplný, zkuste vytvoření spustit znovu.`;
             return `AI vrátila ${parsedCount} dní místo požadovaných ${expectedCount}. Zkontrolujte výsledek před importem.`;
+        }
+
+
+        function getRecentEntriesForAiIdeas(periodValue) {
+            const all = getMainData().filter(item => item.planned !== true);
+            if (periodValue === 'all') return all;
+            const daysBack = parseInt(periodValue, 10);
+            if (!daysBack || Number.isNaN(daysBack)) return all;
+            const today = new Date();
+            const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            start.setDate(start.getDate() - daysBack + 1);
+            return all.filter(item => {
+                const d = parseDateValue(item.d);
+                return d && d >= start;
+            });
+        }
+
+        function summarizeRecentFoodsForIdeas(entries, mealScope) {
+            const selectedIndexes = mealScope === 'all' ? [0, 1, 2, 3, 4] : [parseInt(mealScope, 10)];
+            const good = new Map();
+            const frequent = new Map();
+            const disliked = new Map();
+            const riskNotes = [];
+
+            entries.forEach(day => {
+                (day.m || []).forEach((meal, index) => {
+                    if (!selectedIndexes.includes(index)) return;
+                    const text = (meal.t || '').replace(/\s+/g, ' ').trim();
+                    const note = (meal.n || '').replace(/\s+/g, ' ').trim();
+                    const rating = (meal.r || '😐').trim();
+                    if (!text || isEmptyMealText(text)) return;
+                    addCount(frequent, text);
+                    if ((rating === '😍' || rating === '🙂') && !hasRiskWords(note) && !textMatchesAvoidList(text)) addCount(good, text);
+                    if (rating === '☹️' || hasRiskWords(note) || textMatchesAvoidList(text)) addCount(disliked, text);
+                    if (note && hasRiskWords(note)) riskNotes.push(`${day.d} – ${mealLabels[index]}: ${text} | poznámka: ${note}`);
+                });
+            });
+
+            function linesFromMap(map, limit) {
+                return Array.from(map.entries())
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, limit)
+                    .map(([name, count]) => `- ${name} (${count}×)`);
+            }
+
+            return {
+                good: linesFromMap(good, 14),
+                frequent: linesFromMap(frequent, 14),
+                disliked: linesFromMap(disliked, 12),
+                riskNotes: riskNotes.slice(0, 12)
+            };
+        }
+
+        function generateAiIdeasPrompt() {
+            const mealScope = document.getElementById('aiIdeasMealScope')?.value || 'all';
+            const period = document.getElementById('aiIdeasPeriod')?.value || '14';
+            const style = document.getElementById('aiIdeasStyle')?.value || 'safe';
+            const entries = getRecentEntriesForAiIdeas(period);
+            const summary = summarizeRecentFoodsForIdeas(entries, mealScope);
+            const childInfoLines = getChildInfoForAi();
+            const childInfoText = childInfoLines.length ? `\n\nÚdaje o dítěti:\n${childInfoLines.join('\n')}` : '';
+            const mealText = mealScope === 'all' ? 'libovolné denní jídlo' : mealLabels[parseInt(mealScope, 10)];
+            const periodText = period === 'all' ? 'celé historie' : `posledních ${period} dní`;
+            const styleText = {
+                safe: 'bezpečné kombinace hlavně ze známých a dobře snášených surovin',
+                variety: 'rozšíření pestrosti jídelníčku bez zbytečného rizika',
+                oneNew: 'opatrné rozšíření maximálně o jednu novou nebo méně používanou surovinu v jednom návrhu'
+            }[style] || 'bezpečné kombinace ze známých surovin';
+
+            const prompt = `Potřebuji 3 opatrné návrhy jídel pro dítě.${childInfoText}
+
+Cíl:
+- navrhni přesně 3 nové nápady pro: ${mealText}
+- styl návrhů: ${styleText}
+- vycházej z rozboru ${periodText}
+- nejde o lékařské doporučení; formuluj to jako inspiraci k posouzení rodičem
+
+Bezpečnostní pravidla:
+- nepoužívej nic z ručního seznamu „Vyhnout se“
+- položky ze seznamu „Sledovat“ ber jako podezřelé a raději je obcházej
+- nepoužívej jídla ani suroviny s poznámkou typu alergie, vyrážka, zvracení, průjem, reakce, osypání, dušení nebo kašel
+- pokud si nejsi jistý, napiš, že návrh je vhodné nejdřív ověřit u pediatra nebo ho raději nedoporučuj
+- nenavrhuj nic riskantního, exotického ani nevěkově přiměřeného
+- návrhy mají rozšiřovat pestrost, ne jen opsat stejné historické jídlo jinými slovy
+
+Formát odpovědi dodrž přesně:
+NÁVRH 1
+Jídlo: ...
+Typ jídla: ...
+Proč: ...
+Z historie podporuje: ...
+Nová nebo méně častá surovina: ano/ne – ...
+Riziko: nízké / sledovat / raději ne – ...
+Poznámka pro rodiče: ...
+
+NÁVRH 2
+Jídlo: ...
+Typ jídla: ...
+Proč: ...
+Z historie podporuje: ...
+Nová nebo méně častá surovina: ano/ne – ...
+Riziko: nízké / sledovat / raději ne – ...
+Poznámka pro rodiče: ...
+
+NÁVRH 3
+Jídlo: ...
+Typ jídla: ...
+Proč: ...
+Z historie podporuje: ...
+Nová nebo méně častá surovina: ano/ne – ...
+Riziko: nízké / sledovat / raději ne – ...
+Poznámka pro rodiče: ...
+
+Dobře snášená / vhodná jídla z vybraného období:
+${summary.good.length ? summary.good.join('\n') : '- ve vybraném období není dost vhodných dat'}
+
+Nejčastější jídla z vybraného období:
+${summary.frequent.length ? summary.frequent.join('\n') : '- ve vybraném období není dost dat'}
+
+Nevhodné, nechutnalo nebo rizikové:
+${summary.disliked.length ? summary.disliked.join('\n') : '- nic výrazného'}
+
+Ruční seznam Vyhnout se:
+${getAvoidList().length ? getAvoidList().map(x => '- ' + x).join('\n') : '- není vyplněn'}
+
+Ruční seznam Sledovat:
+${getWatchList().length ? getWatchList().map(x => '- ' + x).join('\n') : '- není vyplněn'}
+
+Rizikové poznámky:
+${summary.riskNotes.length ? summary.riskNotes.map(x => '- ' + x).join('\n') : '- žádné ve vybraném období'}
+`;
+
+            const box = document.getElementById('aiPromptOutput');
+            if (box) box.value = prompt;
+            setStatusText('geminiAiStatus', 'Podklad pro 3 návrhy je připravený. Můžete ho zkopírovat nebo poslat přes Gemini.');
+        }
+
+        async function generateIdeasWithGemini() {
+            generateAiIdeasPrompt();
+            const prompt = document.getElementById('aiPromptOutput')?.value || '';
+            const output = document.getElementById('aiGeminiOutput');
+            if (output) output.value = '';
+            if (!prompt.trim()) {
+                setStatusText('geminiAiStatus', 'Nepodařilo se vytvořit podklad pro návrhy.', true);
+                return;
+            }
+            setStatusText('geminiAiStatus', 'Gemini vytváří 3 návrhy jídel. Chvíli počkejte...');
+            try {
+                const text = await callGeminiApi(prompt, 'geminiAiStatus');
+                if (output) output.value = text;
+                setStatusText('geminiAiStatus', '3 návrhy jsou připravené níže. Zkontrolujte je před použitím.');
+            } catch (err) {
+                setStatusText('geminiAiStatus', formatGeminiError(err), true);
+            }
         }
 
         function generateAiPrompt() {
