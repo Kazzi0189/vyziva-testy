@@ -1754,6 +1754,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         const GEMINI_SETTINGS_KEY = 'nutri_gemini_settings_v1';
         const AVOID_LIST_KEY = 'nutri_avoid_list_v1';
         const WATCH_LIST_KEY = 'nutri_watch_list_v1';
+        const RESOLVED_RISKS_KEY = 'nutri_resolved_risks_v1';
         const AUTO_BACKUP_KEY = 'nutri_last_auto_backup_v1';
         const DATA_VERSION = 3;
 
@@ -1874,12 +1875,68 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             alert('Seznam „Sledovat“ byl uložen. Použije se jako upozornění v přehledu a v AI podkladu.');
         }
 
+
+        function getResolvedRisks() {
+            const raw = localStorage.getItem(RESOLVED_RISKS_KEY) || '[]';
+            try {
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed.map(String).filter(Boolean) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function setResolvedRisks(items) {
+            const unique = Array.from(new Set((items || []).map(String).filter(Boolean)));
+            localStorage.setItem(RESOLVED_RISKS_KEY, JSON.stringify(unique));
+        }
+
+        function makeRiskId(item) {
+            return normalizeSearchText([
+                item?.date || '',
+                item?.mealLabel || '',
+                item?.food || '',
+                item?.note || ''
+            ].join('|'));
+        }
+
+        function isRiskResolved(item) {
+            const id = typeof item === 'string' ? item : makeRiskId(item);
+            if (!id) return false;
+            return getResolvedRisks().includes(id);
+        }
+
+        function markRiskResolved(encodedRiskId) {
+            const id = decodeURIComponent(encodedRiskId || '').trim();
+            if (!id) return;
+            const current = getResolvedRisks();
+            if (!current.includes(id)) setResolvedRisks([...current, id]);
+            openOverviewModal();
+        }
+
+        function restoreRiskToNew(encodedRiskId) {
+            const id = decodeURIComponent(encodedRiskId || '').trim();
+            if (!id) return;
+            setResolvedRisks(getResolvedRisks().filter(x => x !== id));
+            openOverviewModal();
+        }
+
         function textMatchesAvoidList(text) {
             const normalized = normalizeFoodName(text);
             if (!normalized) return false;
             return getAvoidList().some(item => {
                 const avoid = normalizeFoodName(item);
                 return avoid && (normalized.includes(avoid) || avoid.includes(normalized));
+            });
+        }
+
+
+        function textMatchesWatchList(text) {
+            const normalized = normalizeFoodName(text);
+            if (!normalized) return false;
+            return getWatchList().some(item => {
+                const watch = normalizeFoodName(item);
+                return watch && (normalized.includes(watch) || watch.includes(normalized));
             });
         }
 
@@ -1893,6 +1950,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                     childProfile: getChildProfile(),
                     avoidList: getAvoidList(),
                     watchList: getWatchList(),
+                    resolvedRisks: getResolvedRisks(),
                     draft: getDraftData ? getDraftData() : []
                 };
                 localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(backup));
@@ -1921,6 +1979,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             if (backup.childProfile) localStorage.setItem(CHILD_PROFILE_KEY, JSON.stringify(backup.childProfile));
             if (Array.isArray(backup.avoidList)) setAvoidList(backup.avoidList);
             if (Array.isArray(backup.watchList)) setWatchList(backup.watchList);
+            if (Array.isArray(backup.resolvedRisks)) setResolvedRisks(backup.resolvedRisks);
             if (Array.isArray(backup.draft)) localStorage.setItem('nutri_draft', JSON.stringify(backup.draft));
             closeSettings();
             loadChildProfile();
@@ -2030,11 +2089,11 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             return candidates.slice(0, 10);
         }
 
-        function openRiskActionModal(encodedValue, listType) {
+        function openRiskActionModal(encodedValue, listType, encodedRiskId = '') {
             const food = normalizeAvoidCandidate(decodeURIComponent(encodedValue || ''));
             if (!food) return;
             const type = listType === 'watch' ? 'watch' : 'avoid';
-            pendingRiskAction = { food, listType: type };
+            pendingRiskAction = { food, listType: type, riskId: decodeURIComponent(encodedRiskId || '') };
 
             const title = document.getElementById('riskActionTitle');
             const text = document.getElementById('riskActionText');
@@ -2090,6 +2149,11 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                 alert(`Položka už v seznamu „${listName}“ je.`);
                 return;
             }
+            const resolvedId = pendingRiskAction.riskId;
+            if (resolvedId) {
+                const currentResolved = getResolvedRisks();
+                if (!currentResolved.includes(resolvedId)) setResolvedRisks([...currentResolved, resolvedId]);
+            }
             closeRiskActionModal();
             alert(`Přidáno do seznamu „${listName}“: ${value}`);
             openOverviewModal();
@@ -2097,18 +2161,17 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
 
         function riskItemsHtml(items) {
             if (!items.length) {
-                return '<div style="color:#27ae60; font-weight:bold;">Nenašel jsem žádné poznámky s rizikovými slovy.</div>';
+                return '<div style="color:#27ae60; font-weight:bold;">Žádné nové rizikové poznámky u konkrétních jídel.</div>';
             }
             return '<div style="display:flex; flex-direction:column; gap:10px;">' + items.map(item => {
-                const inAvoid = item.food && getAvoidList().some(x => normalizeFoodName(x) === normalizeFoodName(item.food));
-                const inWatch = item.food && getWatchList().some(x => normalizeFoodName(x) === normalizeFoodName(item.food));
+                const riskId = item.riskId || makeRiskId(item);
                 const actionButtons = item.food
                     ? `<div class="risk-action-row">
-                        <button type="button" class="modal-btn" style="background:#d35400;" onclick="openRiskActionModal('${encodeURIComponent(item.food)}', 'avoid')">🚫 Vyhnout se</button>
-                        <button type="button" class="modal-btn" style="background:#e67e22;" onclick="openRiskActionModal('${encodeURIComponent(item.food)}', 'watch')">👀 Sledovat</button>
-                    </div>
-                    ${(inAvoid || inWatch) ? `<div style="color:#7f8c8d; margin-top:7px; font-size:0.8rem;">${inAvoid ? 'Celé jídlo už je v „Vyhnout se“. ' : ''}${inWatch ? 'Celé jídlo už je ve „Sledovat“.' : ''}</div>` : ''}`
-                    : '<div style="color:#7f8c8d; margin-top:8px; font-size:0.8rem;">U denní poznámky chybí konkrétní název jídla. Přidejte položku ručně do „Vyhnout se“ nebo „Sledovat“.</div>';
+                        <button type="button" class="modal-btn" style="background:#d35400;" onclick="openRiskActionModal('${encodeURIComponent(item.food)}', 'avoid', '${encodeURIComponent(riskId)}')">🚫 Vyhnout se</button>
+                        <button type="button" class="modal-btn" style="background:#e67e22;" onclick="openRiskActionModal('${encodeURIComponent(item.food)}', 'watch', '${encodeURIComponent(riskId)}')">👀 Sledovat</button>
+                        <button type="button" class="modal-btn" style="background:#7f8c8d;" onclick="markRiskResolved('${encodeURIComponent(riskId)}')">✅ Zpracováno</button>
+                    </div>`
+                    : `<div class="risk-action-row"><button type="button" class="modal-btn" style="background:#7f8c8d;" onclick="markRiskResolved('${encodeURIComponent(riskId)}')">✅ Zpracováno</button></div>`;
                 const ratingWarning = item.rating && item.rating !== '☹️'
                     ? `<div style="margin-top:6px; color:#c0392b;"><b>Rozpor:</b> hodnocení je ${escapeHtml(item.rating)}, ale poznámka obsahuje riziko.</div>`
                     : '';
@@ -2124,18 +2187,64 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             }).join('') + '</div>';
         }
 
+        function dayRiskNotesHtml(items) {
+            if (!items.length) {
+                return '<div style="color:#95a5a6;">Žádné nové rizikové denní poznámky.</div>';
+            }
+            return '<div style="display:flex; flex-direction:column; gap:10px;">' + items.map(item => {
+                const riskId = item.riskId || makeRiskId(item);
+                return `
+                    <div style="border:1px solid #f1c40f; background:#fffaf0; border-radius:8px; padding:10px;">
+                        <div><b>${escapeHtml(item.date)}</b> – denní poznámka</div>
+                        <div><b>Důvod:</b> ${escapeHtml(item.reason)}</div>
+                        <div><b>Poznámka:</b> ${escapeHtml(item.note)}</div>
+                        <div style="margin-top:6px; color:#7f8c8d; font-size:0.82rem;">Denní poznámka není konkrétní jídlo. Zkontrolujte jídla z tohoto dne a případně přidejte podezřelou položku ručně do „Vyhnout se“ nebo „Sledovat“.</div>
+                        <div class="risk-action-row"><button type="button" class="modal-btn" style="background:#7f8c8d;" onclick="markRiskResolved('${encodeURIComponent(riskId)}')">✅ Zpracováno</button></div>
+                    </div>`;
+            }).join('') + '</div>';
+        }
+
+        function resolvedRisksHtml(items) {
+            if (!items.length) return '<div style="color:#95a5a6;">Zatím žádná zpracovaná rizika.</div>';
+            return `<details class="manual-section" style="margin-top:6px;">
+                <summary>📁 Zpracovaná rizika (${items.length})</summary>
+                <div class="manual-section-content" style="padding:10px 0 0;">
+                    <div style="display:flex; flex-direction:column; gap:8px;">${items.map(item => {
+                        const riskId = item.riskId || makeRiskId(item);
+                        const state = item.food && textMatchesAvoidList(item.food) ? '🚫 celé jídlo je ve „Vyhnout se“' : (item.food && textMatchesWatchList(item.food) ? '👀 celé jídlo je ve „Sledovat“' : '✅ zpracováno');
+                        return `<div style="border:1px solid #e1e7ec; background:#f8f9fa; border-radius:8px; padding:8px;">
+                            <div><b>${escapeHtml(item.date)}</b> – ${escapeHtml(item.mealLabel)}</div>
+                            ${item.food ? `<div><b>Jídlo:</b> ${escapeHtml(item.food)}</div>` : ''}
+                            <div><b>Poznámka:</b> ${escapeHtml(item.note)}</div>
+                            <div style="color:#7f8c8d; font-size:0.8rem; margin-top:4px;">Stav: ${state}</div>
+                            <button type="button" class="modal-btn" style="background:#3498db; margin-top:7px; padding:8px;" onclick="restoreRiskToNew('${encodeURIComponent(riskId)}')">↩️ Vrátit mezi nové</button>
+                        </div>`;
+                    }).join('')}</div>
+                </div>
+            </details>`;
+        }
+
         function buildOverviewHtml() {
             const data = getMainData().filter(item => item.planned !== true);
             const loved = new Map();
             const disliked = new Map();
             const frequent = new Map();
             const aiIdeas = new Map();
-            const riskItems = [];
+            const riskMealItems = [];
+            const dayRiskItems = [];
+            const resolvedRiskItems = [];
+
+            function addRiskItem(target, item) {
+                item.riskId = makeRiskId(item);
+                const isHandled = isRiskResolved(item) || (item.food && (textMatchesAvoidList(item.food) || textMatchesWatchList(item.food)));
+                if (isHandled) resolvedRiskItems.push(item);
+                else target.push(item);
+            }
 
             data.forEach(day => {
                 const dayNote = (day.dn || '').trim();
                 if (hasRiskWords(dayNote)) {
-                    riskItems.push({
+                    addRiskItem(dayRiskItems, {
                         date: day.d || '',
                         mealLabel: 'Denní poznámka',
                         food: '',
@@ -2161,7 +2270,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                     if (idea && !isEmptyMealText(idea)) addCount(aiIdeas, idea);
 
                     if (mealIsRisky) {
-                        riskItems.push({
+                        addRiskItem(riskMealItems, {
                             date: day.d || '',
                             mealLabel: mealLabels[index] || 'Jídlo',
                             food: text,
@@ -2176,7 +2285,9 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             const avoid = getAvoidList();
             const watch = getWatchList();
             return `
-                <div class="overview-box"><h4>⚠️ Možné reakce a rizikové poznámky</h4>${riskItemsHtml(riskItems)}</div>
+                <div class="overview-box"><h4>⚠️ Nové rizikové poznámky u jídel</h4>${riskItemsHtml(riskMealItems)}</div>
+                <div class="overview-box"><h4>📝 Rizikové denní poznámky</h4>${dayRiskNotesHtml(dayRiskItems)}</div>
+                <div class="overview-box"><h4>📁 Zpracovaná rizika</h4>${resolvedRisksHtml(resolvedRiskItems)}</div>
                 <div class="overview-box"><h4>😍 Nejčastější oblíbená jídla</h4>${topListHtml(loved)}</div>
                 <div class="overview-box"><h4>📌 Nejčastější jídla celkově</h4>${topListHtml(frequent)}</div>
                 <div class="overview-box"><h4>☹️ Nechutnalo nebo rizikové</h4>${topListHtml(disliked)}</div>
@@ -4055,7 +4166,8 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                 entries: getMainData(),
                 childProfile: getChildProfile(),
                 avoidList: getAvoidList(),
-                watchList: getWatchList()
+                watchList: getWatchList(),
+                resolvedRisks: getResolvedRisks()
             };
             const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -4098,6 +4210,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                     if (importedRaw.childProfile) localStorage.setItem(CHILD_PROFILE_KEY, JSON.stringify(importedRaw.childProfile));
                     if (Array.isArray(importedRaw.avoidList)) setAvoidList(importedRaw.avoidList);
                     if (Array.isArray(importedRaw.watchList)) setWatchList(importedRaw.watchList);
+                    if (Array.isArray(importedRaw.resolvedRisks)) setResolvedRisks(importedRaw.resolvedRisks);
                     importedRaw = importedRaw.entries;
                 }
                 let imported = importedRaw;
