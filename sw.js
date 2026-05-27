@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vyziva-v2-2026-05-26-bezpecnost POKUS';
+const CACHE_NAME = 'vyziva-v3-2026-05-27-sledovat';
 const ASSETS = [
   './',
   './index.html',

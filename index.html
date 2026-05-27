@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Výživa PRO - TEST</title>
+    <!-- build: bezpecnostni-rozbor-cache-fix-2026-05-26 -->
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -335,6 +336,54 @@
             font-size: 0.9rem;
             line-height: 1.4;
             resize: vertical;
+        }
+
+
+        .risk-action-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .risk-action-row .modal-btn {
+            flex: 1 1 150px;
+            margin: 0;
+            padding: 8px 7px;
+            font-size: 0.74rem;
+            line-height: 1.2;
+        }
+
+        .risk-choice-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        .risk-choice-item {
+            display: block;
+            background: #f8f9fa;
+            border: 1px solid #e1e7ec;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 0.86rem;
+            color: #2c3e50;
+        }
+
+        .risk-choice-item input {
+            margin-right: 6px;
+        }
+
+        .risk-custom-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-top: 8px;
         }
 
         /* MODAL OKNA (NASTAVENÍ A IMPORT) */
@@ -1188,6 +1237,7 @@
                 <button class="modal-btn" style="background:#c0392b" onclick="closeMoreMenu(); openDeleteManager();">🧹 Smazat</button>
                 <button class="modal-btn" style="background:#1abc9c" onclick="closeMoreMenu(); openChildModal();">👶 Údaje dítěte</button>
                 <button class="modal-btn" style="background:#d35400" onclick="closeMoreMenu(); openAvoidListModal();">🚫 Vyhnout se</button>
+                <button class="modal-btn" style="background:#e67e22" onclick="closeMoreMenu(); openWatchListModal();">👀 Sledovat</button>
                 <button class="modal-btn" style="background:#27ae60" onclick="closeMoreMenu(); openOverviewModal();">📊 Přehled jídel</button>
                 <button class="modal-btn" style="background:#2980b9" onclick="closeMoreMenu(); openManualModal();">📘 Manuál</button>
                 <button class="modal-btn" style="background:#2c3e50" onclick="closeMoreMenu(); openDraft();">📥 Rozpracované zápisy</button>
@@ -1389,6 +1439,7 @@
                         <li>Datum narození se do AI neposílá, posílá se jen vypočtený věk v měsících.</li>
                         <li>Váha a výška se do AI použijí jen tehdy, když jsou vyplněné.</li>
                         <li><b>Vyhnout se</b> je ruční seznam jídel, surovin nebo kombinací, které nemá používat offline plán ani AI.</li>
+                        <li><b>Sledovat</b> je ruční seznam podezřelých položek, které ještě nejsou jistě zakázané, ale mají být vidět v přehledu a AI podkladu.</li>
                     </ul>
                 </div>
             </details>
@@ -1397,8 +1448,9 @@
                 <summary>📊 Přehled jídel</summary>
                 <div class="manual-section-content">
                     <ul>
-                        <li>Zobrazí nejčastější jídla, oblíbená jídla, nechutnalo/rizikové položky, AI nápady a ruční seznam vyhnout se.</li>
-                        <li>Nově hlídá i riziková slova v denní poznámce a poznámkách u jídel, například vyrážka, alergie nebo zvracení.</li>
+                        <li>Zobrazí nejčastější jídla, oblíbená jídla, nechutnalo/rizikové položky, AI nápady, ruční seznam Vyhnout se a ruční seznam Sledovat.</li>
+                        <li>Hlídá i riziková slova v denní poznámce a poznámkách u jídel, například vyrážka, alergie nebo zvracení.</li>
+                        <li>U rizikového jídla nabídne přidání celého jídla, jedné složky nebo vlastního textu buď do 🚫 Vyhnout se, nebo do 👀 Sledovat.</li>
                         <li>Přehled bere jako základ hlavně skutečný deník, ne plán.</li>
                     </ul>
                 </div>
@@ -1667,6 +1719,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         const CHILD_PROFILE_KEY = 'nutri_child_profile_v1';
         const GEMINI_SETTINGS_KEY = 'nutri_gemini_settings_v1';
         const AVOID_LIST_KEY = 'nutri_avoid_list_v1';
+        const WATCH_LIST_KEY = 'nutri_watch_list_v1';
         const AUTO_BACKUP_KEY = 'nutri_last_auto_backup_v1';
         const DATA_VERSION = 3;
 
@@ -1777,6 +1830,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                     entries: getMainData(),
                     childProfile: getChildProfile(),
                     avoidList: getAvoidList(),
+                    watchList: getWatchList(),
                     draft: getDraftData ? getDraftData() : []
                 };
                 localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(backup));
@@ -1804,6 +1858,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             localStorage.setItem('nutri_data_v13', JSON.stringify(normalizeAllEntries(backup.entries)));
             if (backup.childProfile) localStorage.setItem(CHILD_PROFILE_KEY, JSON.stringify(backup.childProfile));
             if (Array.isArray(backup.avoidList)) setAvoidList(backup.avoidList);
+            if (Array.isArray(backup.watchList)) setWatchList(backup.watchList);
             if (Array.isArray(backup.draft)) localStorage.setItem('nutri_draft', JSON.stringify(backup.draft));
             closeSettings();
             loadChildProfile();
@@ -1892,17 +1947,89 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             return String(value || '').replace(/\s+/g, ' ').trim();
         }
 
-        function addAvoidFromOverview(encodedValue) {
-            const value = normalizeAvoidCandidate(decodeURIComponent(encodedValue || ''));
-            if (!value) return;
-            const current = getAvoidList();
-            const exists = current.some(item => normalizeFoodName(item) === normalizeFoodName(value));
-            if (exists) {
-                alert('Tato položka už v seznamu „Vyhnout se“ je.');
+        let pendingRiskAction = null;
+
+        function splitFoodCandidates(foodText) {
+            const food = normalizeAvoidCandidate(foodText);
+            if (!food) return [];
+            const candidates = [];
+            const add = (value) => {
+                const cleaned = normalizeAvoidCandidate(value)
+                    .replace(/^[,;:\-–—]+|[,;:\-–—]+$/g, '')
+                    .trim();
+                if (!cleaned || cleaned.length < 2) return;
+                if (/^(a|s|se|plus|nebo)$/i.test(cleaned)) return;
+                if (!candidates.some(x => normalizeFoodName(x) === normalizeFoodName(cleaned))) candidates.push(cleaned);
+            };
+
+            add(food);
+            food.split(/\s*(?:,|;|\+|a|s|se|plus|nebo|\(|\))\s*/i).forEach(add);
+
+            return candidates.slice(0, 10);
+        }
+
+        function openRiskActionModal(encodedValue, listType) {
+            const food = normalizeAvoidCandidate(decodeURIComponent(encodedValue || ''));
+            if (!food) return;
+            const type = listType === 'watch' ? 'watch' : 'avoid';
+            pendingRiskAction = { food, listType: type };
+
+            const title = document.getElementById('riskActionTitle');
+            const text = document.getElementById('riskActionText');
+            const choices = document.getElementById('riskActionChoices');
+            const custom = document.getElementById('riskActionCustom');
+            if (!title || !text || !choices || !custom) return;
+
+            title.innerText = type === 'avoid' ? 'Co přidat do „Vyhnout se“?' : 'Co přidat do „Sledovat“?';
+            text.innerHTML = type === 'avoid'
+                ? 'Vyberte celé jídlo, konkrétní složku nebo napište vlastní text. „Vyhnout se“ znamená opravdu nepoužívat v plánu ani AI podkladu.'
+                : 'Vyberte celé jídlo, konkrétní složku nebo napište vlastní text. „Sledovat“ znamená podezřelé, ale ještě ne jistě zakázané.';
+
+            const candidates = splitFoodCandidates(food);
+            choices.innerHTML = candidates.map((candidate, index) => `
+                <label class="risk-choice-item">
+                    <input type="radio" name="riskChoice" value="${escapeHtml(candidate)}" ${index === 0 ? 'checked' : ''}>
+                    ${index === 0 ? '<b>Celé jídlo:</b> ' : '<b>Složka / část:</b> '}${escapeHtml(candidate)}
+                </label>
+            `).join('');
+            custom.value = '';
+            document.getElementById('riskActionModal').style.display = 'flex';
+        }
+
+        function closeRiskActionModal() {
+            document.getElementById('riskActionModal').style.display = 'none';
+            pendingRiskAction = null;
+        }
+
+        function addToNamedList(value, listType) {
+            const item = normalizeAvoidCandidate(value);
+            if (!item) return false;
+            const getter = listType === 'watch' ? getWatchList : getAvoidList;
+            const setter = listType === 'watch' ? setWatchList : setAvoidList;
+            const current = getter();
+            const exists = current.some(x => normalizeFoodName(x) === normalizeFoodName(item));
+            if (exists) return 'exists';
+            setter([...current, item]);
+            return true;
+        }
+
+        function confirmRiskActionChoice() {
+            if (!pendingRiskAction) return;
+            const custom = normalizeAvoidCandidate(document.getElementById('riskActionCustom')?.value || '');
+            const selected = document.querySelector('input[name="riskChoice"]:checked')?.value || '';
+            const value = custom || selected;
+            if (!value) {
+                alert('Vyberte položku nebo napište vlastní text.');
                 return;
             }
-            setAvoidList([...current, value]);
-            alert('Přidáno do seznamu „Vyhnout se“: ' + value);
+            const result = addToNamedList(value, pendingRiskAction.listType);
+            const listName = pendingRiskAction.listType === 'watch' ? 'Sledovat' : 'Vyhnout se';
+            if (result === 'exists') {
+                alert(`Položka už v seznamu „${listName}“ je.`);
+                return;
+            }
+            closeRiskActionModal();
+            alert(`Přidáno do seznamu „${listName}“: ${value}`);
             openOverviewModal();
         }
 
@@ -1911,10 +2038,15 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                 return '<div style="color:#27ae60; font-weight:bold;">Nenašel jsem žádné poznámky s rizikovými slovy.</div>';
             }
             return '<div style="display:flex; flex-direction:column; gap:10px;">' + items.map(item => {
-                const alreadyAvoided = item.food && getAvoidList().some(x => normalizeFoodName(x) === normalizeFoodName(item.food));
-                const addButton = item.food && !alreadyAvoided
-                    ? `<button type="button" class="modal-btn" style="background:#d35400; margin-top:8px; padding:8px;" onclick="addAvoidFromOverview('${encodeURIComponent(item.food)}')">🚫 Přidat jídlo do Vyhnout se</button>`
-                    : '<div style="color:#7f8c8d; margin-top:8px; font-size:0.8rem;">Už je v seznamu „Vyhnout se“ nebo chybí název jídla.</div>';
+                const inAvoid = item.food && getAvoidList().some(x => normalizeFoodName(x) === normalizeFoodName(item.food));
+                const inWatch = item.food && getWatchList().some(x => normalizeFoodName(x) === normalizeFoodName(item.food));
+                const actionButtons = item.food
+                    ? `<div class="risk-action-row">
+                        <button type="button" class="modal-btn" style="background:#d35400;" onclick="openRiskActionModal('${encodeURIComponent(item.food)}', 'avoid')">🚫 Vyhnout se</button>
+                        <button type="button" class="modal-btn" style="background:#e67e22;" onclick="openRiskActionModal('${encodeURIComponent(item.food)}', 'watch')">👀 Sledovat</button>
+                    </div>
+                    ${(inAvoid || inWatch) ? `<div style="color:#7f8c8d; margin-top:7px; font-size:0.8rem;">${inAvoid ? 'Celé jídlo už je v „Vyhnout se“. ' : ''}${inWatch ? 'Celé jídlo už je ve „Sledovat“.' : ''}</div>` : ''}`
+                    : '<div style="color:#7f8c8d; margin-top:8px; font-size:0.8rem;">U denní poznámky chybí konkrétní název jídla. Přidejte položku ručně do „Vyhnout se“ nebo „Sledovat“.</div>';
                 const ratingWarning = item.rating && item.rating !== '☹️'
                     ? `<div style="margin-top:6px; color:#c0392b;"><b>Rozpor:</b> hodnocení je ${escapeHtml(item.rating)}, ale poznámka obsahuje riziko.</div>`
                     : '';
@@ -1925,7 +2057,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                         <div><b>Důvod:</b> ${escapeHtml(item.reason)}</div>
                         <div><b>Poznámka:</b> ${escapeHtml(item.note)}</div>
                         ${ratingWarning}
-                        ${addButton}
+                        ${actionButtons}
                     </div>`;
             }).join('') + '</div>';
         }
@@ -1980,6 +2112,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             });
 
             const avoid = getAvoidList();
+            const watch = getWatchList();
             return `
                 <div class="overview-box"><h4>⚠️ Možné reakce a rizikové poznámky</h4>${riskItemsHtml(riskItems)}</div>
                 <div class="overview-box"><h4>😍 Nejčastější oblíbená jídla</h4>${topListHtml(loved)}</div>
@@ -1987,6 +2120,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                 <div class="overview-box"><h4>☹️ Nechutnalo nebo rizikové</h4>${topListHtml(disliked)}</div>
                 <div class="overview-box"><h4>✨ AI nápady k vyzkoušení</h4>${topListHtml(aiIdeas)}</div>
                 <div class="overview-box"><h4>🚫 Ruční seznam Vyhnout se</h4>${avoid.length ? '<ul>' + avoid.map(x => `<li>${escapeHtml(x)}</li>`).join('') + '</ul>' : '<div style="color:#95a5a6;">Seznam je prázdný.</div>'}</div>
+                <div class="overview-box"><h4>👀 Ruční seznam Sledovat</h4>${watch.length ? '<ul>' + watch.map(x => `<li>${escapeHtml(x)}</li>`).join('') + '</ul>' : '<div style="color:#95a5a6;">Seznam je prázdný.</div>'}</div>
             `;
         }
 
@@ -3521,6 +3655,7 @@ Pracuj podle těchto pravidel:
 - AI návrh má být opatrný nápad k vyzkoušení, ne tvrzení, že je zaručeně bezpečný
 - zohledni věk dítěte a dostupné údaje o váze/výšce; pokud některý údaj chybí, nevadí, pracuj s tím, co je k dispozici
 - nepoužívej jídla ani suroviny, která jsou uvedená v ručním seznamu „Vyhnout se“ nebo v části „vyhnout se“ z historie
+- položky v seznamu „Sledovat“ ber jako podezřelé: nepředkládej je jako jistě bezpečné a u nových návrhů je raději obcházej, pokud existuje vhodná alternativa
 - nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou bezpečnou variantu
 - neopakuj stejné nebo velmi podobné jídlo hned po sobě
 - zachovej rozumnou pestrost
@@ -3543,6 +3678,9 @@ ${summary.sections}
 
 Ruční seznam Vyhnout se:
 ${getAvoidList().length ? getAvoidList().map(x => '- ' + x).join('\n') : '- není vyplněn'}
+
+Ruční seznam Sledovat, podezřelé ale ne jistě zakázané:
+${getWatchList().length ? getWatchList().map(x => '- ' + x).join('\n') : '- není vyplněn'}
 
 Důležité poznámky / možné reakce:
 ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- žádné výrazné varovné poznámky nenalezeny'}
@@ -3854,7 +3992,8 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                 exportedAt: new Date().toISOString(),
                 entries: getMainData(),
                 childProfile: getChildProfile(),
-                avoidList: getAvoidList()
+                avoidList: getAvoidList(),
+                watchList: getWatchList()
             };
             const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -3896,6 +4035,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                 if (importedRaw && !Array.isArray(importedRaw) && Array.isArray(importedRaw.entries)) {
                     if (importedRaw.childProfile) localStorage.setItem(CHILD_PROFILE_KEY, JSON.stringify(importedRaw.childProfile));
                     if (Array.isArray(importedRaw.avoidList)) setAvoidList(importedRaw.avoidList);
+                    if (Array.isArray(importedRaw.watchList)) setWatchList(importedRaw.watchList);
                     importedRaw = importedRaw.entries;
                 }
                 let imported = importedRaw;
@@ -4005,7 +4145,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
         // Registrace Service Workeru pro PWA (instalace na plochu)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
+                navigator.serviceWorker.register('./sw.js?v=2026-05-26-bezpecnost')
                     .then(reg => console.log('Aplikace je připravena pro offline režim.'))
                     .catch(err => console.log('Chyba registrace SW:', err));
             });
