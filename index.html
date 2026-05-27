@@ -386,6 +386,16 @@
             margin-top: 8px;
         }
 
+        /* Výběr rizikové položky se otevírá z Přehledu jídel, proto musí být nad běžnými modaly. */
+        #riskActionModal {
+            z-index: 4500;
+        }
+
+        #riskActionModal .modal-box {
+            position: relative;
+            z-index: 4501;
+        }
+
         /* MODAL OKNA (NASTAVENÍ A IMPORT) */
         .modal-overlay {
             position: fixed;
