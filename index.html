@@ -1419,7 +1419,7 @@ květák..."></textarea>
                 <option value="append">Přidat za stávající text</option>
             </select>
 
-            <div id="ideaUseWarning" class="ai-status" style="display:none;"></div>
+            <div id="ideaUseWarning" class="ai-status" style="display:none; cursor:pointer;" title="Kliknutím zobrazíte detail upozornění" onclick="showIdeaUseWarningDetails()"></div>
             <button class="modal-btn btn-merge" onclick="confirmUseIdea()">✅ VLOŽIT NÁVRH</button>
             <button class="modal-btn btn-cancel" onclick="closeIdeaUseModal()">ZAVŘÍT</button>
         </div>
@@ -4099,6 +4099,14 @@ Tuto akci nelze vrátit zpět.`)) return;
             const idea = currentAiIdeaSuggestions[index];
             if (!idea) return;
             const saved = getSavedIdeas();
+            const ideaTitleKey = normalizeFoodName(idea.title || '');
+            const ideaTextKey = normalizeFoodName(idea.text || idea.title || '');
+            const exists = saved.some(item => normalizeFoodName(item.title || '') === ideaTitleKey && normalizeFoodName(item.text || item.title || '') === ideaTextKey);
+            if (exists) {
+                setStatusText('geminiAiStatus', 'Tento návrh už je uložený v 💡 Nápady jídel.');
+                alert('Tento návrh už je uložený v 💡 Nápady jídel.');
+                return;
+            }
             saved.unshift({
                 id: makeIdeaId(),
                 createdAt: new Date().toISOString(),
@@ -4149,21 +4157,37 @@ Tuto akci nelze vrátit zpět.`)) return;
             hint.innerText = date > startToday ? 'Automatika: toto datum se uloží jako PLÁN.' : 'Automatika: toto datum se uloží jako skutečný den.';
         }
 
-        function updateIdeaUseWarning() {
-            const box = document.getElementById('ideaUseWarning');
-            if (!box || !pendingIdeaUse) return;
-            const idea = pendingIdeaUse.idea;
+        function getIdeaUseWarnings(idea) {
             const warnings = [];
+            if (!idea) return warnings;
             const fullText = [idea.title, idea.text].join(' ');
-            const avoidHits = getAvoidList().filter(item => item && normalizeFoodName(fullText).includes(normalizeFoodName(item)));
-            const watchHits = getWatchList().filter(item => item && normalizeFoodName(fullText).includes(normalizeFoodName(item)));
+            const normalizedFullText = normalizeFoodName(fullText);
+            const avoidHits = getAvoidList().filter(item => item && normalizedFullText.includes(normalizeFoodName(item)));
+            const watchHits = getWatchList().filter(item => item && normalizedFullText.includes(normalizeFoodName(item)));
             if (avoidHits.length) warnings.push('🚫 Návrh obsahuje položku ze seznamu Vyhnout se: ' + avoidHits.join(', '));
             if (watchHits.length) warnings.push('👀 Návrh obsahuje položku ze seznamu Sledovat: ' + watchHits.join(', '));
             if (/raději\s*ne|radeji\s*ne|vyšší|vyssi|riziko/i.test(fullText)) warnings.push('⚠️ Text návrhu obsahuje upozornění na vyšší riziko.');
+            return warnings;
+        }
+
+        function showIdeaUseWarningDetails() {
+            if (!pendingIdeaUse || !pendingIdeaUse.idea) return;
+            const warnings = getIdeaUseWarnings(pendingIdeaUse.idea);
+            if (!warnings.length) return;
+            alert('Detail upozornění:\n\n' + warnings.join('\n') + '\n\nZkontrolujte návrh ručně. AI návrh je jen inspirace, ne potvrzení bezpečnosti.');
+        }
+
+        function updateIdeaUseWarning() {
+            const box = document.getElementById('ideaUseWarning');
+            if (!box || !pendingIdeaUse) return;
+            const warnings = getIdeaUseWarnings(pendingIdeaUse.idea);
             box.style.display = warnings.length ? 'block' : 'none';
             box.style.color = warnings.length ? '#c0392b' : '#2c3e50';
             box.style.borderColor = warnings.length ? '#e74c3c' : '#e1e7ec';
-            box.innerText = warnings.join('\n');
+            box.dataset.details = warnings.join('\n');
+            box.innerHTML = warnings.length
+                ? '⚠️ Návrh obsahuje upozornění. <u>Klepnutím zobrazit detail.</u>'
+                : '';
         }
 
         function getEffectiveIdeaDayMode(isoDate, selectedMode) {
@@ -4361,7 +4385,7 @@ ${summary.riskNotes.length ? summary.riskNotes.map(x => '- ' + x).join('\n') : '
             generateAiIdeasPrompt();
             const prompt = document.getElementById('aiPromptOutput')?.value || '';
             const output = document.getElementById('aiGeminiOutput');
-            if (output) output.value = '';
+            if (output) { output.value = ''; output.style.display = 'none'; }
             if (!prompt.trim()) {
                 setStatusText('geminiAiStatus', 'Nepodařilo se vytvořit podklad pro návrhy.', true);
                 return;
@@ -4369,9 +4393,9 @@ ${summary.riskNotes.length ? summary.riskNotes.map(x => '- ' + x).join('\n') : '
             setStatusText('geminiAiStatus', 'Gemini vytváří 3 návrhy jídel. Chvíli počkejte...');
             try {
                 const text = await callGeminiApi(prompt, 'geminiAiStatus');
-                if (output) output.value = text;
+                if (output) { output.value = text; output.style.display = 'none'; }
                 renderAiIdeasActions(parseAiIdeasText(text));
-                setStatusText('geminiAiStatus', '3 návrhy jsou připravené níže. Můžete je použít, uložit jako nápad nebo zahodit.');
+                setStatusText('geminiAiStatus', '3 návrhy jsou připravené níže. Původní text odpovědi je skrytý, aby nepřekážel.');
             } catch (err) {
                 setStatusText('geminiAiStatus', formatGeminiError(err), true);
             }
@@ -4455,7 +4479,7 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
             setStatusText('geminiAiStatus', 'Gemini vytváří jídelníček. Chvíli počkejte...');
             try {
                 const text = await callGeminiApi(prompt, 'geminiAiStatus');
-                if (output) output.value = text;
+                if (output) { output.value = text; output.style.display = 'block'; }
                 const planBlock = extractAiPlanBlock(text);
                 if (importInput) importInput.value = planBlock;
                 const parsed = parseAiPlanText(planBlock);
