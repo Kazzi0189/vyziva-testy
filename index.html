@@ -1066,18 +1066,39 @@
             text-align: center;
         }
 
+        .more-section {
+            text-align: left;
+            margin: 12px 0 14px;
+            padding: 10px;
+            border: 1px solid #e1e7ec;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+
+        .more-section-title {
+            font-size: 0.8rem;
+            font-weight: 900;
+            color: #2c3e50;
+            margin: 0 0 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+        }
+
         .more-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            margin-bottom: 12px;
         }
 
         .more-grid .modal-btn {
             margin-bottom: 0;
-            min-height: 48px;
+            min-height: 46px;
             padding: 10px 7px;
             line-height: 1.2;
+        }
+
+        .more-grid .modal-btn.more-wide-btn {
+            grid-column: 1 / -1;
         }
 
         .reorder-active-strip {
@@ -1310,23 +1331,46 @@
 
 
     <div class="modal-overlay" id="moreMenuModal">
-        <div class="modal-box">
+        <div class="modal-box" style="max-width:430px;">
             <div class="modal-title">Další funkce</div>
-            <div class="modal-text">Méně časté nástroje jsou schované tady, aby deník při listování nezabíral tolik místa.</div>
-            <div class="more-grid">
-                <button class="modal-btn" style="background:#16a085" onclick="closeMoreMenu(); openPlanner();">🗓️ Plán</button>
-                <button class="modal-btn" style="background:#8e44ad" onclick="closeMoreMenu(); openAiModal();">🤖 AI</button>
-                <button class="modal-btn" style="background:#e67e22" onclick="closeMoreMenu(); openSavedIdeasModal();">💡 Nápady jídel</button>
-                <button id="reorderPlanBtn" class="modal-btn" style="background:#3498db" onclick="closeMoreMenu(); togglePlanReorderMode();">↕️ Přeskládat</button>
-                <button class="modal-btn" style="background:#c0392b" onclick="closeMoreMenu(); openDeleteManager();">🧹 Smazat</button>
-                <button class="modal-btn" style="background:#1abc9c" onclick="closeMoreMenu(); openChildModal();">👶 Údaje dítěte</button>
-                <button class="modal-btn" style="background:#d35400" onclick="closeMoreMenu(); openAvoidListModal();">🚫 Vyhnout se</button>
-                <button class="modal-btn" style="background:#e67e22" onclick="closeMoreMenu(); openWatchListModal();">👀 Sledovat</button>
-                <button class="modal-btn" style="background:#27ae60" onclick="closeMoreMenu(); openOverviewModal();">📊 Přehled jídel</button>
-                <button class="modal-btn" style="background:#2980b9" onclick="closeMoreMenu(); openManualModal();">📘 Manuál</button>
-                <button class="modal-btn" style="background:#2c3e50" onclick="closeMoreMenu(); openDraft();">📥 Rozpracované zápisy</button>
-                <button class="modal-btn" style="background:#7f8c8d" onclick="closeMoreMenu(); openSettings();">⚙️ Správa dat</button>
+            <div class="modal-text">Funkce jsou rozdělené podle účelu, aby bylo jasnější, kam sáhnout.</div>
+
+            <div class="more-section">
+                <div class="more-section-title">🧠 Plánování a AI</div>
+                <div class="more-grid">
+                    <button class="modal-btn" style="background:#16a085" onclick="closeMoreMenu(); openPlanner();">🗓️ Plán jídel</button>
+                    <button class="modal-btn" style="background:#8e44ad" onclick="closeMoreMenu(); openAiModal();">🤖 AI návrhy</button>
+                    <button class="modal-btn more-wide-btn" style="background:#e67e22" onclick="closeMoreMenu(); openSavedIdeasModal();">💡 Nápady jídel</button>
+                </div>
             </div>
+
+            <div class="more-section">
+                <div class="more-section-title">⚠️ Bezpečnost a rozbor</div>
+                <div class="more-grid">
+                    <button class="modal-btn more-wide-btn" style="background:#27ae60" onclick="closeMoreMenu(); openOverviewModal();">📊 Rozbor jídelníčku</button>
+                    <button class="modal-btn" style="background:#d35400" onclick="closeMoreMenu(); openAvoidListModal();">🚫 Vyhnout se</button>
+                    <button class="modal-btn" style="background:#e67e22" onclick="closeMoreMenu(); openWatchListModal();">👀 Sledovat</button>
+                </div>
+            </div>
+
+            <div class="more-section">
+                <div class="more-section-title">🧾 Práce se záznamy</div>
+                <div class="more-grid">
+                    <button id="reorderPlanBtn" class="modal-btn" style="background:#3498db" onclick="closeMoreMenu(); togglePlanReorderMode();">↕️ Přeskládat plán</button>
+                    <button class="modal-btn" style="background:#2c3e50" onclick="closeMoreMenu(); openDraft();">📥 Rozpracované</button>
+                    <button class="modal-btn more-wide-btn" style="background:#c0392b" onclick="closeMoreMenu(); openDeleteManager();">🧹 Mazání záznamů</button>
+                </div>
+            </div>
+
+            <div class="more-section">
+                <div class="more-section-title">⚙️ Nastavení a pomoc</div>
+                <div class="more-grid">
+                    <button class="modal-btn" style="background:#1abc9c" onclick="closeMoreMenu(); openChildModal();">👶 Údaje dítěte</button>
+                    <button class="modal-btn" style="background:#7f8c8d" onclick="closeMoreMenu(); openSettings();">⚙️ Zálohy a data</button>
+                    <button class="modal-btn more-wide-btn" style="background:#2980b9" onclick="closeMoreMenu(); openManualModal();">📘 Manuál</button>
+                </div>
+            </div>
+
             <button class="modal-btn btn-cancel" onclick="closeMoreMenu()">ZAVŘÍT</button>
         </div>
     </div>
@@ -1441,7 +1485,7 @@ květák..."></textarea>
 
     <div class="modal-overlay" id="overviewModal">
         <div class="modal-box" style="max-width:460px; text-align:left;">
-            <div class="modal-title" style="text-align:center;">Přehled jídel</div>
+            <div class="modal-title" style="text-align:center;">Rozbor jídelníčku</div>
             <div id="overviewContent"></div>
             <button class="modal-btn btn-cancel" onclick="closeOverviewModal()">ZAVŘÍT</button>
         </div>
@@ -1602,7 +1646,7 @@ květák..."></textarea>
             </details>
 
             <details class="manual-section">
-                <summary>📊 Přehled jídel</summary>
+                <summary>📊 Rozbor jídelníčku</summary>
                 <div class="manual-section-content">
                     <ul>
                         <li>Zobrazí nejčastější jídla, oblíbená jídla, nechutnalo/rizikové položky, AI nápady, ruční seznam Vyhnout se a ruční seznam Sledovat.</li>
