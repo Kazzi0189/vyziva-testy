@@ -396,6 +396,74 @@
             z-index: 4501;
         }
 
+        .ai-ideas-action-panel {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin: 10px 0 12px;
+            text-align: left;
+        }
+
+        .ai-idea-card {
+            border: 1px solid #f5cba7;
+            background: #fff8f0;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.84rem;
+            line-height: 1.4;
+        }
+
+        .ai-idea-card-title {
+            font-weight: 900;
+            color: #d35400;
+            margin-bottom: 6px;
+        }
+
+        .ai-idea-card-text {
+            color: #34495e;
+            white-space: pre-wrap;
+        }
+
+        .ai-idea-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 9px;
+        }
+
+        .ai-idea-actions .modal-btn {
+            flex: 1 1 120px;
+            margin: 0;
+            padding: 8px 7px;
+            font-size: 0.74rem;
+            line-height: 1.2;
+        }
+
+        .idea-list-card {
+            border: 1px solid #e1e7ec;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 0.84rem;
+            line-height: 1.4;
+        }
+
+        .idea-list-meta {
+            color: #7f8c8d;
+            font-size: 0.76rem;
+            margin-top: 4px;
+        }
+
+        #ideaUseModal, #savedIdeasModal {
+            z-index: 4600;
+        }
+
+        #ideaUseModal .modal-box, #savedIdeasModal .modal-box {
+            position: relative;
+            z-index: 4601;
+        }
+
         /* MODAL OKNA (NASTAVENÍ A IMPORT) */
         .modal-overlay {
             position: fixed;
@@ -1243,6 +1311,7 @@
             <div class="more-grid">
                 <button class="modal-btn" style="background:#16a085" onclick="closeMoreMenu(); openPlanner();">🗓️ Plán</button>
                 <button class="modal-btn" style="background:#8e44ad" onclick="closeMoreMenu(); openAiModal();">🤖 AI</button>
+                <button class="modal-btn" style="background:#e67e22" onclick="closeMoreMenu(); openSavedIdeasModal();">💡 Nápady jídel</button>
                 <button id="reorderPlanBtn" class="modal-btn" style="background:#3498db" onclick="closeMoreMenu(); togglePlanReorderMode();">↕️ Přeskládat</button>
                 <button class="modal-btn" style="background:#c0392b" onclick="closeMoreMenu(); openDeleteManager();">🧹 Smazat</button>
                 <button class="modal-btn" style="background:#1abc9c" onclick="closeMoreMenu(); openChildModal();">👶 Údaje dítěte</button>
@@ -1315,6 +1384,53 @@ květák..."></textarea>
             <input id="riskActionCustom" type="text" placeholder="např. jen sardinky" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:12px;">
             <button class="modal-btn btn-merge" onclick="confirmRiskActionChoice()">✅ PŘIDAT VYBRANÉ</button>
             <button class="modal-btn btn-cancel" onclick="closeRiskActionModal()">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="ideaUseModal" onclick="if (event.target === this) closeIdeaUseModal()">
+        <div class="modal-box" style="max-width:430px; text-align:left;">
+            <div class="modal-title" style="text-align:center;">Kam vložit návrh?</div>
+            <div class="modal-text" id="ideaUseSummary" style="text-align:left; margin-bottom:12px;"></div>
+
+            <label style="display:block; font-size:0.8rem; font-weight:800; margin:10px 0 5px; color:#2c3e50;">Datum</label>
+            <input id="ideaUseDate" type="date" onchange="updateIdeaUseAutoMode()" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+
+            <label style="display:block; font-size:0.8rem; font-weight:800; margin:10px 0 5px; color:#2c3e50;">Typ jídla</label>
+            <select id="ideaUseMealIndex" style="width:100%; margin-bottom:10px;">
+                <option value="0">Snídaně</option>
+                <option value="1">Dop. svačina</option>
+                <option value="2">Oběd</option>
+                <option value="3">Odp. svačina</option>
+                <option value="4">Večeře</option>
+            </select>
+
+            <label style="display:block; font-size:0.8rem; font-weight:800; margin:10px 0 5px; color:#2c3e50;">Režim dne</label>
+            <select id="ideaUseDayMode" style="width:100%; margin-bottom:10px;">
+                <option value="auto" selected>Automaticky podle data</option>
+                <option value="real">Skutečný den</option>
+                <option value="plan">PLÁN</option>
+            </select>
+            <div id="ideaUseAutoModeHint" class="small-help-text" style="margin-top:-4px;">Budoucí datum se uloží jako PLÁN, dnešek a minulost jako skutečný den.</div>
+
+            <label style="display:block; font-size:0.8rem; font-weight:800; margin:10px 0 5px; color:#2c3e50;">Jak vložit</label>
+            <select id="ideaUseInsertMode" style="width:100%; margin-bottom:12px;">
+                <option value="ai" selected>Jako AI návrh pod jídlo</option>
+                <option value="main">Jako hlavní jídlo</option>
+                <option value="append">Přidat za stávající text</option>
+            </select>
+
+            <div id="ideaUseWarning" class="ai-status" style="display:none;"></div>
+            <button class="modal-btn btn-merge" onclick="confirmUseIdea()">✅ VLOŽIT NÁVRH</button>
+            <button class="modal-btn btn-cancel" onclick="closeIdeaUseModal()">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="savedIdeasModal">
+        <div class="modal-box" style="max-width:520px; text-align:left;">
+            <div class="modal-title" style="text-align:center;">💡 Nápady jídel</div>
+            <div class="modal-text" style="text-align:left;">Sem se ukládají AI nápady, které ještě nechcete dát rovnou do dne nebo plánu.</div>
+            <div id="savedIdeasContent"></div>
+            <button class="modal-btn btn-cancel" onclick="closeSavedIdeasModal()">ZAVŘÍT</button>
         </div>
     </div>
 
@@ -1412,6 +1528,7 @@ květák..."></textarea>
                         <li><b>POUŽÍT</b> přesune návrh do hlavního jídla.</li>
                         <li><b>ZAMÍTNOUT</b> návrh odstraní.</li>
                         <li>V AI okně je také režim <b>✨ 3 návrhy pro pestrost</b>, který nevytváří celý plán, ale jen tři opatrné nápady podle historie, rizik, seznamu „Vyhnout se“ a seznamu „Sledovat“.</li>
+                        <li>U návrhů lze použít <b>➕ Použít</b> pro vložení do konkrétního dne/plánu, <b>💡 Uložit</b> pro odložení do Nápadů jídel nebo <b>🗑️ Zahodit</b>.</li>
                     </ul>
                 </div>
             </details>
@@ -1678,6 +1795,8 @@ květák..."></textarea>
             <div id="geminiAiStatus" class="ai-status"></div>
             <button class="modal-btn btn-merge" style="background:#8e44ad;" onclick="generatePlanWithGemini()">🤖 VYTVOŘIT PLÁN PŘES GEMINI</button>
             <textarea id="aiGeminiOutput" readonly placeholder="Tady se zobrazí odpověď Gemini..." style="width:100%; min-height:170px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
+            <div id="aiIdeasActionPanel" class="ai-ideas-action-panel"></div>
+            <button class="modal-btn" style="background:#e67e22" onclick="renderAiIdeasActionsFromOutput()">✨ NAČÍST 3 NÁVRHY Z TEXTU</button>
             <button class="modal-btn btn-import" onclick="moveGeminiResponseToImport()">⬇️ PŘIPRAVIT ODPOVĚĎ K IMPORTU</button>
 
             <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
@@ -1791,7 +1910,10 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         const AVOID_LIST_KEY = 'nutri_avoid_list_v1';
         const WATCH_LIST_KEY = 'nutri_watch_list_v1';
         const RESOLVED_RISKS_KEY = 'nutri_resolved_risks_v1';
+        const SAVED_IDEAS_KEY = 'nutri_saved_ideas_v1';
         const AUTO_BACKUP_KEY = 'nutri_last_auto_backup_v1';
+        let currentAiIdeaSuggestions = [];
+        let pendingIdeaUse = null;
         const DATA_VERSION = 3;
 
         function getChildProfile() {
@@ -1967,6 +2089,28 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
         }
 
 
+        function getSavedIdeas() {
+            const raw = localStorage.getItem(SAVED_IDEAS_KEY) || '[]';
+            try { return Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : []; } catch (e) { return []; }
+        }
+
+        function setSavedIdeas(items) {
+            localStorage.setItem(SAVED_IDEAS_KEY, JSON.stringify(Array.isArray(items) ? items : []));
+        }
+
+        function makeIdeaId() {
+            return 'idea_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        }
+
+        function openSavedIdeasModal() {
+            renderSavedIdeas();
+            document.getElementById('savedIdeasModal').style.display = 'flex';
+        }
+
+        function closeSavedIdeasModal() {
+            document.getElementById('savedIdeasModal').style.display = 'none';
+        }
+
         function textMatchesWatchList(text) {
             const normalized = normalizeFoodName(text);
             if (!normalized) return false;
@@ -1987,6 +2131,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
                     avoidList: getAvoidList(),
                     watchList: getWatchList(),
                     resolvedRisks: getResolvedRisks(),
+                    savedIdeas: getSavedIdeas(),
                     draft: getDraftData ? getDraftData() : []
                 };
                 localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(backup));
@@ -2016,6 +2161,7 @@ Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; borde
             if (Array.isArray(backup.avoidList)) setAvoidList(backup.avoidList);
             if (Array.isArray(backup.watchList)) setWatchList(backup.watchList);
             if (Array.isArray(backup.resolvedRisks)) setResolvedRisks(backup.resolvedRisks);
+            if (Array.isArray(backup.savedIdeas)) setSavedIdeas(backup.savedIdeas);
             if (Array.isArray(backup.draft)) localStorage.setItem('nutri_draft', JSON.stringify(backup.draft));
             closeSettings();
             loadChildProfile();
@@ -3887,6 +4033,246 @@ Tuto akci nelze vrátit zpět.`)) return;
             };
         }
 
+        function parseAiIdeasText(text) {
+            const cleaned = String(text || '').replace(/\r\n/g, '\n').trim();
+            if (!cleaned) return [];
+            const matches = Array.from(cleaned.matchAll(/(?:^|\n)\s*NÁVRH\s*\d+\s*\n([\s\S]*?)(?=(?:\n\s*NÁVRH\s*\d+\s*\n)|$)/gi));
+            const blocks = matches.length ? matches.map(m => (m[1] || '').trim()) : [cleaned];
+            return blocks.map((block, index) => {
+                const titleMatch = block.match(/(?:^|\n)\s*Jídlo\s*[:：]\s*(.+)/i);
+                const typeMatch = block.match(/(?:^|\n)\s*Typ\s*jídla\s*[:：]\s*(.+)/i);
+                const title = titleMatch ? titleMatch[1].trim() : (block.split('\n').find(x => x.trim()) || '').replace(/^[-•]\s*/, '').trim();
+                const mealType = typeMatch ? typeMatch[1].trim() : '';
+                if (!title) return null;
+                return { id: makeIdeaId(), title, mealType, text: block, index };
+            }).filter(Boolean).slice(0, 6);
+        }
+
+        function mealIndexFromIdeaType(typeText) {
+            const t = normalizeSearchText(typeText || '');
+            if (!t) return -1;
+            if (t.includes('snidan')) return 0;
+            if (t.includes('dopoled') || t.includes('dop svac')) return 1;
+            if (t.includes('obed')) return 2;
+            if (t.includes('odpoled') || t.includes('odp svac')) return 3;
+            if (t.includes('vecer')) return 4;
+            return -1;
+        }
+
+        function renderAiIdeasActionsFromOutput() {
+            const text = document.getElementById('aiGeminiOutput')?.value || '';
+            const ideas = parseAiIdeasText(text);
+            renderAiIdeasActions(ideas);
+            if (!ideas.length) setStatusText('geminiAiStatus', 'V textu jsem nenašel návrhy ve formátu NÁVRH 1 / Jídlo:.', true);
+        }
+
+        function renderAiIdeasActions(ideas) {
+            currentAiIdeaSuggestions = Array.isArray(ideas) ? ideas : [];
+            const panel = document.getElementById('aiIdeasActionPanel');
+            if (!panel) return;
+            if (!currentAiIdeaSuggestions.length) {
+                panel.style.display = 'none';
+                panel.innerHTML = '';
+                return;
+            }
+            panel.style.display = 'flex';
+            panel.innerHTML = currentAiIdeaSuggestions.map((idea, index) => `
+                <div class="ai-idea-card" data-idea-index="${index}">
+                    <div class="ai-idea-card-title">Návrh ${index + 1}: ${escapeHtml(idea.title)}</div>
+                    <div class="ai-idea-card-text">${escapeHtml(idea.text)}</div>
+                    <div class="ai-idea-actions">
+                        <button type="button" class="modal-btn" style="background:#27ae60" onclick="openUseIdeaModal(${index})">➕ Použít</button>
+                        <button type="button" class="modal-btn" style="background:#e67e22" onclick="saveAiIdea(${index})">💡 Uložit</button>
+                        <button type="button" class="modal-btn" style="background:#7f8c8d" onclick="discardAiIdea(${index})">🗑️ Zahodit</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function discardAiIdea(index) {
+            currentAiIdeaSuggestions.splice(index, 1);
+            renderAiIdeasActions(currentAiIdeaSuggestions);
+            setStatusText('geminiAiStatus', 'Návrh byl schovaný z aktuálního seznamu.');
+        }
+
+        function saveAiIdea(index) {
+            const idea = currentAiIdeaSuggestions[index];
+            if (!idea) return;
+            const saved = getSavedIdeas();
+            saved.unshift({
+                id: makeIdeaId(),
+                createdAt: new Date().toISOString(),
+                title: idea.title,
+                mealType: idea.mealType || '',
+                text: idea.text || idea.title,
+                status: 'new'
+            });
+            setSavedIdeas(saved);
+            setStatusText('geminiAiStatus', 'Návrh byl uložen do 💡 Nápady jídel.');
+        }
+
+        function openUseIdeaModal(indexOrIdea, source = 'current') {
+            let idea = null;
+            if (source === 'saved') idea = getSavedIdeas()[indexOrIdea] || null;
+            else idea = currentAiIdeaSuggestions[indexOrIdea] || null;
+            if (!idea) return;
+            pendingIdeaUse = { idea, source, index: indexOrIdea };
+            const summary = document.getElementById('ideaUseSummary');
+            if (summary) summary.innerHTML = `<b>Návrh:</b> ${escapeHtml(idea.title)}${idea.mealType ? `<br><b>Typ:</b> ${escapeHtml(idea.mealType)}` : ''}`;
+            const dateInput = document.getElementById('ideaUseDate');
+            if (dateInput) dateInput.value = dateToISO(new Date());
+            const mealSelect = document.getElementById('ideaUseMealIndex');
+            const suggestedIndex = mealIndexFromIdeaType(idea.mealType || '');
+            if (mealSelect) mealSelect.value = String(suggestedIndex >= 0 ? suggestedIndex : 2);
+            const dayMode = document.getElementById('ideaUseDayMode');
+            if (dayMode) dayMode.value = 'auto';
+            const insertMode = document.getElementById('ideaUseInsertMode');
+            if (insertMode) insertMode.value = 'ai';
+            updateIdeaUseWarning();
+            updateIdeaUseAutoMode();
+            document.getElementById('ideaUseModal').style.display = 'flex';
+        }
+
+        function closeIdeaUseModal() {
+            document.getElementById('ideaUseModal').style.display = 'none';
+            pendingIdeaUse = null;
+        }
+
+        function updateIdeaUseAutoMode() {
+            const hint = document.getElementById('ideaUseAutoModeHint');
+            const iso = document.getElementById('ideaUseDate')?.value || '';
+            if (!hint || !iso) return;
+            const date = isoToDateValue(iso);
+            if (!date) return;
+            const today = new Date();
+            const startToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            hint.innerText = date > startToday ? 'Automatika: toto datum se uloží jako PLÁN.' : 'Automatika: toto datum se uloží jako skutečný den.';
+        }
+
+        function updateIdeaUseWarning() {
+            const box = document.getElementById('ideaUseWarning');
+            if (!box || !pendingIdeaUse) return;
+            const idea = pendingIdeaUse.idea;
+            const warnings = [];
+            const fullText = [idea.title, idea.text].join(' ');
+            const avoidHits = getAvoidList().filter(item => item && normalizeFoodName(fullText).includes(normalizeFoodName(item)));
+            const watchHits = getWatchList().filter(item => item && normalizeFoodName(fullText).includes(normalizeFoodName(item)));
+            if (avoidHits.length) warnings.push('🚫 Návrh obsahuje položku ze seznamu Vyhnout se: ' + avoidHits.join(', '));
+            if (watchHits.length) warnings.push('👀 Návrh obsahuje položku ze seznamu Sledovat: ' + watchHits.join(', '));
+            if (/raději\s*ne|radeji\s*ne|vyšší|vyssi|riziko/i.test(fullText)) warnings.push('⚠️ Text návrhu obsahuje upozornění na vyšší riziko.');
+            box.style.display = warnings.length ? 'block' : 'none';
+            box.style.color = warnings.length ? '#c0392b' : '#2c3e50';
+            box.style.borderColor = warnings.length ? '#e74c3c' : '#e1e7ec';
+            box.innerText = warnings.join('\n');
+        }
+
+        function getEffectiveIdeaDayMode(isoDate, selectedMode) {
+            if (selectedMode === 'real') return 'real';
+            if (selectedMode === 'plan') return 'plan';
+            const date = isoToDateValue(isoDate);
+            if (!date) return 'real';
+            const today = new Date();
+            const startToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            return date > startToday ? 'plan' : 'real';
+        }
+
+        function confirmUseIdea() {
+            if (!pendingIdeaUse || !pendingIdeaUse.idea) return;
+            const idea = pendingIdeaUse.idea;
+            const iso = document.getElementById('ideaUseDate')?.value || '';
+            const date = isoToDateValue(iso);
+            if (!date) { alert('Vyberte platné datum.'); return; }
+            const mealIndex = parseInt(document.getElementById('ideaUseMealIndex')?.value || '2', 10);
+            if (Number.isNaN(mealIndex) || mealIndex < 0 || mealIndex > 4) { alert('Vyberte typ jídla.'); return; }
+            const selectedDayMode = document.getElementById('ideaUseDayMode')?.value || 'auto';
+            const dayMode = getEffectiveIdeaDayMode(iso, selectedDayMode);
+            const insertMode = document.getElementById('ideaUseInsertMode')?.value || 'ai';
+            const title = normalizeAvoidCandidate(idea.title || '');
+            if (!title) { alert('Návrh nemá název jídla.'); return; }
+
+            const fullText = [idea.title, idea.text].join(' ');
+            const avoidHits = getAvoidList().filter(item => item && normalizeFoodName(fullText).includes(normalizeFoodName(item)));
+            const watchHits = getWatchList().filter(item => item && normalizeFoodName(fullText).includes(normalizeFoodName(item)));
+            if (avoidHits.length && !confirm('Návrh obsahuje položku ze seznamu Vyhnout se: ' + avoidHits.join(', ') + '\n\nOpravdu ho chcete přesto vložit?')) return;
+            if (watchHits.length && !confirm('Návrh obsahuje položku ze seznamu Sledovat: ' + watchHits.join(', ') + '\n\nChcete pokračovat?')) return;
+
+            const dateText = formatDateValue(date);
+            let data = getMainData();
+            let idx = data.findIndex(item => (item.d || '').trim() === dateText);
+            let item = idx >= 0 ? normalizeEntry(data[idx]) : { d: dateText, dn: '', m: createEmptyMealSet() };
+            if (dayMode === 'plan') item.planned = true;
+            if (dayMode === 'real') delete item.planned;
+            const meal = item.m[mealIndex] || { t: '', w: '', n: '', r: '😐', a: '' };
+            const currentText = (meal.t || '').trim();
+
+            if (insertMode === 'main') {
+                if (currentText && !isEmptyMealText(currentText) && !confirm(`${dateText} – ${mealLabels[mealIndex]} už obsahuje:\n${currentText}\n\nPřepsat hlavní jídlo návrhem?`)) return;
+                meal.t = title;
+                meal.a = meal.a || '';
+            } else if (insertMode === 'append') {
+                meal.t = currentText && !isEmptyMealText(currentText) ? `${currentText}; ${title}` : title;
+            } else {
+                if (meal.a && !confirm('U tohoto jídla už existuje AI návrh. Přepsat ho novým návrhem?')) return;
+                meal.a = title;
+            }
+            item.m[mealIndex] = meal;
+
+            createAutoBackup('vložení AI nápadu do dne/plánu');
+            if (idx >= 0) data[idx] = item;
+            else data.push(item);
+            setMainData(data);
+
+            if (pendingIdeaUse.source === 'saved') {
+                const saved = getSavedIdeas();
+                if (saved[pendingIdeaUse.index]) {
+                    saved[pendingIdeaUse.index].status = 'used';
+                    saved[pendingIdeaUse.index].usedAt = new Date().toISOString();
+                    saved[pendingIdeaUse.index].usedDate = dateText;
+                    saved[pendingIdeaUse.index].usedMeal = mealLabels[mealIndex];
+                    setSavedIdeas(saved);
+                    renderSavedIdeas();
+                }
+            }
+
+            closeIdeaUseModal();
+            load();
+            alert(`Návrh byl vložen do ${dayMode === 'plan' ? 'PLÁNU' : 'skutečného dne'}: ${dateText} – ${mealLabels[mealIndex]}.`);
+        }
+
+        function renderSavedIdeas() {
+            const box = document.getElementById('savedIdeasContent');
+            if (!box) return;
+            const ideas = getSavedIdeas();
+            if (!ideas.length) {
+                box.innerHTML = '<div class="overview-box" style="color:#95a5a6;">Zatím zde nejsou uložené žádné nápady.</div>';
+                return;
+            }
+            box.innerHTML = ideas.map((idea, index) => {
+                const statusText = idea.status === 'used' ? `Použito${idea.usedDate ? ' – ' + idea.usedDate : ''}${idea.usedMeal ? ' / ' + idea.usedMeal : ''}` : 'Nový nápad';
+                const created = idea.createdAt ? new Date(idea.createdAt).toLocaleString('cs-CZ') : '';
+                return `
+                    <div class="idea-list-card">
+                        <div><b>${escapeHtml(idea.title || 'Nápad')}</b></div>
+                        ${idea.mealType ? `<div class="idea-list-meta">Typ: ${escapeHtml(idea.mealType)}</div>` : ''}
+                        <div class="idea-list-meta">Stav: ${escapeHtml(statusText)}${created ? ' · Uloženo: ' + escapeHtml(created) : ''}</div>
+                        <details style="margin-top:6px;"><summary style="cursor:pointer; font-weight:800; color:#2c3e50;">Zobrazit detail</summary><div style="white-space:pre-wrap; margin-top:6px;">${escapeHtml(idea.text || '')}</div></details>
+                        <div class="ai-idea-actions">
+                            <button type="button" class="modal-btn" style="background:#27ae60" onclick="openUseIdeaModal(${index}, 'saved')">➕ Použít</button>
+                            <button type="button" class="modal-btn" style="background:#7f8c8d" onclick="deleteSavedIdea(${index})">🗑️ Smazat</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function deleteSavedIdea(index) {
+            const ideas = getSavedIdeas();
+            if (!ideas[index]) return;
+            if (!confirm('Smazat uložený nápad: ' + (ideas[index].title || 'Nápad') + '?')) return;
+            ideas.splice(index, 1);
+            setSavedIdeas(ideas);
+            renderSavedIdeas();
+        }
+
         function generateAiIdeasPrompt() {
             const mealScope = document.getElementById('aiIdeasMealScope')?.value || 'all';
             const period = document.getElementById('aiIdeasPeriod')?.value || '14';
@@ -3984,7 +4370,8 @@ ${summary.riskNotes.length ? summary.riskNotes.map(x => '- ' + x).join('\n') : '
             try {
                 const text = await callGeminiApi(prompt, 'geminiAiStatus');
                 if (output) output.value = text;
-                setStatusText('geminiAiStatus', '3 návrhy jsou připravené níže. Zkontrolujte je před použitím.');
+                renderAiIdeasActions(parseAiIdeasText(text));
+                setStatusText('geminiAiStatus', '3 návrhy jsou připravené níže. Můžete je použít, uložit jako nápad nebo zahodit.');
             } catch (err) {
                 setStatusText('geminiAiStatus', formatGeminiError(err), true);
             }
@@ -4057,6 +4444,7 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
         async function generatePlanWithGemini() {
             const output = document.getElementById('aiGeminiOutput');
             const importInput = document.getElementById('aiPlanInput');
+            renderAiIdeasActions([]);
             if (output) output.value = '';
             if (!document.getElementById('aiPromptOutput')?.value.trim()) generateAiPrompt();
             const prompt = document.getElementById('aiPromptOutput')?.value || '';
@@ -4357,7 +4745,8 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                 childProfile: getChildProfile(),
                 avoidList: getAvoidList(),
                 watchList: getWatchList(),
-                resolvedRisks: getResolvedRisks()
+                resolvedRisks: getResolvedRisks(),
+                savedIdeas: getSavedIdeas()
             };
             const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -4401,6 +4790,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                     if (Array.isArray(importedRaw.avoidList)) setAvoidList(importedRaw.avoidList);
                     if (Array.isArray(importedRaw.watchList)) setWatchList(importedRaw.watchList);
                     if (Array.isArray(importedRaw.resolvedRisks)) setResolvedRisks(importedRaw.resolvedRisks);
+                    if (Array.isArray(importedRaw.savedIdeas)) setSavedIdeas(importedRaw.savedIdeas);
                     importedRaw = importedRaw.entries;
                 }
                 let imported = importedRaw;
