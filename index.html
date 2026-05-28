@@ -1441,7 +1441,7 @@
                     <div class="child-age-box" id="childAgeDisplay">nezadáno</div>
                 </div>
             </div>
-            <button class="modal-btn btn-merge" style="margin-top:15px;" onclick="closeChildModal()">ULOŽIT A ZAVŘÍT</button>
+            <button class="modal-btn btn-merge" style="margin-top:15px;" onclick="closeChildModal(true)">ULOŽIT A ZAVŘÍT</button>
         </div>
     </div>
 
@@ -1452,7 +1452,7 @@
             <div class="modal-text" style="text-align:left;">Sem napište potraviny, jídla nebo kombinace, které se nemají používat v offline plánu ani v AI promptu. Každý řádek jedna položka.</div>
             <textarea id="avoidListText" class="avoid-list-textarea" placeholder="např. vejce\nkousky mrkve\nkonkrétní sklenička..."></textarea>
             <button class="modal-btn btn-merge" style="margin-top:12px;" onclick="saveAvoidListFromModal()">💾 ULOŽIT</button>
-            <button class="modal-btn btn-cancel" onclick="closeAvoidListModal()">ZAVŘÍT</button>
+            <button class="modal-btn btn-cancel" onclick="closeAvoidListModal(true)">ZAVŘÍT</button>
         </div>
     </div>
 
@@ -1464,7 +1464,7 @@
 sardinky
 květák..."></textarea>
             <button class="modal-btn btn-merge" style="margin-top:12px; background:#e67e22;" onclick="saveWatchListFromModal()">💾 ULOŽIT</button>
-            <button class="modal-btn btn-cancel" onclick="closeWatchListModal()">ZAVŘÍT</button>
+            <button class="modal-btn btn-cancel" onclick="closeWatchListModal(true)">ZAVŘÍT</button>
         </div>
     </div>
 
@@ -1523,7 +1523,7 @@ květák..."></textarea>
             <div class="modal-title" style="text-align:center;">💡 Nápady jídel</div>
             <div class="modal-text" style="text-align:left;">Sem se ukládají AI nápady, které ještě nechcete dát rovnou do dne nebo plánu.</div>
             <div id="savedIdeasContent"></div>
-            <button class="modal-btn btn-cancel" onclick="closeSavedIdeasModal()">ZAVŘÍT</button>
+            <button class="modal-btn btn-cancel" onclick="closeSavedIdeasModal(true)">ZAVŘÍT</button>
         </div>
     </div>
 
@@ -1531,13 +1531,13 @@ květák..."></textarea>
         <div class="modal-box" style="max-width:460px; text-align:left;">
             <div class="modal-title" style="text-align:center;">Rozbor jídelníčku</div>
             <div id="overviewContent"></div>
-            <button class="modal-btn btn-cancel" onclick="closeOverviewModal()">ZAVŘÍT</button>
+            <button class="modal-btn btn-cancel" onclick="closeOverviewModal(true)">ZAVŘÍT</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="manualModal">
         <div class="modal-box manual-modal-box">
-            <button type="button" class="ai-close-x" onclick="closeManualModal()">×</button>
+            <button type="button" class="ai-close-x" onclick="closeManualModal(true)">×</button>
             <div class="modal-title" style="text-align:center;">Manuál aplikace</div>
             <div class="manual-intro">
                 Tento manuál popisuje hlavní funkce deníku výživy, plánování jídelníčku a práci s AI. Většinu méně častých nástrojů najdete přes tlačítko <b>⋯ DALŠÍ</b>.
@@ -1726,7 +1726,7 @@ květák..."></textarea>
                 </div>
             </details>
 
-            <button class="modal-btn btn-cancel" onclick="closeManualModal()">ZAVŘÍT</button>
+            <button class="modal-btn btn-cancel" onclick="closeManualModal(true)">ZAVŘÍT</button>
         </div>
     </div>
 
@@ -1759,7 +1759,7 @@ květák..."></textarea>
             <button class="modal-btn btn-overwrite" onclick="deleteGeminiSettings()">🗑️ SMAZAT API KLÍČ</button>
 
             <button class="modal-btn" style="background:#2980b9" onclick="closeSettings(); openManualModal();">📘 OTEVŘÍT MANUÁL</button>
-            <button class="modal-btn btn-cancel" onclick="closeSettings()">ZAVŘÍT</button>
+            <button class="modal-btn btn-cancel" onclick="closeSettings(true)">ZAVŘÍT</button>
             <button class="modal-btn btn-overwrite" style="margin-top: 30px;" onclick="clearAllMainData()">🔥 SMAZAT
                 ÚPLNĚ VŠECHNA DATA</button>
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="handleFileSelect(event)">
@@ -1809,13 +1809,13 @@ květák..."></textarea>
 
             <button class="modal-btn btn-merge" onclick="generateMealPlan()">✅ VYTVOŘIT NÁVRH</button>
             <button class="modal-btn btn-overwrite" onclick="cancelGeneratedPlan()">🗑️ ZRUŠIT PLÁN</button>
-            <button class="modal-btn btn-cancel" onclick="closePlanner()">ZAVŘÍT</button>
+            <button class="modal-btn btn-cancel" onclick="closePlanner(true)">ZAVŘÍT</button>
         </div>
     </div>
 
-    <div class="modal-overlay" id="aiModal" onclick="if (event.target === this) closeAiModal()">
+    <div class="modal-overlay" id="aiModal" onclick="if (event.target === this) closeAiModal(true)">
         <div class="modal-box" style="max-width:560px;">
-            <button type="button" class="ai-close-x" onclick="closeAiModal()" aria-label="Zavřít AI okno">×</button>
+            <button type="button" class="ai-close-x" onclick="closeAiModal(true)" aria-label="Zavřít AI okno">×</button>
             <div class="modal-title">AI jídelníček</div>
             <div class="modal-text">Můžete vytvořit podklad ke zkopírování, nebo zavolat Gemini přímo přes vlastní API klíč uložený v nastavení.</div>
 
@@ -1905,7 +1905,7 @@ květák..."></textarea>
             <input type="date" id="aiImportStartDate" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px; font-weight:bold; color:#2c3e50;">
             <textarea id="aiPlanInput" aria-hidden="true" style="display:none;"></textarea>
             <button class="modal-btn btn-merge" onclick="importAiPlan()">📥 IMPORTOVAT AI PLÁN</button>
-            <button class="modal-btn btn-cancel" onclick="closeAiModal()">ZAVŘÍT</button>
+            <button class="modal-btn btn-cancel" onclick="closeAiModal(true)">ZAVŘÍT</button>
         </div>
     </div>
 
@@ -1927,7 +1927,7 @@ květák..."></textarea>
 
             <div style="border-top: 1px solid #eee; margin: 18px 0 15px;"></div>
             <button class="modal-btn btn-import" onclick="startDeleteSelectionMode()">☑️ RUČNĚ OZNAČIT DNY</button>
-            <button class="modal-btn btn-cancel" onclick="closeDeleteManager()">ZAVŘÍT</button>
+            <button class="modal-btn btn-cancel" onclick="closeDeleteManager(true)">ZAVŘÍT</button>
         </div>
     </div>
 
@@ -1961,7 +1961,7 @@ květák..."></textarea>
             <div class="draft-list" id="draftList">
             </div>
             <button class="modal-btn btn-merge" onclick="transferDraft()">✅ ODESLAT DO HLAVNÍHO DENÍKU</button>
-            <button class="modal-btn btn-cancel" onclick="closeDraft()">ZAVŘÍT (Uloží se jako koncept)</button>
+            <button class="modal-btn btn-cancel" onclick="closeDraft(true)">ZAVŘÍT (Uloží se jako koncept)</button>
             <button class="modal-btn btn-overwrite" style="margin-top: 25px;" onclick="clearAllDrafts()">🗑️ SMAZAT
                 VŠECHNY KONCEPTY</button>
         </div>
@@ -2086,8 +2086,9 @@ květák..."></textarea>
             document.getElementById('avoidListModal').style.display = 'flex';
         }
 
-        function closeAvoidListModal() {
+        function closeAvoidListModal(backToMore = false) {
             document.getElementById('avoidListModal').style.display = 'none';
+            returnToMoreMenuIfRequested(backToMore);
         }
 
         function saveAvoidListFromModal() {
@@ -2114,8 +2115,9 @@ květák..."></textarea>
             document.getElementById('watchListModal').style.display = 'flex';
         }
 
-        function closeWatchListModal() {
+        function closeWatchListModal(backToMore = false) {
             document.getElementById('watchListModal').style.display = 'none';
+            returnToMoreMenuIfRequested(backToMore);
         }
 
         function saveWatchListFromModal() {
@@ -2199,8 +2201,9 @@ květák..."></textarea>
             document.getElementById('savedIdeasModal').style.display = 'flex';
         }
 
-        function closeSavedIdeasModal() {
+        function closeSavedIdeasModal(backToMore = false) {
             document.getElementById('savedIdeasModal').style.display = 'none';
+            returnToMoreMenuIfRequested(backToMore);
         }
 
         function textMatchesWatchList(text) {
@@ -2298,16 +2301,18 @@ květák..."></textarea>
             document.getElementById('overviewModal').style.display = 'flex';
         }
 
-        function closeOverviewModal() {
+        function closeOverviewModal(backToMore = false) {
             document.getElementById('overviewModal').style.display = 'none';
+            returnToMoreMenuIfRequested(backToMore);
         }
 
         function openManualModal() {
             document.getElementById('manualModal').style.display = 'flex';
         }
 
-        function closeManualModal() {
+        function closeManualModal(backToMore = false) {
             document.getElementById('manualModal').style.display = 'none';
+            returnToMoreMenuIfRequested(backToMore);
         }
 
         function addCount(map, key) {
@@ -2746,16 +2751,23 @@ květák..."></textarea>
             document.getElementById('moreMenuModal').style.display = 'none';
         }
 
+        function returnToMoreMenuIfRequested(backToMore) {
+            if (backToMore) {
+                setTimeout(openMoreMenu, 0);
+            }
+        }
+
         function openChildModal() {
             loadChildProfile();
             document.getElementById('childProfileModal').style.display = 'flex';
             adjustSpacing();
         }
 
-        function closeChildModal() {
+        function closeChildModal(backToMore = false) {
             saveChildProfile();
             document.getElementById('childProfileModal').style.display = 'none';
             adjustSpacing();
+            returnToMoreMenuIfRequested(backToMore);
         }
 
 
@@ -3306,7 +3318,10 @@ květák..."></textarea>
         function setViewFilter(v) { currentViewFilter = v; updateFilterSummary(); load(); }
 
         function openPlanner() { document.getElementById('plannerModal').style.display = 'flex'; }
-        function closePlanner() { document.getElementById('plannerModal').style.display = 'none'; }
+        function closePlanner(backToMore = false) {
+            document.getElementById('plannerModal').style.display = 'none';
+            returnToMoreMenuIfRequested(backToMore);
+        }
 
         function parseDateValue(str) {
             const p = (str || '').split('.').map(x => parseInt(x.trim(), 10));
@@ -3409,7 +3424,10 @@ květák..."></textarea>
             document.getElementById('deleteManagerModal').style.display = 'flex';
         }
 
-        function closeDeleteManager() { document.getElementById('deleteManagerModal').style.display = 'none'; }
+        function closeDeleteManager(backToMore = false) {
+            document.getElementById('deleteManagerModal').style.display = 'none';
+            returnToMoreMenuIfRequested(backToMore);
+        }
 
         function cancelGeneratedPlan() {
             const data = getMainData();
@@ -3978,7 +3996,10 @@ Tuto akci nelze vrátit zpět.`)) return;
             generateAiPrompt();
         }
 
-        function closeAiModal() { document.getElementById('aiModal').style.display = 'none'; }
+        function closeAiModal(backToMore = false) {
+            document.getElementById('aiModal').style.display = 'none';
+            returnToMoreMenuIfRequested(backToMore);
+        }
 
         function getAllowedRatingsForMode(mode) {
             if (mode === 'love') return ['😍'];
@@ -4881,7 +4902,10 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
 
         // --- SPRÁVA DAT A MODAL OKNA ---
         function openSettings() { loadGeminiSettings(); document.getElementById('settingsModal').style.display = 'flex'; }
-        function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+        function closeSettings(backToMore = false) {
+            document.getElementById('settingsModal').style.display = 'none';
+            returnToMoreMenuIfRequested(backToMore);
+        }
         function triggerImport() { document.getElementById('importFile').click(); closeSettings(); }
 
         function exportData() {
@@ -5062,8 +5086,9 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
             renderDraftList();
         }
 
-        function closeDraft() {
+        function closeDraft(backToMore = false) {
             document.getElementById('draftModal').style.display = 'none';
+            returnToMoreMenuIfRequested(backToMore);
         }
 
         function getDraftData() {
