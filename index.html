@@ -1073,6 +1073,36 @@
             border: 1px solid #e1e7ec;
             border-radius: 12px;
             background: #f8f9fa;
+            --section-btn-bg: #64748b;
+            --section-btn-bg-hover: #536174;
+        }
+
+        .more-section-planning {
+            background: #f6f4ff;
+            border-color: #ddd6fe;
+            --section-btn-bg: #6d5bd0;
+            --section-btn-bg-hover: #5b4ab8;
+        }
+
+        .more-section-safety {
+            background: #fff7ed;
+            border-color: #fed7aa;
+            --section-btn-bg: #d97706;
+            --section-btn-bg-hover: #b96305;
+        }
+
+        .more-section-records {
+            background: #f0f7ff;
+            border-color: #bfdbfe;
+            --section-btn-bg: #2563a7;
+            --section-btn-bg-hover: #1d4f86;
+        }
+
+        .more-section-settings {
+            background: #f5f7f7;
+            border-color: #d8e0e0;
+            --section-btn-bg: #66757a;
+            --section-btn-bg-hover: #556367;
         }
 
         .more-section-title {
@@ -1095,6 +1125,20 @@
             min-height: 46px;
             padding: 10px 7px;
             line-height: 1.2;
+            background: var(--section-btn-bg);
+            box-shadow: none;
+        }
+
+        .more-grid .modal-btn:active {
+            background: var(--section-btn-bg-hover);
+        }
+
+        .more-grid .modal-btn.more-danger-btn {
+            background: #c0392b;
+        }
+
+        .more-grid .modal-btn.more-danger-btn:active {
+            background: #a93226;
         }
 
         .more-grid .modal-btn.more-wide-btn {
@@ -1335,39 +1379,39 @@
             <div class="modal-title">Další funkce</div>
             <div class="modal-text">Funkce jsou rozdělené podle účelu, aby bylo jasnější, kam sáhnout.</div>
 
-            <div class="more-section">
+            <div class="more-section more-section-planning">
                 <div class="more-section-title">🧠 Plánování a AI</div>
                 <div class="more-grid">
-                    <button class="modal-btn" style="background:#16a085" onclick="closeMoreMenu(); openPlanner();">🗓️ Plán jídel</button>
-                    <button class="modal-btn" style="background:#8e44ad" onclick="closeMoreMenu(); openAiModal();">🤖 AI návrhy</button>
-                    <button class="modal-btn more-wide-btn" style="background:#e67e22" onclick="closeMoreMenu(); openSavedIdeasModal();">💡 Nápady jídel</button>
+                    <button class="modal-btn" onclick="closeMoreMenu(); openPlanner();">🗓️ Plán jídel</button>
+                    <button class="modal-btn" onclick="closeMoreMenu(); openAiModal();">🤖 AI návrhy</button>
+                    <button class="modal-btn more-wide-btn" onclick="closeMoreMenu(); openSavedIdeasModal();">💡 Nápady jídel</button>
                 </div>
             </div>
 
-            <div class="more-section">
+            <div class="more-section more-section-safety">
                 <div class="more-section-title">⚠️ Bezpečnost a rozbor</div>
                 <div class="more-grid">
-                    <button class="modal-btn more-wide-btn" style="background:#27ae60" onclick="closeMoreMenu(); openOverviewModal();">📊 Rozbor jídelníčku</button>
-                    <button class="modal-btn" style="background:#d35400" onclick="closeMoreMenu(); openAvoidListModal();">🚫 Vyhnout se</button>
-                    <button class="modal-btn" style="background:#e67e22" onclick="closeMoreMenu(); openWatchListModal();">👀 Sledovat</button>
+                    <button class="modal-btn more-wide-btn" onclick="closeMoreMenu(); openOverviewModal();">📊 Rozbor jídelníčku</button>
+                    <button class="modal-btn" onclick="closeMoreMenu(); openAvoidListModal();">🚫 Vyhnout se</button>
+                    <button class="modal-btn" onclick="closeMoreMenu(); openWatchListModal();">👀 Sledovat</button>
                 </div>
             </div>
 
-            <div class="more-section">
+            <div class="more-section more-section-records">
                 <div class="more-section-title">🧾 Práce se záznamy</div>
                 <div class="more-grid">
-                    <button id="reorderPlanBtn" class="modal-btn" style="background:#3498db" onclick="closeMoreMenu(); togglePlanReorderMode();">↕️ Přeskládat plán</button>
-                    <button class="modal-btn" style="background:#2c3e50" onclick="closeMoreMenu(); openDraft();">📥 Rozpracované</button>
-                    <button class="modal-btn more-wide-btn" style="background:#c0392b" onclick="closeMoreMenu(); openDeleteManager();">🧹 Mazání záznamů</button>
+                    <button id="reorderPlanBtn" class="modal-btn" onclick="closeMoreMenu(); togglePlanReorderMode();">↕️ Přeskládat plán</button>
+                    <button class="modal-btn" onclick="closeMoreMenu(); openDraft();">📥 Rozpracované</button>
+                    <button class="modal-btn more-wide-btn more-danger-btn" onclick="closeMoreMenu(); openDeleteManager();">🧹 Mazání záznamů</button>
                 </div>
             </div>
 
-            <div class="more-section">
+            <div class="more-section more-section-settings">
                 <div class="more-section-title">⚙️ Nastavení a pomoc</div>
                 <div class="more-grid">
-                    <button class="modal-btn" style="background:#1abc9c" onclick="closeMoreMenu(); openChildModal();">👶 Údaje dítěte</button>
-                    <button class="modal-btn" style="background:#7f8c8d" onclick="closeMoreMenu(); openSettings();">⚙️ Zálohy a data</button>
-                    <button class="modal-btn more-wide-btn" style="background:#2980b9" onclick="closeMoreMenu(); openManualModal();">📘 Manuál</button>
+                    <button class="modal-btn" onclick="closeMoreMenu(); openChildModal();">👶 Údaje dítěte</button>
+                    <button class="modal-btn" onclick="closeMoreMenu(); openSettings();">⚙️ Zálohy a data</button>
+                    <button class="modal-btn more-wide-btn" onclick="closeMoreMenu(); openManualModal();">📘 Manuál</button>
                 </div>
             </div>
 
@@ -3521,7 +3565,7 @@ Tuto akci nelze vrátit zpět.`)) return;
             const btn = document.getElementById('reorderPlanBtn');
             if (btn) {
                 btn.innerText = reorderPlanMode ? '✅ HOTOVO' : '↕️ PŘESKLÁDAT';
-                btn.style.background = reorderPlanMode ? '#27ae60' : '#3498db';
+                btn.style.background = reorderPlanMode ? '#27ae60' : '';
             }
             load();
             if (reorderPlanMode) window.scrollTo(0, 0);
