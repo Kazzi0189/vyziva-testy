@@ -1215,6 +1215,12 @@
             margin-top: 8px;
         }
 
+        /* FILTRY: zůstává jen jedno tlačítko bez duplicitního textu „Filtry: vše“ */
+        .filter-open-btn {
+            flex: 1 1 100%;
+            max-width: none;
+        }
+
     </style>
 </head>
 
@@ -1238,7 +1244,6 @@
             </div>
             <div class="btn-row filter-row">
                 <button type="button" class="filter-open-btn" onclick="openFilterModal()">🔎 FILTRY</button>
-                <div id="activeFilterSummary" class="filter-summary">Filtry: vše</div>
             </div>
         </div>
     </div>
