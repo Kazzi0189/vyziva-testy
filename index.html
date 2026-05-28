@@ -4156,6 +4156,19 @@ Tuto akci nelze vrátit zpět.`)) return;
             hint.innerText = date > startToday ? 'Automatika: toto datum se uloží jako PLÁN.' : 'Automatika: toto datum se uloží jako skutečný den.';
         }
 
+        function getRiskTextSnippetsFromIdea(idea) {
+            if (!idea) return [];
+            const fullText = [idea.title, idea.text].filter(Boolean).join('\n');
+            const pattern = /raději\s*ne|radeji\s*ne|vyšší|vyssi|riziko|opatrn|pozor|sledovat|vyhnout|alerg|vyráž|vyraz|zvracen|zvracení|reakc|průjem|prujem|osyp|dušen|dusil|kašel|kasel/i;
+            const parts = fullText
+                .split(/(?<=[.!?])\s+|\n+/)
+                .map(x => x.replace(/^[\-•\s]+/, '').trim())
+                .filter(Boolean);
+            const snippets = parts.filter(part => pattern.test(part));
+            if (snippets.length) return snippets.slice(0, 4);
+            return pattern.test(fullText) ? [fullText.trim().slice(0, 450)] : [];
+        }
+
         function getIdeaUseWarnings(idea) {
             const warnings = [];
             if (!idea) return warnings;
@@ -4165,7 +4178,10 @@ Tuto akci nelze vrátit zpět.`)) return;
             const watchHits = getWatchList().filter(item => item && normalizedFullText.includes(normalizeFoodName(item)));
             if (avoidHits.length) warnings.push('🚫 Návrh obsahuje položku ze seznamu Vyhnout se: ' + avoidHits.join(', '));
             if (watchHits.length) warnings.push('👀 Návrh obsahuje položku ze seznamu Sledovat: ' + watchHits.join(', '));
-            if (/raději\s*ne|radeji\s*ne|vyšší|vyssi|riziko/i.test(fullText)) warnings.push('⚠️ Text návrhu obsahuje upozornění na vyšší riziko.');
+            const riskSnippets = getRiskTextSnippetsFromIdea(idea);
+            if (riskSnippets.length) {
+                warnings.push('⚠️ Rizikový text v návrhu:\n- ' + riskSnippets.join('\n- '));
+            }
             return warnings;
         }
 
@@ -4173,7 +4189,7 @@ Tuto akci nelze vrátit zpět.`)) return;
             if (!pendingIdeaUse || !pendingIdeaUse.idea) return;
             const warnings = getIdeaUseWarnings(pendingIdeaUse.idea);
             if (!warnings.length) return;
-            alert('Detail upozornění:\n\n' + warnings.join('\n') + '\n\nZkontrolujte návrh ručně. AI návrh je jen inspirace, ne potvrzení bezpečnosti.');
+            alert('Detail upozornění:\n\n' + warnings.join('\n\n') + '\n\nZkontrolujte návrh ručně. AI návrh je jen inspirace, ne potvrzení bezpečnosti.');
         }
 
         function updateIdeaUseWarning() {
