@@ -1779,25 +1779,31 @@ květák..."></textarea>
                 <option value="all">Celá historie</option>
             </select>
 
-            <button class="modal-btn" style="background:#e67e22" onclick="generateAiIdeasPrompt()">✨ VYTVOŘIT PODKLAD PRO 3 NÁVRHY</button>
             <button class="modal-btn" style="background:#d35400" onclick="generateIdeasWithGemini()">🤖 3 NÁVRHY PŘES GEMINI</button>
+            <div id="geminiAiStatus" class="ai-status"></div>
+            <div id="aiIdeasActionPanel" class="ai-ideas-action-panel"></div>
+
+            <details class="manual-section" style="margin-top:10px;">
+                <summary>⚙️ Pokročilé / ruční práce s AI textem</summary>
+                <div class="manual-section-content">
+                    <div class="small-help-text">
+                        Tato část je hlavně záloha pro ruční práci: když nechcete nebo nemůžete použít přímé Gemini, můžete si tady vytvořit podklad, zkopírovat ho do jiné AI a odpověď vložit zpět. V běžném používání ji není potřeba otevírat.
+                    </div>
+                    <button class="modal-btn" style="background:#e67e22" onclick="generateAiIdeasPrompt()">✨ VYTVOŘIT PODKLAD PRO 3 NÁVRHY</button>
+                    <textarea id="aiPromptOutput" readonly style="width:100%; min-height:170px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
+                    <button class="modal-btn btn-import" onclick="copyAiPrompt()">📋 KOPÍROVAT AKTUÁLNÍ PODKLAD PRO AI</button>
+
+                    <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:12px 0 5px; color:#2c3e50;">Ruční odpověď AI / Gemini</label>
+                    <textarea id="aiGeminiOutput" placeholder="Sem lze ručně vložit odpověď AI. U 3 návrhů očekávám formát NÁVRH 1, NÁVRH 2, NÁVRH 3. U plánu očekávám DEN 1, DEN 2..." style="width:100%; min-height:150px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
+                    <button class="modal-btn" style="background:#e67e22" onclick="renderAiIdeasActionsFromOutput()">✨ NAČÍST 3 NÁVRHY Z RUČNÍHO TEXTU</button>
+                    <button class="modal-btn btn-import" onclick="moveGeminiResponseToImport()">⬇️ PŘIPRAVIT RUČNÍ TEXT K IMPORTU PLÁNU</button>
+                </div>
+            </details>
 
             <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
             <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">🗓️ AI plán jídelníčku</div>
-
-            <textarea id="aiPromptOutput" readonly style="width:100%; min-height:220px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
-            <button class="modal-btn btn-merge" onclick="generateAiPrompt()">🤖 VYTVOŘIT PODKLAD</button>
-            <button class="modal-btn btn-import" onclick="copyAiPrompt()">📋 KOPÍROVAT TEXT PRO AI</button>
-
-            <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
-            <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">Přímé dotazování Gemini</div>
-            <div class="small-help-text">Použije se Gemini API klíč ze Správy dat. Odpověď se nejdřív zobrazí ke kontrole a zároveň se připraví pro import.</div>
-            <div id="geminiAiStatus" class="ai-status"></div>
+            <div class="small-help-text">Běžné použití: klikněte na tlačítko níže, zkontrolujte výsledek v části Import AI jídelníčku a teprve potom ho importujte jako PLÁN.</div>
             <button class="modal-btn btn-merge" style="background:#8e44ad;" onclick="generatePlanWithGemini()">🤖 VYTVOŘIT PLÁN PŘES GEMINI</button>
-            <textarea id="aiGeminiOutput" readonly placeholder="Tady se zobrazí odpověď Gemini..." style="width:100%; min-height:170px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
-            <div id="aiIdeasActionPanel" class="ai-ideas-action-panel"></div>
-            <button class="modal-btn" style="background:#e67e22" onclick="renderAiIdeasActionsFromOutput()">✨ NAČÍST 3 NÁVRHY Z TEXTU</button>
-            <button class="modal-btn btn-import" onclick="moveGeminiResponseToImport()">⬇️ PŘIPRAVIT ODPOVĚĎ K IMPORTU</button>
 
             <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
             <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">Import AI jídelníčku</div>
@@ -4385,7 +4391,7 @@ ${summary.riskNotes.length ? summary.riskNotes.map(x => '- ' + x).join('\n') : '
             generateAiIdeasPrompt();
             const prompt = document.getElementById('aiPromptOutput')?.value || '';
             const output = document.getElementById('aiGeminiOutput');
-            if (output) { output.value = ''; output.style.display = 'none'; }
+            if (output) { output.value = ''; output.style.display = ''; }
             if (!prompt.trim()) {
                 setStatusText('geminiAiStatus', 'Nepodařilo se vytvořit podklad pro návrhy.', true);
                 return;
@@ -4393,7 +4399,7 @@ ${summary.riskNotes.length ? summary.riskNotes.map(x => '- ' + x).join('\n') : '
             setStatusText('geminiAiStatus', 'Gemini vytváří 3 návrhy jídel. Chvíli počkejte...');
             try {
                 const text = await callGeminiApi(prompt, 'geminiAiStatus');
-                if (output) { output.value = text; output.style.display = 'none'; }
+                if (output) { output.value = text; output.style.display = ''; }
                 renderAiIdeasActions(parseAiIdeasText(text));
                 setStatusText('geminiAiStatus', '3 návrhy jsou připravené níže. Původní text odpovědi je skrytý, aby nepřekážel.');
             } catch (err) {
@@ -4469,8 +4475,8 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
             const output = document.getElementById('aiGeminiOutput');
             const importInput = document.getElementById('aiPlanInput');
             renderAiIdeasActions([]);
-            if (output) output.value = '';
-            if (!document.getElementById('aiPromptOutput')?.value.trim()) generateAiPrompt();
+            if (output) { output.value = ''; output.style.display = ''; }
+            generateAiPrompt();
             const prompt = document.getElementById('aiPromptOutput')?.value || '';
             if (!prompt.trim()) {
                 setStatusText('geminiAiStatus', 'Nejdřív vytvořte AI podklad.', true);
@@ -4479,18 +4485,18 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
             setStatusText('geminiAiStatus', 'Gemini vytváří jídelníček. Chvíli počkejte...');
             try {
                 const text = await callGeminiApi(prompt, 'geminiAiStatus');
-                if (output) { output.value = text; output.style.display = 'block'; }
+                if (output) { output.value = text; output.style.display = ''; }
                 const planBlock = extractAiPlanBlock(text);
                 if (importInput) importInput.value = planBlock;
                 const parsed = parseAiPlanText(planBlock);
                 const expectedDays = getExpectedAiDaysCount();
                 if (parsed.length === 0) {
-                    setStatusText('geminiAiStatus', 'Gemini odpovědělo, ale aplikace v textu nenašla platný blok DEN 1. Odpověď je níže ke kontrole.', true);
+                    setStatusText('geminiAiStatus', 'Gemini odpovědělo, ale aplikace v textu nenašla platný blok DEN 1. Ruční text je dostupný v pokročilé části.', true);
                     return;
                 }
                 const completenessMessage = getAiPlanCompletenessMessage(parsed.length, expectedDays);
                 if (completenessMessage) {
-                    setStatusText('geminiAiStatus', completenessMessage + ' Text je zobrazený níže, ale automatický import raději nepoužívejte bez opravy.', true);
+                    setStatusText('geminiAiStatus', completenessMessage + ' Text je uložený v pokročilé části, ale automatický import raději nepoužívejte bez opravy.', true);
                     return;
                 }
                 setStatusText('geminiAiStatus', `Gemini plán je připravený k importu (${parsed.length} dní). Zkontrolujte text a klikněte na IMPORTOVAT AI PLÁN.`);
