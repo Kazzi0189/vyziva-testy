@@ -1660,7 +1660,7 @@ květák..."></textarea>
                         <li>AI návrh má být nová věkově přiměřená možnost, kterou jste ještě nezkoušeli.</li>
                         <li><b>POUŽÍT</b> přesune návrh do hlavního jídla.</li>
                         <li><b>ZAMÍTNOUT</b> návrh odstraní.</li>
-                        <li>V AI okně je také režim <b>✨ 3 návrhy pro pestrost</b>, který nevytváří celý plán, ale jen tři opatrné nápady podle historie, rizik, seznamu „Vyhnout se“ a seznamu „Sledovat“.</li>
+                        <li>V AI okně je také režim <b>✨ 3 návrhy pro pestrost</b>, který nevytváří celý plán, ale jen tři opatrné nápady. Pestrost hodnotí podle zvoleného období, ale bezpečnost, rizika, seznam „Vyhnout se“ a seznam „Sledovat“ kontroluje z celé historie.</li>
                         <li>U návrhů lze použít <b>➕ Použít</b> pro vložení do konkrétního dne/plánu, <b>💡 Uložit</b> pro odložení do Nápadů jídel nebo <b>🗑️ Zahodit</b>.</li>
                     </ul>
                 </div>
@@ -1899,13 +1899,14 @@ květák..."></textarea>
                 <option value="4">Večeře</option>
             </select>
 
-            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Období pro rozbor</label>
-            <select id="aiIdeasPeriod" style="width:100%; margin-bottom:12px;">
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Období pro pestrost</label>
+            <select id="aiIdeasPeriod" style="width:100%; margin-bottom:6px;">
                 <option value="14" selected>Posledních 14 dní</option>
                 <option value="7">Posledních 7 dní</option>
                 <option value="30">Posledních 30 dní</option>
                 <option value="all">Celá historie</option>
             </select>
+            <div class="small-help-text" style="margin-top:0;">Bezpečnost, „Vyhnout se“, „Sledovat“ a rizikové poznámky se kontrolují vždy z celé historie. Toto období ovlivňuje jen pestrost a časté opakování jídel.</div>
 
             <button class="modal-btn" style="background:#d35400" onclick="generateIdeasWithGemini()">🤖 3 NÁVRHY PŘES GEMINI</button>
             <div id="geminiAiStatus" class="ai-status"></div>
@@ -2027,6 +2028,7 @@ květák..."></textarea>
         let currentRatingFilter = 'all';
         let currentViewFilter = 'all';
         let currentTextFilter = '';
+        let currentAiPlanAbortController = null;
         let isRendering = false;
         let deleteSelectionMode = false;
         let selectedDeleteDates = new Set();
@@ -2738,10 +2740,11 @@ květák..."></textarea>
         }
 
         function formatGeminiError(err) {
+            if (err && err.name === 'AbortError') return 'Požadavek na Gemini byl přerušen.';
             return `Chyba Gemini: ${translateGeminiErrorMessage(err && err.message ? err.message : err)}`;
         }
 
-        async function callGeminiApi(promptText, statusElementId) {
+        async function callGeminiApi(promptText, statusElementId, abortSignal) {
             const settings = getGeminiSettings();
             if (!settings.apiKey) throw new Error('Gemini API klíč není uložený. Otevřete ⋯ DALŠÍ → Správa dat → Gemini AI.');
             const model = settings.model || 'gemini-2.5-flash';
@@ -2752,6 +2755,7 @@ květák..."></textarea>
                     'Content-Type': 'application/json',
                     'x-goog-api-key': settings.apiKey
                 },
+                signal: abortSignal,
                 body: JSON.stringify({
                     contents: [
                         {
@@ -4242,6 +4246,38 @@ Tuto akci nelze vrátit zpět.`)) return;
             };
         }
 
+        function summarizeSafetyFoodsForIdeas(mealScope) {
+            const selectedIndexes = mealScope === 'all' ? [0, 1, 2, 3, 4] : [parseInt(mealScope, 10)];
+            const disliked = new Map();
+            const riskNotes = [];
+
+            getMainData().forEach(day => {
+                if (day.planned === true) return;
+                const dayNote = (day.dn || '').replace(/\s+/g, ' ').trim();
+                if (dayNote && hasRiskWords(dayNote)) riskNotes.push(`${day.d} – denní poznámka: ${dayNote}`);
+
+                (day.m || []).forEach((meal, index) => {
+                    if (!selectedIndexes.includes(index)) return;
+                    const text = (meal.t || '').replace(/\s+/g, ' ').trim();
+                    const note = (meal.n || '').replace(/\s+/g, ' ').trim();
+                    const rating = (meal.r || '😐').trim();
+                    if (!text || isEmptyMealText(text)) return;
+                    if (rating === '☹️' || hasRiskWords(note) || textMatchesAvoidList(text)) addCount(disliked, text);
+                    if (note && hasRiskWords(note)) riskNotes.push(`${day.d} – ${mealLabels[index]}: ${text} | poznámka: ${note}`);
+                });
+            });
+
+            const dislikedLines = Array.from(disliked.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 18)
+                .map(([name, count]) => `- ${name} (${count}×)`);
+
+            return {
+                disliked: dislikedLines,
+                riskNotes: riskNotes.slice(0, 18)
+            };
+        }
+
         function parseAiIdeasText(text) {
             const cleaned = String(text || '').replace(/\r\n/g, '\n').trim();
             if (!cleaned) return [];
@@ -4543,10 +4579,12 @@ Tuto akci nelze vrátit zpět.`)) return;
             const style = document.getElementById('aiIdeasStyle')?.value || 'safe';
             const entries = getRecentEntriesForAiIdeas(period);
             const summary = summarizeRecentFoodsForIdeas(entries, mealScope);
+            const safetySummary = summarizeSafetyFoodsForIdeas(mealScope);
             const childInfoLines = getChildInfoForAi();
             const childInfoText = childInfoLines.length ? `\n\nÚdaje o dítěti:\n${childInfoLines.join('\n')}` : '';
             const mealText = mealScope === 'all' ? 'libovolné denní jídlo' : mealLabels[parseInt(mealScope, 10)];
             const periodText = period === 'all' ? 'celé historie' : `posledních ${period} dní`;
+            const varietyText = period === 'all' ? 'celé historie' : `posledních ${period} dní`;
             const styleText = {
                 safe: 'bezpečné kombinace hlavně ze známých a dobře snášených surovin',
                 variety: 'rozšíření pestrosti jídelníčku bez zbytečného rizika',
@@ -4558,7 +4596,8 @@ Tuto akci nelze vrátit zpět.`)) return;
 Cíl:
 - navrhni přesně 3 nové nápady pro: ${mealText}
 - styl návrhů: ${styleText}
-- vycházej z rozboru ${periodText}
+- pestrost a časté opakování posuzuj z období: ${varietyText}
+- bezpečnost, rizika, seznam „Vyhnout se“ a seznam „Sledovat“ kontroluj vždy podle celé historie
 - nejde o lékařské doporučení; formuluj to jako inspiraci k posouzení rodičem
 
 Bezpečnostní pravidla:
@@ -4597,14 +4636,14 @@ Nová nebo méně častá surovina: ano/ne – ...
 Riziko: nízké / sledovat / raději ne – ...
 Poznámka pro rodiče: ...
 
-Dobře snášená / vhodná jídla z vybraného období:
+Dobře snášená / vhodná jídla z období pro pestrost:
 ${summary.good.length ? summary.good.join('\n') : '- ve vybraném období není dost vhodných dat'}
 
-Nejčastější jídla z vybraného období:
+Nejčastější jídla z období pro pestrost:
 ${summary.frequent.length ? summary.frequent.join('\n') : '- ve vybraném období není dost dat'}
 
-Nevhodné, nechutnalo nebo rizikové:
-${summary.disliked.length ? summary.disliked.join('\n') : '- nic výrazného'}
+Nevhodné, nechutnalo nebo rizikové z celé historie:
+${safetySummary.disliked.length ? safetySummary.disliked.join('\n') : '- nic výrazného'}
 
 Ruční seznam Vyhnout se:
 ${getAvoidList().length ? getAvoidList().map(x => '- ' + x).join('\n') : '- není vyplněn'}
@@ -4612,8 +4651,8 @@ ${getAvoidList().length ? getAvoidList().map(x => '- ' + x).join('\n') : '- nen�
 Ruční seznam Sledovat:
 ${getWatchList().length ? getWatchList().map(x => '- ' + x).join('\n') : '- není vyplněn'}
 
-Rizikové poznámky:
-${summary.riskNotes.length ? summary.riskNotes.map(x => '- ' + x).join('\n') : '- žádné ve vybraném období'}
+Rizikové poznámky z celé historie:
+${safetySummary.riskNotes.length ? safetySummary.riskNotes.map(x => '- ' + x).join('\n') : '- žádné výrazné rizikové poznámky nenalezeny'}
 `;
 
             const box = document.getElementById('aiPromptOutput');
@@ -4719,9 +4758,10 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
                 return;
             }
             setStatusText('geminiAiStatus', 'Gemini vytváří jídelníček. Chvíli počkejte...');
+            currentAiPlanAbortController = new AbortController();
             openAiPlanResultModalLoading();
             try {
-                const text = await callGeminiApi(prompt, 'geminiAiStatus');
+                const text = await callGeminiApi(prompt, 'geminiAiStatus', currentAiPlanAbortController.signal);
                 if (output) { output.value = text; output.style.display = ''; }
                 const planBlock = extractAiPlanBlock(text);
                 if (importInput) importInput.value = planBlock;
@@ -4744,6 +4784,8 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
                 const msg = formatGeminiError(err);
                 setStatusText('geminiAiStatus', msg, true);
                 showAiPlanResultModalError(msg);
+            } finally {
+                currentAiPlanAbortController = null;
             }
         }
 
@@ -4818,8 +4860,20 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
                     Gemini připravuje jídelníček. Chvíli počkejte…
                 </div>
                 <div class="small-help-text" style="text-align:center;">Okno po dokončení zobrazí plán ke kontrole a tlačítko pro import.</div>
+                <button type="button" class="modal-btn btn-overwrite" onclick="cancelAiPlanGeneration()">⛔ PŘERUŠIT ČEKÁNÍ</button>
             `;
             modal.style.display = 'flex';
+        }
+
+
+        function cancelAiPlanGeneration() {
+            if (currentAiPlanAbortController) {
+                currentAiPlanAbortController.abort();
+                currentAiPlanAbortController = null;
+            }
+            window.aiPlanModalBusy = false;
+            setStatusText('geminiAiStatus', 'Vytváření AI plánu bylo přerušeno uživatelem.', true);
+            showAiPlanResultModalError('Vytváření AI plánu bylo přerušeno. Žádný plán se neimportoval ani neuložil.');
         }
 
         function showAiPlanResultModal(planBlock, parsedCount, expectedCount, completenessMessage) {
