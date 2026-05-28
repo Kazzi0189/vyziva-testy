@@ -1866,12 +1866,7 @@ květák..."></textarea>
                 <option value="base">Chutnalo 😍 + dobré 🙂 + základ 😐</option>
             </select>
 
-            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Délka AI návrhu</label>
-            <select id="aiDays" style="width:100%; margin-bottom:10px;">
-                <option value="7">7 dní</option>
-                <option value="14">14 dní</option>
-                <option value="30" selected>30 dní</option>
-            </select>
+            <input type="hidden" id="aiDays" value="7">
 
             <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Co má AI plánovat</label>
             <select id="aiMealScope" style="width:100%; margin-bottom:12px;">
@@ -1935,8 +1930,8 @@ květák..."></textarea>
 
             <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
             <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">🗓️ AI plán jídelníčku</div>
-            <div class="small-help-text">Po kliknutí se otevře samostatné okno. Nejdřív uvidíte, že Gemini pracuje, potom se zobrazí hotový plán ke kontrole a importu.</div>
-            <button class="modal-btn btn-merge" style="background:#8e44ad;" onclick="generatePlanWithGemini()">🤖 VYTVOŘIT PLÁN PŘES GEMINI</button>
+            <div class="small-help-text">Po kliknutí nejdřív vyberete počet dní. Výchozí volba je 7 dní, aby se omylem nevytvářel zbytečně dlouhý plán.</div>
+            <button class="modal-btn btn-merge" style="background:#8e44ad;" onclick="openAiPlanDaysModal()">🤖 VYTVOŘIT PLÁN PŘES GEMINI</button>
             <input type="date" id="aiImportStartDate" aria-hidden="true" style="display:none;">
             <textarea id="aiPlanInput" aria-hidden="true" style="display:none;"></textarea>
             <button class="modal-btn btn-cancel" onclick="closeAiModal(true)">ZAVŘÍT</button>
@@ -1945,6 +1940,22 @@ květák..."></textarea>
 
 
 
+
+    <div class="modal-overlay" id="aiPlanDaysModal" onclick="if (event.target === this) closeAiPlanDaysModal()">
+        <div class="modal-box" style="max-width:430px; text-align:left;">
+            <div class="modal-title" style="text-align:center;">Kolik dní má mít AI plán?</div>
+            <div class="modal-text" style="text-align:left;">Vyberte délku plánu. Výchozí je 7 dní, aby se při nechtěném kliknutí neposílal zbytečně dlouhý požadavek na Gemini.</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px;">
+                <button type="button" class="modal-btn" style="background:#8e44ad; margin:0;" onclick="selectAiPlanDays(7)">7 dní</button>
+                <button type="button" class="modal-btn" style="background:#8e44ad; margin:0;" onclick="selectAiPlanDays(14)">14 dní</button>
+                <button type="button" class="modal-btn" style="background:#8e44ad; margin:0;" onclick="selectAiPlanDays(30)">30 dní</button>
+            </div>
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Nebo vlastní počet dní</label>
+            <input id="aiPlanCustomDays" type="number" min="1" max="60" inputmode="numeric" placeholder="např. 10" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px; font-weight:bold; color:#2c3e50;">
+            <button class="modal-btn btn-merge" onclick="startAiPlanWithCustomDays()">✅ POKRAČOVAT S VLASTNÍM POČTEM</button>
+            <button class="modal-btn btn-cancel" onclick="closeAiPlanDaysModal()">ZAVŘÍT</button>
+        </div>
+    </div>
 
     <div class="modal-overlay" id="aiPlanResultModal" onclick="if (event.target === this && !window.aiPlanModalBusy) closeAiPlanResultModal()">
         <div class="modal-box" style="max-width:560px; text-align:left;">
@@ -4126,8 +4137,52 @@ Tuto akci nelze vrátit zpět.`)) return;
         }
 
         function getExpectedAiDaysCount() {
-            const value = document.getElementById('aiDays')?.value || '7';
-            return Math.max(1, parseInt(value, 10) || 7);
+            const value = document.getElementById('aiDays')?.value || window.aiPlanDaysCount || '7';
+            const parsed = Math.max(1, parseInt(value, 10) || 7);
+            return Math.min(parsed, 60);
+        }
+
+        function setAiPlanDaysCount(days) {
+            const parsed = Math.max(1, Math.min(60, parseInt(days, 10) || 7));
+            window.aiPlanDaysCount = parsed;
+            const input = document.getElementById('aiDays');
+            if (input) input.value = String(parsed);
+            return parsed;
+        }
+
+        function openAiPlanDaysModal() {
+            setAiPlanDaysCount(7);
+            const custom = document.getElementById('aiPlanCustomDays');
+            if (custom) custom.value = '';
+            const modal = document.getElementById('aiPlanDaysModal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeAiPlanDaysModal() {
+            const modal = document.getElementById('aiPlanDaysModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function selectAiPlanDays(days) {
+            setAiPlanDaysCount(days);
+            closeAiPlanDaysModal();
+            generatePlanWithGemini();
+        }
+
+        function startAiPlanWithCustomDays() {
+            const raw = document.getElementById('aiPlanCustomDays')?.value || '';
+            const days = parseInt(raw, 10);
+            if (!days || days < 1) {
+                alert('Zadejte platný počet dní.');
+                return;
+            }
+            if (days > 60) {
+                alert('Kvůli délce odpovědi je maximum 60 dní.');
+                return;
+            }
+            setAiPlanDaysCount(days);
+            closeAiPlanDaysModal();
+            generatePlanWithGemini();
         }
 
         function getAiPlanCompletenessMessage(parsedCount, expectedCount) {
