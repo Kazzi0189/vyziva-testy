@@ -1802,22 +1802,15 @@ květák..."></textarea>
 
             <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
             <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">🗓️ AI plán jídelníčku</div>
-            <div class="small-help-text">Běžné použití: klikněte na tlačítko níže, zkontrolujte výsledek v části Import AI jídelníčku a teprve potom ho importujte jako PLÁN.</div>
+            <div class="small-help-text">Běžné použití: klikněte na tlačítko níže. Aplikace výsledek zkontroluje a připraví k importu jako PLÁN.</div>
             <button class="modal-btn btn-merge" style="background:#8e44ad;" onclick="generatePlanWithGemini()">🤖 VYTVOŘIT PLÁN PŘES GEMINI</button>
 
             <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
             <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">Import AI jídelníčku</div>
-            <div class="modal-text" style="margin-bottom:10px;">Sem vložte jen výsledný blok jídelníčku od AI. Aplikace ho uloží jako PLÁN.</div>
+            <div class="modal-text" style="margin-bottom:10px;">Po vytvoření plánu přes Gemini se výsledek připraví na pozadí. Tady už stačí jen zvolit datum a importovat ho jako PLÁN.</div>
             <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Začít plán od data</label>
             <input type="date" id="aiImportStartDate" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px; font-weight:bold; color:#2c3e50;">
-            <textarea id="aiPlanInput" placeholder="Vložte například:
-
-DEN 1
-Snídaně: ...
-Dop. svačina: ...
-Oběd: ...
-Odp. svačina: ...
-Večeře: ..." style="width:100%; min-height:180px; box-sizing:border-box; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:0.82rem; line-height:1.4; resize:vertical; margin-bottom:10px;"></textarea>
+            <textarea id="aiPlanInput" aria-hidden="true" style="display:none;"></textarea>
             <button class="modal-btn btn-merge" onclick="importAiPlan()">📥 IMPORTOVAT AI PLÁN</button>
             <button class="modal-btn btn-cancel" onclick="closeAiModal()">ZAVŘÍT</button>
         </div>
@@ -4621,7 +4614,7 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
             const startInput = document.getElementById('aiImportStartDate');
             const parsed = parseAiPlanText(input ? input.value : '');
             if (parsed.length === 0) {
-                alert('Nepodařilo se najít žádný platný den jídelníčku. Vložte blok ve formátu DEN 1, Snídaně, Dop. svačina, Oběd, Odp. svačina, Večeře.');
+                alert('Není připravený žádný platný AI plán. Nejdřív vytvořte plán přes Gemini, nebo v pokročilé části připravte ruční text k importu.');
                 return;
             }
 
