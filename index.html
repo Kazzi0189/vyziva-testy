@@ -699,6 +699,46 @@
         }
 
 
+        .ai-plan-result-box {
+            width: 100%;
+            min-height: 220px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.82rem;
+            line-height: 1.4;
+            resize: vertical;
+            margin: 10px 0;
+            background: #fafafa;
+        }
+
+        .ai-loading-box {
+            background: #f8f9fa;
+            border: 1px solid #e1e7ec;
+            border-radius: 12px;
+            padding: 14px;
+            margin: 10px 0;
+            text-align: center;
+            color: #2c3e50;
+            font-weight: 700;
+        }
+
+        .ai-loading-spinner {
+            width: 28px;
+            height: 28px;
+            border: 4px solid #e1e7ec;
+            border-top-color: #8e44ad;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            animation: aiSpin 0.9s linear infinite;
+        }
+
+        @keyframes aiSpin {
+            to { transform: rotate(360deg); }
+        }
+
+
         .delete-check-wrap {
             display: none;
             position: absolute;
@@ -1895,22 +1935,23 @@ květák..."></textarea>
 
             <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
             <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">🗓️ AI plán jídelníčku</div>
-            <div class="small-help-text">Běžné použití: klikněte na tlačítko níže. Aplikace výsledek zkontroluje a připraví k importu jako PLÁN.</div>
+            <div class="small-help-text">Po kliknutí se otevře samostatné okno. Nejdřív uvidíte, že Gemini pracuje, potom se zobrazí hotový plán ke kontrole a importu.</div>
             <button class="modal-btn btn-merge" style="background:#8e44ad;" onclick="generatePlanWithGemini()">🤖 VYTVOŘIT PLÁN PŘES GEMINI</button>
-
-            <div style="border-top:1px solid #eee; margin:18px 0 14px;"></div>
-            <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">Import AI jídelníčku</div>
-            <div class="modal-text" style="margin-bottom:10px;">Po vytvoření plánu přes Gemini se výsledek připraví na pozadí. Tady už stačí jen zvolit datum a importovat ho jako PLÁN.</div>
-            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Začít plán od data</label>
-            <input type="date" id="aiImportStartDate" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px; font-weight:bold; color:#2c3e50;">
+            <input type="date" id="aiImportStartDate" aria-hidden="true" style="display:none;">
             <textarea id="aiPlanInput" aria-hidden="true" style="display:none;"></textarea>
-            <button class="modal-btn btn-merge" onclick="importAiPlan()">📥 IMPORTOVAT AI PLÁN</button>
             <button class="modal-btn btn-cancel" onclick="closeAiModal(true)">ZAVŘÍT</button>
         </div>
     </div>
 
 
 
+
+    <div class="modal-overlay" id="aiPlanResultModal" onclick="if (event.target === this && !window.aiPlanModalBusy) closeAiPlanResultModal()">
+        <div class="modal-box" style="max-width:560px; text-align:left;">
+            <div class="modal-title" style="text-align:center;">🗓️ AI plán jídelníčku</div>
+            <div id="aiPlanModalContent"></div>
+        </div>
+    </div>
 
     <div class="modal-overlay" id="deleteManagerModal">
         <div class="modal-box">
@@ -4614,13 +4655,16 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
             const importInput = document.getElementById('aiPlanInput');
             renderAiIdeasActions([]);
             if (output) { output.value = ''; output.style.display = ''; }
+            if (importInput) importInput.value = '';
             generateAiPrompt();
             const prompt = document.getElementById('aiPromptOutput')?.value || '';
             if (!prompt.trim()) {
                 setStatusText('geminiAiStatus', 'Nejdřív vytvořte AI podklad.', true);
+                showAiPlanResultModalError('Nepodařilo se vytvořit AI podklad pro plán.');
                 return;
             }
             setStatusText('geminiAiStatus', 'Gemini vytváří jídelníček. Chvíli počkejte...');
+            openAiPlanResultModalLoading();
             try {
                 const text = await callGeminiApi(prompt, 'geminiAiStatus');
                 if (output) { output.value = text; output.style.display = ''; }
@@ -4629,17 +4673,22 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
                 const parsed = parseAiPlanText(planBlock);
                 const expectedDays = getExpectedAiDaysCount();
                 if (parsed.length === 0) {
-                    setStatusText('geminiAiStatus', 'Gemini odpovědělo, ale aplikace v textu nenašla platný blok DEN 1. Ruční text je dostupný v pokročilé části.', true);
+                    const msg = 'Gemini odpovědělo, ale aplikace v textu nenašla platný blok DEN 1. Ruční text je dostupný v pokročilé části.';
+                    setStatusText('geminiAiStatus', msg, true);
+                    showAiPlanResultModalError(msg);
                     return;
                 }
                 const completenessMessage = getAiPlanCompletenessMessage(parsed.length, expectedDays);
                 if (completenessMessage) {
-                    setStatusText('geminiAiStatus', completenessMessage + ' Text je uložený v pokročilé části, ale automatický import raději nepoužívejte bez opravy.', true);
-                    return;
+                    setStatusText('geminiAiStatus', completenessMessage + ' Text je zobrazený v kontrolním okně. Importujte ho jen po ruční kontrole.', true);
+                } else {
+                    setStatusText('geminiAiStatus', `Gemini plán je připravený ke kontrole a importu (${parsed.length} dní).`);
                 }
-                setStatusText('geminiAiStatus', `Gemini plán je připravený k importu (${parsed.length} dní). Zkontrolujte text a klikněte na IMPORTOVAT AI PLÁN.`);
+                showAiPlanResultModal(planBlock, parsed.length, expectedDays, completenessMessage);
             } catch (err) {
-                setStatusText('geminiAiStatus', formatGeminiError(err), true);
+                const msg = formatGeminiError(err);
+                setStatusText('geminiAiStatus', msg, true);
+                showAiPlanResultModalError(msg);
             }
         }
 
@@ -4680,12 +4729,82 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
         }
 
         function setDefaultAiImportStartDate() {
-            const input = document.getElementById('aiImportStartDate');
-            if (!input || input.value) return;
             const tomorrow = new Date();
             tomorrow.setHours(0, 0, 0, 0);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            input.value = dateToISO(tomorrow);
+            const defaultValue = dateToISO(tomorrow);
+            ['aiImportStartDate', 'aiPlanModalStartDate'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input && !input.value) input.value = defaultValue;
+            });
+        }
+
+        function getAiPlanImportStartDateValue() {
+            const modalValue = document.getElementById('aiPlanModalStartDate')?.value || '';
+            const hiddenValue = document.getElementById('aiImportStartDate')?.value || '';
+            return modalValue || hiddenValue;
+        }
+
+        function setAiPlanImportStartDateValue(value) {
+            const hidden = document.getElementById('aiImportStartDate');
+            const modal = document.getElementById('aiPlanModalStartDate');
+            if (hidden && value) hidden.value = value;
+            if (modal && value) modal.value = value;
+        }
+
+        function openAiPlanResultModalLoading() {
+            window.aiPlanModalBusy = true;
+            const modal = document.getElementById('aiPlanResultModal');
+            const content = document.getElementById('aiPlanModalContent');
+            if (!modal || !content) return;
+            content.innerHTML = `
+                <div class="ai-loading-box">
+                    <div class="ai-loading-spinner"></div>
+                    Gemini připravuje jídelníček. Chvíli počkejte…
+                </div>
+                <div class="small-help-text" style="text-align:center;">Okno po dokončení zobrazí plán ke kontrole a tlačítko pro import.</div>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function showAiPlanResultModal(planBlock, parsedCount, expectedCount, completenessMessage) {
+            window.aiPlanModalBusy = false;
+            setDefaultAiImportStartDate();
+            const modal = document.getElementById('aiPlanResultModal');
+            const content = document.getElementById('aiPlanModalContent');
+            if (!modal || !content) return;
+            const currentDate = getAiPlanImportStartDateValue() || dateToISO(new Date());
+            const warningHtml = completenessMessage
+                ? `<div style="background:#fff3cd; border:1px solid #f1c40f; color:#7d6608; border-radius:8px; padding:10px; margin:10px 0; font-size:0.84rem;"><b>Upozornění:</b> ${escapeHtml(completenessMessage)}</div>`
+                : `<div style="background:#eafaf1; border:1px solid #82e0aa; color:#1e8449; border-radius:8px; padding:10px; margin:10px 0; font-size:0.84rem;"><b>Kontrola:</b> plán obsahuje ${parsedCount} z ${expectedCount} požadovaných dní.</div>`;
+            content.innerHTML = `
+                <div class="small-help-text">Gemini plán je připravený. Zkontrolujte text, zvolte datum začátku a potom ho importujte jako <b>PLÁN</b>.</div>
+                ${warningHtml}
+                <label style="display:block; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Začít plán od data</label>
+                <input type="date" id="aiPlanModalStartDate" value="${escapeHtml(currentDate)}" onchange="setAiPlanImportStartDateValue(this.value)" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px; font-weight:bold; color:#2c3e50;">
+                <textarea class="ai-plan-result-box" readonly>${escapeHtml(planBlock || '')}</textarea>
+                <button class="modal-btn btn-merge" onclick="importAiPlan()">📥 IMPORTOVAT AI PLÁN</button>
+                <button class="modal-btn btn-cancel" onclick="closeAiPlanResultModal()">ZAVŘÍT</button>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function showAiPlanResultModalError(message) {
+            window.aiPlanModalBusy = false;
+            const modal = document.getElementById('aiPlanResultModal');
+            const content = document.getElementById('aiPlanModalContent');
+            if (!modal || !content) return;
+            content.innerHTML = `
+                <div style="background:#fff5f5; border:1px solid #f5c6cb; color:#c0392b; border-radius:8px; padding:12px; margin:10px 0; font-size:0.9rem;">${escapeHtml(message)}</div>
+                <button class="modal-btn btn-cancel" onclick="closeAiPlanResultModal()">ZAVŘÍT</button>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function closeAiPlanResultModal() {
+            if (window.aiPlanModalBusy) return;
+            const modal = document.getElementById('aiPlanResultModal');
+            if (modal) modal.style.display = 'none';
         }
 
         function normalizeAiMealLabel(label) {
@@ -4771,7 +4890,7 @@ Přesto chcete tento neúplný/odlišný plán importovat?`)) {
                 return;
             }
 
-            const startDate = isoToDateValue(startInput ? startInput.value : '');
+            const startDate = isoToDateValue(getAiPlanImportStartDateValue());
             if (!startDate) {
                 alert('Vyberte datum, od kdy má AI plán začít.');
                 return;
@@ -4793,6 +4912,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
             const generatedMap = new Map(generated.map(item => [item.d, item]));
             let data = getMainData().filter(item => !generatedMap.has((item.d || '').trim())).concat(generated);
             setMainData(data);
+            closeAiPlanResultModal();
             closeAiModal();
             load();
             alert(appendPlanWarningsToMessage(`AI plán byl importován jako PLÁN (${generated.length} dní).`, generated));
