@@ -424,15 +424,6 @@
         }
 
         /* Výběr rizikové položky se otevírá z Přehledu jídel, proto musí být nad běžnými modaly. */
-        #riskActionModal {
-            z-index: 4500;
-        }
-
-        #riskActionModal .modal-box {
-            position: relative;
-            z-index: 4501;
-        }
-
 
         .meal-item.meal-watch {
             border-color: #f39c12;
@@ -548,13 +539,32 @@
             background: #f4f6f6;
         }
 
-        #ideaUseModal, #savedIdeasModal {
+        #savedIdeasModal {
             z-index: 4600;
         }
 
-        #ideaUseModal .modal-box, #savedIdeasModal .modal-box {
+        #savedIdeasModal .modal-box {
             position: relative;
             z-index: 4601;
+        }
+
+        /* Sekundární okna otevřená z Nápadů/Rozboru musí být vždy nad rodičovským oknem. */
+        #ideaUseModal {
+            z-index: 7000;
+        }
+
+        #ideaUseModal .modal-box {
+            position: relative;
+            z-index: 7001;
+        }
+
+        #riskActionModal {
+            z-index: 7100;
+        }
+
+        #riskActionModal .modal-box {
+            position: relative;
+            z-index: 7101;
         }
 
         /* MODAL OKNA (NASTAVENÍ A IMPORT) */
@@ -2181,7 +2191,7 @@ květák..."></textarea>
         let currentAiIdeaSuggestions = [];
         let pendingIdeaUse = null;
         const DATA_VERSION = 3;
-        const APP_VERSION = '2026-05-29-ideas-manager-v1';
+        const APP_VERSION = '2026-05-29-ideas-modal-layer-v1';
 
         function getChildProfile() {
             const raw = localStorage.getItem(CHILD_PROFILE_KEY);
