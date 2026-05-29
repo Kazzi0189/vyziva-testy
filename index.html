@@ -222,6 +222,43 @@
             display: block;
         }
 
+        .rx-select {
+            display: none;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #f1c40f;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 0.82rem;
+            background: #fffdf2;
+            color: #2c3e50;
+            font-weight: 700;
+        }
+
+        body.show-n .rx-select {
+            display: block;
+        }
+
+        .reaction-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            align-self: flex-start;
+            background: #fff4e6;
+            border: 1px solid #f5cba7;
+            color: #a04000;
+            border-radius: 999px;
+            padding: 5px 9px;
+            font-size: 0.74rem;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .meal-item.meal-reaction {
+            border-color: #f5cba7;
+            background: #fffaf2;
+        }
+
         .rating {
             font-size: 1.4rem;
             text-align: center;
@@ -1655,8 +1692,9 @@ květák..."></textarea>
                         <li><b>🙂</b> znamená dobré.</li>
                         <li><b>😐</b> je základní výchozí hodnocení.</li>
                         <li><b>☹️</b> znamená nechutnalo nebo nevhodné.</li>
+                        <li>Po zapnutí <b>📝 poznámek</b> je u každého jídla také pole <b>Reakce</b>, kde lze ručně označit vyrážku, zvracení, průjem, kašel/dušení, nechutnalo nebo jinou reakci.</li>
                     </ul>
-                    <div class="manual-note">AI i offline plán se snaží vycházet hlavně z lepších hodnocení a vyhýbat se negativním položkám.</div>
+                    <div class="manual-note">AI i offline plán se snaží vycházet hlavně z lepších hodnocení a vyhýbat se negativním položkám. Ručně označená reakce má přednost před smajlíkem, takže i jídlo s 🙂 se po označení reakce objeví v rozboru rizik.</div>
                 </div>
             </details>
 
@@ -2098,7 +2136,7 @@ květák..."></textarea>
         let currentAiIdeaSuggestions = [];
         let pendingIdeaUse = null;
         const DATA_VERSION = 3;
-        const APP_VERSION = '2026-05-29-watch-allow-v1';
+        const APP_VERSION = '2026-05-29-reaction-field-v1';
 
         function getChildProfile() {
             const raw = localStorage.getItem(CHILD_PROFILE_KEY);
@@ -2240,7 +2278,8 @@ květák..."></textarea>
                 item?.date || '',
                 item?.mealLabel || '',
                 item?.food || '',
-                item?.note || ''
+                item?.note || '',
+                item?.reaction || ''
             ].join('|'));
         }
 
@@ -2439,12 +2478,13 @@ květák..."></textarea>
             entry.d = (entry.d || '').trim();
             entry.dn = (entry.dn || entry.dayNote || '').toString();
             const meals = Array.isArray(entry.m) ? entry.m.slice(0, 5) : [];
-            while (meals.length < 5) meals.push({ t: '', w: '', n: '', r: '😐', a: '' });
+            while (meals.length < 5) meals.push({ t: '', w: '', n: '', r: '😐', rx: '', a: '' });
             entry.m = meals.map(m => ({
                 t: (m && m.t) ? String(m.t) : '',
                 w: (m && m.w) ? String(m.w) : '',
                 n: (m && m.n) ? String(m.n) : '',
                 r: (m && m.r) ? String(m.r) : '😐',
+                rx: normalizeReactionValue(m && m.rx),
                 a: (m && m.a) ? String(m.a) : ''
             }));
             if (entry.planned === true) entry.planned = true;
@@ -2485,6 +2525,72 @@ květák..."></textarea>
             const rows = Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, limit);
             if (rows.length === 0) return '<div style="color:#95a5a6;">Zatím žádná data.</div>';
             return '<ul>' + rows.map(([name, count]) => `<li>${escapeHtml(name)} <b>${count}×</b></li>`).join('') + '</ul>';
+        }
+
+        const REACTION_OPTIONS = [
+            { value: '', label: 'Reakce: žádná', risk: false },
+            { value: 'rash', label: 'Reakce: vyrážka / osypání', risk: true },
+            { value: 'vomit', label: 'Reakce: zvracení', risk: true },
+            { value: 'diarrhea', label: 'Reakce: průjem', risk: true },
+            { value: 'cough', label: 'Reakce: kašel / dušení', risk: true },
+            { value: 'dislike', label: 'Reakce: nechutnalo', risk: true },
+            { value: 'other', label: 'Reakce: jiné / sledovat', risk: true }
+        ];
+
+        function normalizeReactionValue(value) {
+            const v = String(value || '').trim();
+            return REACTION_OPTIONS.some(item => item.value === v) ? v : '';
+        }
+
+        function getReactionOption(value) {
+            const v = normalizeReactionValue(value);
+            return REACTION_OPTIONS.find(item => item.value === v) || REACTION_OPTIONS[0];
+        }
+
+        function getReactionLabel(value) {
+            return getReactionOption(value).label.replace(/^Reakce:\s*/i, '');
+        }
+
+        function hasReactionFlag(value) {
+            return Boolean(normalizeReactionValue(value));
+        }
+
+        function getReactionReason(value) {
+            const v = normalizeReactionValue(value);
+            if (!v) return '';
+            return 'zadaná reakce: ' + getReactionLabel(v).toLowerCase();
+        }
+
+        function reactionSelectHtml(value, onChangeHandler = 'save()') {
+            const current = normalizeReactionValue(value);
+            return `<select class="rx-select" onchange="${onChangeHandler}" title="Reakce po jídle">${REACTION_OPTIONS.map(opt => `<option value="${escapeHtml(opt.value)}" ${opt.value === current ? 'selected' : ''}>${escapeHtml(opt.label)}</option>`).join('')}</select>`;
+        }
+
+        function reactionBadgeHtml(value) {
+            const v = normalizeReactionValue(value);
+            if (!v) return '';
+            const label = getReactionLabel(v);
+            return `<button type="button" class="reaction-badge" onclick="showReactionDetail('${encodeURIComponent(label)}')">⚠️ REAKCE: ${escapeHtml(label)}</button>`;
+        }
+
+        function showReactionDetail(encodedLabel) {
+            const label = decodeURIComponent(encodedLabel || '');
+            alert('U tohoto jídla je ručně označená reakce: ' + label + '\n\nAplikace to bere jako důležitý signál pro rozbor jídelníčku a AI podklady. Pokud byla reakce omylem, změňte v poli Reakce hodnotu na „žádná“ a uložte záznam.');
+        }
+
+        function mealHasReactionRisk(meal) {
+            return Boolean(meal && hasReactionFlag(meal.rx));
+        }
+
+        function mealHasRisk(meal) {
+            return Boolean((meal && hasRiskWords(meal.n || '')) || mealHasReactionRisk(meal));
+        }
+
+        function getMealRiskReason(meal) {
+            const reasons = [];
+            if (meal && hasRiskWords(meal.n || '')) reasons.push(getRiskReason(meal.n || ''));
+            if (mealHasReactionRisk(meal)) reasons.push(getReactionReason(meal.rx));
+            return reasons.filter(Boolean).join(', ') || 'riziková poznámka / reakce';
         }
 
         function hasRiskWords(value) {
@@ -2620,7 +2726,8 @@ květák..."></textarea>
                         <div><b>${escapeHtml(item.date)}</b> – ${escapeHtml(item.mealLabel)}</div>
                         ${item.food ? `<div><b>Jídlo:</b> ${escapeHtml(item.food)}</div>` : ''}
                         <div><b>Důvod:</b> ${escapeHtml(item.reason)}</div>
-                        <div><b>Poznámka:</b> ${escapeHtml(item.note)}</div>
+                        ${item.reaction ? `<div><b>Reakce:</b> ${escapeHtml(getReactionLabel(item.reaction))}</div>` : ''}
+                        <div><b>Poznámka:</b> ${escapeHtml(item.note || '—')}</div>
                         ${ratingWarning}
                         ${actionButtons}
                     </div>`;
@@ -2655,7 +2762,8 @@ květák..."></textarea>
                         return `<div style="border:1px solid #e1e7ec; background:#f8f9fa; border-radius:8px; padding:8px;">
                             <div><b>${escapeHtml(item.date)}</b> – ${escapeHtml(item.mealLabel)}</div>
                             ${item.food ? `<div><b>Jídlo:</b> ${escapeHtml(item.food)}</div>` : ''}
-                            <div><b>Poznámka:</b> ${escapeHtml(item.note)}</div>
+                            ${item.reaction ? `<div><b>Reakce:</b> ${escapeHtml(getReactionLabel(item.reaction))}</div>` : ''}
+                            <div><b>Poznámka:</b> ${escapeHtml(item.note || '—')}</div>
                             <div style="color:#7f8c8d; font-size:0.8rem; margin-top:4px;">Stav: ${state}</div>
                             <button type="button" class="modal-btn" style="background:#3498db; margin-top:7px; padding:8px;" onclick="restoreRiskToNew('${encodeURIComponent(riskId)}')">↩️ Vrátit mezi nové</button>
                         </div>`;
@@ -2698,7 +2806,7 @@ květák..."></textarea>
                     const text = (meal.t || '').replace(/\s+/g, ' ').trim();
                     const note = (meal.n || '').replace(/\s+/g, ' ').trim();
                     const rating = (meal.r || '').trim();
-                    const mealIsRisky = hasRiskWords(note);
+                    const mealIsRisky = mealHasRisk(meal);
 
                     if (text && !isEmptyMealText(text)) {
                         addCount(frequent, text);
@@ -2715,8 +2823,9 @@ květák..."></textarea>
                             mealLabel: mealLabels[index] || 'Jídlo',
                             food: text,
                             note,
+                            reaction: meal.rx || '',
                             rating,
-                            reason: getRiskReason(note)
+                            reason: getMealRiskReason(meal)
                         });
                     }
                 });
@@ -2974,6 +3083,7 @@ květák..."></textarea>
                     w: item.querySelector('.w-box').value,
                     n: item.querySelector('.n-box').innerText,
                     r: item.querySelector('.rating').innerText,
+                    rx: item.querySelector('.rx-select') ? normalizeReactionValue(item.querySelector('.rx-select').value) : '',
                     a: item.querySelector('.ai-suggestion-text') ? item.querySelector('.ai-suggestion-text').innerText.trim() : ''
                 }))
             };
@@ -3011,7 +3121,7 @@ květák..."></textarea>
         }
 
         function createEmptyMealSet() {
-            return mealLabels.map(() => ({ t: '', w: '', n: '', r: '😐' }));
+            return mealLabels.map(() => ({ t: '', w: '', n: '', r: '😐', rx: '' }));
         }
 
         function createEmptyPlanCard(dateText) {
@@ -3262,19 +3372,22 @@ květák..."></textarea>
 
             const dayTextMatches = currentTextFilter.trim() ? dayLevelMatchesText(e) : false;
             for (let i = 0; i < 5; i++) {
-                const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐', a: '' };
+                const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐', rx: '', a: '' };
                 let bg = rates[m.r] || '#e3f9e5';
                 const watchHits = getWatchHits(m.t || '');
                 const aiWatchHits = getWatchHits(m.a || '');
                 const hiddenClass = mealMatchesFilters(m, i, dayTextMatches) ? '' : ' meal-hidden';
                 const watchClass = watchHits.length ? ' meal-watch' : '';
+                const reactionClass = hasReactionFlag(m.rx) ? ' meal-reaction' : '';
                 html += `
-            <div class="meal-item${hiddenClass}${watchClass}" data-index="${i}">
+            <div class="meal-item${hiddenClass}${watchClass}${reactionClass}" data-index="${i}">
                 <div class="meal-label">${mealLabels[i]}</div>
                 <div class="meal-content">
                     <div class="m-box" contenteditable="true" oninput="save()" placeholder="Napište jídlo...">${renderTextWithWatchMarks(m.t, watchHits)}</div>
                     ${watchBadgeHtml(watchHits)}
+                    ${reactionBadgeHtml(m.rx)}
                     <input type="number" class="w-box" placeholder="Gramy (g)" value="${escapeHtml(m.w)}" oninput="save()">
+                    ${reactionSelectHtml(m.rx, 'save()')}
                     <div class="n-box" contenteditable="true" oninput="save()" placeholder="Poznámka...">${escapeHtml(m.n)}</div>
                     ${m.a ? `<div class="ai-suggestion-box"><div class="ai-suggestion-title">✨ AI návrh na rozšíření</div><div class="ai-suggestion-text">${renderTextWithWatchMarks(m.a, aiWatchHits)}</div>${watchBadgeHtml(aiWatchHits)}<div class="ai-suggestion-actions"><button type="button" class="ai-use-btn" onclick="useAiSuggestion(this)">POUŽÍT</button><button type="button" class="ai-reject-btn" onclick="rejectAiSuggestion(this)">ZAMÍTNOUT</button></div></div>` : ''}
                 </div>
@@ -3311,7 +3424,7 @@ květák..."></textarea>
         function addCard() {
             createAutoBackup('vytvoření nového dne');
             let data = getMainData();
-            data.unshift({ d: new Date().toLocaleDateString('cs-CZ'), dn: '', m: Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐' })) });
+            data.unshift({ d: new Date().toLocaleDateString('cs-CZ'), dn: '', m: Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐', rx: '' })) });
             setMainData(data);
             load();
             window.scrollTo(0, 0);
@@ -3339,6 +3452,8 @@ květák..."></textarea>
             const suggestion = mealItem.querySelector('.ai-suggestion-text')?.innerText.trim() || '';
             if (!suggestion) return;
             mealItem.querySelector('.m-box').innerText = suggestion;
+            const rxSelect = mealItem.querySelector('.rx-select');
+            if (rxSelect) rxSelect.value = '';
             const box = mealItem.querySelector('.ai-suggestion-box');
             if (box) box.remove();
             save();
@@ -3383,7 +3498,7 @@ květák..."></textarea>
         function mealTextMatches(m) {
             const needle = normalizeSearchText(currentTextFilter);
             if (!needle) return true;
-            const haystack = normalizeSearchText([m?.t, m?.n, m?.a].join(' '));
+            const haystack = normalizeSearchText([m?.t, m?.n, m?.a, getReactionLabel(m?.rx || '')].join(' '));
             return haystack.includes(needle);
         }
 
@@ -4068,7 +4183,7 @@ Tuto akci nelze vrátit zpět.`)) return;
                     if (!meal || index > 4) return;
                     const text = (meal.t || '').trim();
                     const rating = (meal.r || '😐').trim();
-                    if (!text || isEmptyMealText(text) || textMatchesAvoidList(text) || hasRiskWords(meal.n || '') || !allowed.includes(rating) || rating === '☹️') return;
+                    if (!text || isEmptyMealText(text) || textMatchesAvoidList(text) || mealHasRisk(meal) || !allowed.includes(rating) || rating === '☹️') return;
                     const key = normalizeFoodName(text);
                     if (seen[index].has(key)) return;
                     seen[index].add(key);
@@ -4089,7 +4204,7 @@ Tuto akci nelze vrátit zpět.`)) return;
         }
 
         function pickMeal(pool, recentNames) {
-            if (!pool || pool.length === 0) return { t: '', w: '', n: '', r: '😐' };
+            if (!pool || pool.length === 0) return { t: '', w: '', n: '', r: '😐', rx: '' };
             let chosen = pool.find(item => !recentNames.includes(normalizeFoodName(item.t))) || pool[0];
             pool.push(pool.shift());
             return { t: chosen.t, w: chosen.w || '', n: chosen.n || '', r: chosen.r || '😐' };
@@ -4128,7 +4243,7 @@ Tuto akci nelze vrátit zpět.`)) return;
             for (let day = 0; day < daysCount; day++) {
                 const d = new Date(start);
                 d.setDate(start.getDate() + day);
-                const meals = Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐' }));
+                const meals = Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐', rx: '' }));
 
                 selectedIndexes.forEach(index => {
                     const picked = pickMeal(pools[index], recent[index]);
@@ -4191,7 +4306,7 @@ Tuto akci nelze vrátit zpět.`)) return;
                     const rating = meal.r || '😐';
                     const note = (meal.n || '').trim();
                     const isManualAvoid = textMatchesAvoidList(text);
-                    const isRiskyNote = hasRiskWords(note);
+                    const isRiskyNote = mealHasRisk(meal);
                     const target = (isManualAvoid || isRiskyNote || rating === '☹️') ? avoidMaps[index] : (allowed.includes(rating) ? goodMaps[index] : null);
                     if (target) {
                         const current = target.get(key) || { t: text, count: 0, ratings: {}, lastDate: day.d, notes: [] };
@@ -4201,8 +4316,11 @@ Tuto akci nelze vrátit zpět.`)) return;
                         if (meal.n && current.notes.length < 2) current.notes.push(meal.n.replace(/\s+/g, ' ').trim());
                         target.set(key, current);
                     }
-                    if (note && hasRiskWords(note)) {
-                        noteItems.push(`${day.d} – ${mealLabels[index]}: ${text} | poznámka: ${note}`);
+                    if (mealHasRisk(meal)) {
+                        const parts = [];
+                        if (note && hasRiskWords(note)) parts.push(`poznámka: ${note}`);
+                        if (hasReactionFlag(meal.rx)) parts.push(`reakce: ${getReactionLabel(meal.rx)}`);
+                        noteItems.push(`${day.d} – ${mealLabels[index]}: ${text} | ${parts.join(' | ')}`);
                     }
                 });
             });
@@ -4336,9 +4454,14 @@ Tuto akci nelze vrátit zpět.`)) return;
                     const rating = (meal.r || '😐').trim();
                     if (!text || isEmptyMealText(text)) return;
                     addCount(frequent, text);
-                    if ((rating === '😍' || rating === '🙂') && !hasRiskWords(note) && !textMatchesAvoidList(text)) addCount(good, text);
-                    if (rating === '☹️' || hasRiskWords(note) || textMatchesAvoidList(text)) addCount(disliked, text);
-                    if (note && hasRiskWords(note)) riskNotes.push(`${day.d} – ${mealLabels[index]}: ${text} | poznámka: ${note}`);
+                    if ((rating === '😍' || rating === '🙂') && !mealHasRisk(meal) && !textMatchesAvoidList(text)) addCount(good, text);
+                    if (rating === '☹️' || mealHasRisk(meal) || textMatchesAvoidList(text)) addCount(disliked, text);
+                    if (mealHasRisk(meal)) {
+                        const parts = [];
+                        if (note && hasRiskWords(note)) parts.push(`poznámka: ${note}`);
+                        if (hasReactionFlag(meal.rx)) parts.push(`reakce: ${getReactionLabel(meal.rx)}`);
+                        riskNotes.push(`${day.d} – ${mealLabels[index]}: ${text} | ${parts.join(' | ')}`);
+                    }
                 });
             });
 
@@ -4373,8 +4496,13 @@ Tuto akci nelze vrátit zpět.`)) return;
                     const note = (meal.n || '').replace(/\s+/g, ' ').trim();
                     const rating = (meal.r || '😐').trim();
                     if (!text || isEmptyMealText(text)) return;
-                    if (rating === '☹️' || hasRiskWords(note) || textMatchesAvoidList(text)) addCount(disliked, text);
-                    if (note && hasRiskWords(note)) riskNotes.push(`${day.d} – ${mealLabels[index]}: ${text} | poznámka: ${note}`);
+                    if (rating === '☹️' || mealHasRisk(meal) || textMatchesAvoidList(text)) addCount(disliked, text);
+                    if (mealHasRisk(meal)) {
+                        const parts = [];
+                        if (note && hasRiskWords(note)) parts.push(`poznámka: ${note}`);
+                        if (hasReactionFlag(meal.rx)) parts.push(`reakce: ${getReactionLabel(meal.rx)}`);
+                        riskNotes.push(`${day.d} – ${mealLabels[index]}: ${text} | ${parts.join(' | ')}`);
+                    }
                 });
             });
 
@@ -4613,12 +4741,13 @@ Tuto akci nelze vrátit zpět.`)) return;
             let item = idx >= 0 ? normalizeEntry(data[idx]) : { d: dateText, dn: '', m: createEmptyMealSet() };
             if (dayMode === 'plan') item.planned = true;
             if (dayMode === 'real') delete item.planned;
-            const meal = item.m[mealIndex] || { t: '', w: '', n: '', r: '😐', a: '' };
+            const meal = item.m[mealIndex] || { t: '', w: '', n: '', r: '😐', rx: '', a: '' };
             const currentText = (meal.t || '').trim();
 
             if (insertMode === 'main') {
                 if (currentText && !isEmptyMealText(currentText) && !confirm(`${dateText} – ${mealLabels[mealIndex]} už obsahuje:\n${currentText}\n\nPřepsat hlavní jídlo návrhem?`)) return;
                 meal.t = title;
+                meal.rx = '';
                 meal.a = meal.a || '';
             } else if (insertMode === 'append') {
                 meal.t = currentText && !isEmptyMealText(currentText) ? `${currentText}; ${title}` : title;
@@ -5065,7 +5194,7 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
             lines.forEach(line => {
                 if (/^DEN\s*\d+/i.test(line)) {
                     if (current) days.push(current);
-                    current = { m: Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐', a: '' })) };
+                    current = { m: Array.from({ length: 5 }, () => ({ t: '', w: '', n: '', r: '😐', rx: '', a: '' })) };
                     lastMealIndex = -1;
                     return;
                 }
@@ -5086,7 +5215,7 @@ ${summary.warnings.length ? summary.warnings.map(x => '- ' + x).join('\n') : '- 
                 const index = mealIndexFromAiLabel(rawLabel);
                 if (index < 0) return;
                 if (!mealText || isEmptyMealText(mealText)) mealText = '';
-                current.m[index] = { t: mealText, w: '', n: '', r: '😐', a: current.m[index]?.a || '' };
+                current.m[index] = { t: mealText, w: '', n: '', r: '😐', rx: '', a: current.m[index]?.a || '' };
                 lastMealIndex = index;
             });
             if (current) days.push(current);
@@ -5274,18 +5403,17 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
         }
 
         function exportCSV() {
-            let csv = "\uFEFFDatum;Denní poznámka;Snídaně;Gramy;Poznámka;Hodnocení;Dop.Svačina;Gramy;Poznámka;Hodnocení;Oběd;Gramy;Poznámka;Hodnocení;Odp.Svačina;Gramy;Poznámka;Hodnocení;Večeře;Gramy;Poznámka;Hodnocení\n";
-            const saved = localStorage.getItem('nutri_data_v13');
-            if (saved) {
-                JSON.parse(saved).forEach(d => {
-                    let row = [csvCell(d.d), csvCell(d.dn || '')].join(';');
-                    for (let i = 0; i < 5; i++) {
-                        let m = d.m[i] || { t: '', w: '', n: '', r: '😐' };
-                        row += ';' + [csvCell(m.t), csvCell(m.w), csvCell(m.n), csvCell(m.r)].join(';');
-                    }
-                    csv += row + "\n";
-                });
-            }
+            const header = ['Datum', 'Denní poznámka'];
+            mealLabels.forEach(label => header.push(label, 'Gramy', 'Poznámka', 'Reakce', 'Hodnocení'));
+            let csv = '\uFEFF' + header.join(';') + '\n';
+            getMainData().forEach(d => {
+                const cells = [d.d, d.dn || ''];
+                for (let i = 0; i < 5; i++) {
+                    const m = (d.m && d.m[i]) ? d.m[i] : { t: '', w: '', n: '', rx: '', r: '😐' };
+                    cells.push(m.t || '', m.w || '', m.n || '', getReactionLabel(m.rx || ''), m.r || '😐');
+                }
+                csv += cells.map(csvCell).join(';') + '\n';
+            });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
             a.download = `vyziva_export_excel_${new Date().toISOString().slice(0, 10)}.csv`; a.click(); closeSettings();
@@ -5320,7 +5448,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                 imported = imported.map(item => {
                     const meals = Array.isArray(item.m) ? item.m : [];
                     if (meals.length === 4) {
-                        return { d: item.d, m: [meals[0], { t: '', w: '', n: '', r: '😐' }, meals[1], meals[2], meals[3]], planned: item.planned === true };
+                        return { d: item.d, m: [meals[0], { t: '', w: '', n: '', r: '😐', rx: '' }, meals[1], meals[2], meals[3]], planned: item.planned === true };
                     }
                     return item;
                 });
@@ -5391,15 +5519,32 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                         dailyNote = cols[1] ? cols[1].replace(/^"|"$/g, '').trim() : '';
                         firstMealOffset = 2;
                     }
+                    const headerCols = rows[0] ? parseCSVRow(rows[0]).map(x => normalizeSearchText(x)) : [];
+                    const hasReactionColumns = headerCols.some(x => x.includes('reakce')) || cols.length >= 27;
+                    const mealStride = hasReactionColumns ? 5 : 4;
+                    function reactionValueFromCsv(value) {
+                        const text = normalizeSearchText(value || '');
+                        if (!text || text.includes('zadna') || text.includes('žadna')) return '';
+                        if (text.includes('vyraz') || text.includes('vyráž') || text.includes('osyp')) return 'rash';
+                        if (text.includes('zvrac')) return 'vomit';
+                        if (text.includes('prujem') || text.includes('průjem')) return 'diarrhea';
+                        if (text.includes('kasel') || text.includes('kašel') || text.includes('dus')) return 'cough';
+                        if (text.includes('nechut')) return 'dislike';
+                        if (text.includes('jine') || text.includes('jiné') || text.includes('sledovat')) return 'other';
+                        return normalizeReactionValue(value);
+                    }
                     let meals = [];
                     for (let j = 0; j < 5; j++) {
-                        let offset = firstMealOffset + (j * 4);
+                        let offset = firstMealOffset + (j * mealStride);
+                        const rxValue = hasReactionColumns ? reactionValueFromCsv(cols[offset + 3]) : '';
+                        const ratingOffset = hasReactionColumns ? offset + 4 : offset + 3;
                         meals.push({
                             // Pokud políčko v Excelu chybí (undefined), dosadí se prázdný řetězec nebo smajlík
                             t: cols[offset] ? cols[offset].replace(/^"|"$/g, '').trim() : '',
                             w: cols[offset + 1] ? cols[offset + 1].replace(/^"|"$/g, '').trim() : '',
                             n: cols[offset + 2] ? cols[offset + 2].replace(/^"|"$/g, '').trim() : '',
-                            r: cols[offset + 3] && cols[offset + 3].trim() !== '' ? cols[offset + 3].replace(/^"|"$/g, '').trim() : '😐'
+                            rx: rxValue,
+                            r: cols[ratingOffset] && cols[ratingOffset].trim() !== '' ? cols[ratingOffset].replace(/^"|"$/g, '').trim() : '😐'
                         });
                     }
 
@@ -5455,6 +5600,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                     w: item.querySelector('.w-box').value,
                     n: item.querySelector('.n-box').innerText,
                     r: item.querySelector('.rating').innerText,
+                    rx: item.querySelector('.rx-select') ? normalizeReactionValue(item.querySelector('.rx-select').value) : '',
                     a: item.querySelector('.ai-suggestion-text') ? item.querySelector('.ai-suggestion-text').innerText.trim() : ''
                 }))
             }));
@@ -5484,7 +5630,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                 html += `<div class="card-header" contenteditable="true" oninput="saveDraftFromUI()">${escapeHtml(e.d)}</div>`;
 
                 for (let i = 0; i < 5; i++) {
-                    const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐' };
+                    const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐', rx: '' };
                     let bg = rates[m.r] || '#e3f9e5';
                     html += `
                     <div class="meal-item" data-index="${i}">
@@ -5492,6 +5638,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                         <div class="meal-content">
                             <div class="m-box" contenteditable="true" oninput="saveDraftFromUI()" placeholder="Napište jídlo...">${escapeHtml(m.t)}</div>
                             <input type="number" class="w-box" placeholder="Gramy (g)" value="${escapeHtml(m.w)}" oninput="saveDraftFromUI()">
+                            ${reactionSelectHtml(m.rx, 'saveDraftFromUI()')}
                             <div class="n-box" contenteditable="true" oninput="saveDraftFromUI()" placeholder="Poznámka...">${escapeHtml(m.n)}</div>
                         </div>
                         <div class="rating" onclick="cycleDraft(this)" style="background:${bg}">${escapeHtml(m.r)}</div>
