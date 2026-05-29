@@ -396,6 +396,42 @@
             z-index: 4501;
         }
 
+
+        .meal-item.meal-watch {
+            border-color: #f39c12;
+            background: #fffaf0;
+        }
+
+        .watch-mark {
+            background: #fff1b8;
+            border-bottom: 2px solid #f39c12;
+            border-radius: 4px;
+            padding: 0 2px;
+            font-weight: 800;
+        }
+
+        .watch-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: auto;
+            flex: 0 0 auto;
+            margin-top: 2px;
+            padding: 6px 8px;
+            border-radius: 999px;
+            border: 1px solid #f5c16c;
+            background: #fff4e6;
+            color: #8a5a00;
+            font-size: 0.72rem;
+            font-weight: 900;
+            line-height: 1.2;
+            text-align: left;
+        }
+
+        .watch-badge:active {
+            transform: scale(0.98);
+        }
+
         .ai-ideas-action-panel {
             display: none;
             flex-direction: column;
@@ -1724,7 +1760,7 @@ květák..."></textarea>
                         <li>Datum narození se do AI neposílá, posílá se jen vypočtený věk v měsících.</li>
                         <li>Váha a výška se do AI použijí jen tehdy, když jsou vyplněné.</li>
                         <li><b>Vyhnout se</b> je ruční seznam jídel, surovin nebo kombinací, které nemá používat offline plán ani AI.</li>
-                        <li><b>Sledovat</b> je ruční seznam podezřelých položek, které ještě nejsou jistě zakázané, ale mají být vidět v přehledu a AI podkladu.</li>
+                        <li><b>Sledovat</b> je ruční seznam podezřelých položek, které ještě nejsou jistě zakázané, ale mají být vidět v přehledu, AI podkladu a přímo u jídel jako oranžové upozornění.</li>
                     </ul>
                 </div>
             </details>
@@ -2062,7 +2098,7 @@ květák..."></textarea>
         let currentAiIdeaSuggestions = [];
         let pendingIdeaUse = null;
         const DATA_VERSION = 3;
-        const APP_VERSION = '2026-05-28-tech-fix-v1';
+        const APP_VERSION = '2026-05-28-watch-highlight-v1';
 
         function getChildProfile() {
             const raw = localStorage.getItem(CHILD_PROFILE_KEY);
@@ -2269,6 +2305,75 @@ květák..."></textarea>
                 const watch = normalizeFoodName(item);
                 return watch && (normalized.includes(watch) || watch.includes(normalized));
             });
+        }
+
+
+        function getMatchedListItems(text, items) {
+            const normalized = normalizeFoodName(text);
+            if (!normalized) return [];
+            return (items || []).filter(item => {
+                const value = normalizeFoodName(item);
+                return value && (normalized.includes(value) || value.includes(normalized));
+            });
+        }
+
+        function getWatchHits(text) {
+            return getMatchedListItems(text, getWatchList());
+        }
+
+        function renderTextWithWatchMarks(text, hits) {
+            const value = String(text || '');
+            const list = (hits || [])
+                .map(x => String(x || '').trim())
+                .filter(Boolean)
+                .sort((a, b) => b.length - a.length);
+            if (!value || !list.length) return escapeHtml(value);
+
+            const lower = value.toLowerCase();
+            const ranges = [];
+            list.forEach(hit => {
+                const target = hit.toLowerCase();
+                if (!target) return;
+                let start = 0;
+                while (start < lower.length) {
+                    const idx = lower.indexOf(target, start);
+                    if (idx === -1) break;
+                    const end = idx + target.length;
+                    const overlaps = ranges.some(r => idx < r.end && end > r.start);
+                    if (!overlaps) ranges.push({ start: idx, end });
+                    start = end;
+                }
+            });
+
+            if (!ranges.length) return escapeHtml(value);
+            ranges.sort((a, b) => a.start - b.start);
+            let html = '';
+            let pos = 0;
+            ranges.forEach(range => {
+                html += escapeHtml(value.slice(pos, range.start));
+                html += `<span class="watch-mark">${escapeHtml(value.slice(range.start, range.end))}</span>`;
+                pos = range.end;
+            });
+            html += escapeHtml(value.slice(pos));
+            return html;
+        }
+
+        function watchBadgeHtml(hits) {
+            const list = Array.from(new Set((hits || []).map(x => String(x || '').trim()).filter(Boolean)));
+            if (!list.length) return '';
+            const label = list.length === 1 ? list[0] : list.slice(0, 3).join(', ') + (list.length > 3 ? '…' : '');
+            return `<button type="button" class="watch-badge" onclick="showWatchDetail('${encodeURIComponent(JSON.stringify(list))}')">👀 SLEDOVAT: ${escapeHtml(label)}</button>`;
+        }
+
+        function showWatchDetail(encodedItems) {
+            let items = [];
+            try { items = JSON.parse(decodeURIComponent(encodedItems || '[]')); } catch (err) { items = []; }
+            items = Array.isArray(items) ? items.map(x => String(x || '').trim()).filter(Boolean) : [];
+            if (!items.length) {
+                alert('Toto jídlo obsahuje položku ze seznamu „Sledovat“.');
+                return;
+            }
+            alert('Toto jídlo obsahuje položku ze seznamu „Sledovat":\n\n- ' + items.join('\n- ') + '\n\nPokud jídlo podáte, sledujte případnou reakci dítěte. Nejde o zákaz jako u „Vyhnout se“, ale o upozornění.');
         }
 
         function createAutoBackup(reason) {
@@ -3159,15 +3264,19 @@ květák..."></textarea>
             for (let i = 0; i < 5; i++) {
                 const m = (e.m && e.m[i]) ? e.m[i] : { t: '', w: '', n: '', r: '😐', a: '' };
                 let bg = rates[m.r] || '#e3f9e5';
+                const watchHits = getWatchHits(m.t || '');
+                const aiWatchHits = getWatchHits(m.a || '');
                 const hiddenClass = mealMatchesFilters(m, i, dayTextMatches) ? '' : ' meal-hidden';
+                const watchClass = watchHits.length ? ' meal-watch' : '';
                 html += `
-            <div class="meal-item${hiddenClass}" data-index="${i}">
+            <div class="meal-item${hiddenClass}${watchClass}" data-index="${i}">
                 <div class="meal-label">${mealLabels[i]}</div>
                 <div class="meal-content">
-                    <div class="m-box" contenteditable="true" oninput="save()" placeholder="Napište jídlo...">${escapeHtml(m.t)}</div>
+                    <div class="m-box" contenteditable="true" oninput="save()" placeholder="Napište jídlo...">${renderTextWithWatchMarks(m.t, watchHits)}</div>
+                    ${watchBadgeHtml(watchHits)}
                     <input type="number" class="w-box" placeholder="Gramy (g)" value="${escapeHtml(m.w)}" oninput="save()">
                     <div class="n-box" contenteditable="true" oninput="save()" placeholder="Poznámka...">${escapeHtml(m.n)}</div>
-                    ${m.a ? `<div class="ai-suggestion-box"><div class="ai-suggestion-title">✨ AI návrh na rozšíření</div><div class="ai-suggestion-text">${escapeHtml(m.a)}</div><div class="ai-suggestion-actions"><button type="button" class="ai-use-btn" onclick="useAiSuggestion(this)">POUŽÍT</button><button type="button" class="ai-reject-btn" onclick="rejectAiSuggestion(this)">ZAMÍTNOUT</button></div></div>` : ''}
+                    ${m.a ? `<div class="ai-suggestion-box"><div class="ai-suggestion-title">✨ AI návrh na rozšíření</div><div class="ai-suggestion-text">${renderTextWithWatchMarks(m.a, aiWatchHits)}</div>${watchBadgeHtml(aiWatchHits)}<div class="ai-suggestion-actions"><button type="button" class="ai-use-btn" onclick="useAiSuggestion(this)">POUŽÍT</button><button type="button" class="ai-reject-btn" onclick="rejectAiSuggestion(this)">ZAMÍTNOUT</button></div></div>` : ''}
                 </div>
                 <div class="rating" onclick="cycle(this)" style="background:${bg}">${escapeHtml(m.r)}</div>
             </div>`;
