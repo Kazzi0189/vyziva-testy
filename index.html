@@ -1858,7 +1858,7 @@ květák..."></textarea>
     <div class="modal-overlay" id="plannerModal">
         <div class="modal-box">
             <div class="modal-title">Návrh jídelníčku</div>
-            <div class="modal-text">Offline návrh podle uložené historie. Nechutnalo ☹️, rizikové poznámky, 🚫 Vyhnout se ani 👀 Sledovat se automaticky nepoužijí.</div>
+            <div class="modal-text">Offline návrh podle uložené historie. Nechutnalo ☹️, rizikové poznámky a 🚫 Vyhnout se se nikdy nepoužijí. Položky 👀 Sledovat se mohou objevit, ale budou v deníku/plánu zvýrazněné.</div>
 
             <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Vybírat podle hodnocení</label>
             <select id="plannerRatingMode" style="width:100%; margin-bottom:10px;">
@@ -2098,7 +2098,7 @@ květák..."></textarea>
         let currentAiIdeaSuggestions = [];
         let pendingIdeaUse = null;
         const DATA_VERSION = 3;
-        const APP_VERSION = '2026-05-29-watch-autoblock-v1';
+        const APP_VERSION = '2026-05-29-watch-allow-v1';
 
         function getChildProfile() {
             const raw = localStorage.getItem(CHILD_PROFILE_KEY);
@@ -4068,7 +4068,7 @@ Tuto akci nelze vrátit zpět.`)) return;
                     if (!meal || index > 4) return;
                     const text = (meal.t || '').trim();
                     const rating = (meal.r || '😐').trim();
-                    if (!text || isEmptyMealText(text) || textMatchesAvoidList(text) || textMatchesWatchList(text) || hasRiskWords(meal.n || '') || !allowed.includes(rating) || rating === '☹️') return;
+                    if (!text || isEmptyMealText(text) || textMatchesAvoidList(text) || hasRiskWords(meal.n || '') || !allowed.includes(rating) || rating === '☹️') return;
                     const key = normalizeFoodName(text);
                     if (seen[index].has(key)) return;
                     seen[index].add(key);
@@ -4179,7 +4179,6 @@ Tuto akci nelze vrátit zpět.`)) return;
             const selectedIndexes = mealScope === 'all' ? [0, 1, 2, 3, 4] : [parseInt(mealScope, 10)];
             const goodMaps = Array.from({ length: 5 }, () => new Map());
             const avoidMaps = Array.from({ length: 5 }, () => new Map());
-            const watchMaps = Array.from({ length: 5 }, () => new Map());
             const noteItems = [];
 
             data.forEach(day => {
@@ -4192,9 +4191,8 @@ Tuto akci nelze vrátit zpět.`)) return;
                     const rating = meal.r || '😐';
                     const note = (meal.n || '').trim();
                     const isManualAvoid = textMatchesAvoidList(text);
-                    const isManualWatch = textMatchesWatchList(text);
                     const isRiskyNote = hasRiskWords(note);
-                    const target = (isManualAvoid || isRiskyNote || rating === '☹️') ? avoidMaps[index] : (isManualWatch ? watchMaps[index] : (allowed.includes(rating) ? goodMaps[index] : null));
+                    const target = (isManualAvoid || isRiskyNote || rating === '☹️') ? avoidMaps[index] : (allowed.includes(rating) ? goodMaps[index] : null);
                     if (target) {
                         const current = target.get(key) || { t: text, count: 0, ratings: {}, lastDate: day.d, notes: [] };
                         current.count++;
@@ -4224,10 +4222,8 @@ Tuto akci nelze vrátit zpět.`)) return;
             selectedIndexes.forEach(index => {
                 const goodLines = mapToLines(goodMaps[index], 12);
                 const avoidLines = mapToLines(avoidMaps[index], 8);
-                const watchLines = mapToLines(watchMaps[index], 8);
                 sections.push(`\n${mealLabels[index]} – vhodné z historie:\n${goodLines.length ? goodLines.join('\n') : '- zatím nejsou vhodná data'}`);
                 if (avoidLines.length) sections.push(`${mealLabels[index]} – vyhnout se:\n${avoidLines.join('\n')}`);
-                if (watchLines.length) sections.push(`${mealLabels[index]} – sledovat, automaticky nepoužívat:\n${watchLines.join('\n')}`);
             });
 
             return {
@@ -4823,7 +4819,7 @@ Pracuj podle těchto pravidel:
 - AI návrh má být opatrný nápad k vyzkoušení, ne tvrzení, že je zaručeně bezpečný
 - zohledni věk dítěte a dostupné údaje o váze/výšce; pokud některý údaj chybí, nevadí, pracuj s tím, co je k dispozici
 - nepoužívej jídla ani suroviny, která jsou uvedená v ručním seznamu „Vyhnout se“ nebo v části „vyhnout se“ z historie
-- položky v seznamu „Sledovat“ ber jako podezřelé: nepoužívej je jako hlavní jídlo ani jako AI návrh, pokud není výslovně nutné je uvést jen jako upozornění
+- položky v seznamu „Sledovat“ ber jako podezřelé, ale nepovažuj je za tvrdý zákaz; můžeš je navrhnout, pokud dávají smysl, ale vždy upozorni, že je potřeba sledovat reakci dítěte
 - nepoužívej položky typu „Nic“, „žádné“, „nejedl“ jako návrh jídla; když chybí vhodná historie, navrhni podobnou bezpečnou variantu
 - neopakuj stejné nebo velmi podobné jídlo hned po sobě
 - zachovej rozumnou pestrost
