@@ -528,6 +528,26 @@
             margin-top: 4px;
         }
 
+        .idea-status-used {
+            border-color: #82e0aa;
+            background: #f2fff7;
+        }
+
+        .idea-status-watch {
+            border-color: #f5c16c;
+            background: #fff8ec;
+        }
+
+        .idea-status-avoid {
+            border-color: #f5b7b1;
+            background: #fff5f5;
+        }
+
+        .idea-status-rejected {
+            opacity: 0.82;
+            background: #f4f6f6;
+        }
+
         #ideaUseModal, #savedIdeasModal {
             z-index: 4600;
         }
@@ -1632,9 +1652,34 @@ květák..."></textarea>
     </div>
 
     <div class="modal-overlay" id="savedIdeasModal">
-        <div class="modal-box" style="max-width:520px; text-align:left;">
+        <div class="modal-box" style="max-width:560px; text-align:left;">
             <div class="modal-title" style="text-align:center;">💡 Nápady jídel</div>
-            <div class="modal-text" style="text-align:left;">Sem se ukládají AI nápady, které ještě nechcete dát rovnou do dne nebo plánu.</div>
+            <div class="modal-text" style="text-align:left;">Zásobník uložených AI nápadů. Nápady můžete použít do dne/plánu, označit jako použité, přesunout do Sledovat/Vyhnout se nebo skrýt jako zamítnuté.</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+                <div>
+                    <label style="display:block; font-size:0.76rem; font-weight:800; color:#7f8c8d; margin-bottom:4px;">Zobrazit stav</label>
+                    <select id="savedIdeasStatusFilter" onchange="renderSavedIdeas()" style="width:100%;">
+                        <option value="active" selected>Aktivní nápady</option>
+                        <option value="new">Jen nové</option>
+                        <option value="used">Použité</option>
+                        <option value="watch">Ve Sledovat</option>
+                        <option value="avoid">Ve Vyhnout se</option>
+                        <option value="rejected">Zamítnuté/skryté</option>
+                        <option value="all">Vše</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.76rem; font-weight:800; color:#7f8c8d; margin-bottom:4px;">Typ jídla</label>
+                    <select id="savedIdeasMealFilter" onchange="renderSavedIdeas()" style="width:100%;">
+                        <option value="all" selected>Všechny typy</option>
+                        <option value="Snídaně">Snídaně</option>
+                        <option value="Dop. Svačina">Dop. svačina</option>
+                        <option value="Oběd">Oběd</option>
+                        <option value="Odp. Svačina">Odp. svačina</option>
+                        <option value="Večeře">Večeře</option>
+                    </select>
+                </div>
+            </div>
             <div id="savedIdeasContent"></div>
             <button class="modal-btn btn-cancel" onclick="closeSavedIdeasModal(true)">ZAVŘÍT</button>
         </div>
@@ -1734,7 +1779,7 @@ květák..."></textarea>
                         <li>AI návrh má být nová věkově přiměřená možnost, kterou jste ještě nezkoušeli.</li>
                         <li><b>POUŽÍT</b> přesune návrh do hlavního jídla.</li>
                         <li><b>ZAMÍTNOUT</b> návrh odstraní.</li>
-                        <li>V AI okně je také režim <b>✨ 3 návrhy pro pestrost</b>, který nevytváří celý plán, ale jen tři opatrné nápady. Pestrost hodnotí podle zvoleného období, ale bezpečnost, rizika, seznam „Vyhnout se“ a seznam „Sledovat“ kontroluje z celé historie.</li>
+                        <li>V AI okně je také režim <b>✨ 3 návrhy pro pestrost</b>, který nevytváří celý plán, ale jen tři opatrné nápady. Pestrost hodnotí podle zvoleného období, ale bezpečnost, rizika, seznam „Vyhnout se“ a seznam „Sledovat“ kontroluje z celé historie.</li><li>Uložené návrhy najdete v <b>💡 Nápady jídel</b>. Lze je použít do dne/plánu, označit jako použité, dát do Sledovat/Vyhnout se nebo skrýt jako zamítnuté.</li>
                         <li>U návrhů lze použít <b>➕ Použít</b> pro vložení do konkrétního dne/plánu, <b>💡 Uložit</b> pro odložení do Nápadů jídel nebo <b>🗑️ Zahodit</b>.</li>
                     </ul>
                 </div>
@@ -2136,7 +2181,7 @@ květák..."></textarea>
         let currentAiIdeaSuggestions = [];
         let pendingIdeaUse = null;
         const DATA_VERSION = 3;
-        const APP_VERSION = '2026-05-29-reaction-field-v1';
+        const APP_VERSION = '2026-05-29-ideas-manager-v1';
 
         function getChildProfile() {
             const raw = localStorage.getItem(CHILD_PROFILE_KEY);
@@ -2635,11 +2680,11 @@ květák..."></textarea>
             return candidates.slice(0, 10);
         }
 
-        function openRiskActionModal(encodedValue, listType, encodedRiskId = '') {
+        function openRiskActionModal(encodedValue, listType, encodedRiskId = '', origin = 'overview', originIndex = '') {
             const food = normalizeAvoidCandidate(decodeURIComponent(encodedValue || ''));
             if (!food) return;
             const type = listType === 'watch' ? 'watch' : 'avoid';
-            pendingRiskAction = { food, listType: type, riskId: decodeURIComponent(encodedRiskId || '') };
+            pendingRiskAction = { food, listType: type, riskId: decodeURIComponent(encodedRiskId || ''), origin: origin || 'overview', originIndex: originIndex === '' ? null : parseInt(originIndex, 10) };
 
             const title = document.getElementById('riskActionTitle');
             const text = document.getElementById('riskActionText');
@@ -2696,13 +2741,25 @@ květák..."></textarea>
                 return;
             }
             const resolvedId = pendingRiskAction.riskId;
+            const origin = pendingRiskAction.origin || 'overview';
+            const originIndex = pendingRiskAction.originIndex;
             if (resolvedId) {
                 const currentResolved = getResolvedRisks();
                 if (!currentResolved.includes(resolvedId)) setResolvedRisks([...currentResolved, resolvedId]);
             }
+            if (origin === 'ideas' && Number.isInteger(originIndex)) {
+                const ideas = getSavedIdeas();
+                if (ideas[originIndex]) {
+                    ideas[originIndex].status = pendingRiskAction.listType === 'watch' ? 'watch' : 'avoid';
+                    ideas[originIndex].listActionAt = new Date().toISOString();
+                    ideas[originIndex].listActionItem = value;
+                    setSavedIdeas(ideas);
+                }
+            }
             closeRiskActionModal();
             alert(`Přidáno do seznamu „${listName}“: ${value}`);
-            openOverviewModal();
+            if (origin === 'ideas') renderSavedIdeas();
+            else openOverviewModal();
         }
 
         function riskItemsHtml(items) {
@@ -4779,28 +4836,108 @@ Tuto akci nelze vrátit zpět.`)) return;
             alert(`Návrh byl vložen do ${dayMode === 'plan' ? 'PLÁNU' : 'skutečného dne'}: ${dateText} – ${mealLabels[mealIndex]}.`);
         }
 
+        function getIdeaStatusInfo(idea) {
+            const status = idea && idea.status ? idea.status : 'new';
+            if (status === 'used') return { label: `Použito${idea.usedDate ? ' – ' + idea.usedDate : ''}${idea.usedMeal ? ' / ' + idea.usedMeal : ''}`, group: 'used' };
+            if (status === 'rejected') return { label: 'Zamítnuto / skryto', group: 'rejected' };
+            if (status === 'watch') return { label: `Ve Sledovat${idea.listActionItem ? ' – ' + idea.listActionItem : ''}`, group: 'watch' };
+            if (status === 'avoid') return { label: `Ve Vyhnout se${idea.listActionItem ? ' – ' + idea.listActionItem : ''}`, group: 'avoid' };
+            return { label: 'Nový nápad', group: 'new' };
+        }
+
+        function setSavedIdeaStatus(index, status) {
+            const ideas = getSavedIdeas();
+            if (!ideas[index]) return;
+            ideas[index].status = status || 'new';
+            ideas[index].statusChangedAt = new Date().toISOString();
+            if (status === 'new') {
+                delete ideas[index].usedAt;
+                delete ideas[index].usedDate;
+                delete ideas[index].usedMeal;
+                delete ideas[index].listActionAt;
+                delete ideas[index].listActionItem;
+            }
+            if (status === 'rejected') ideas[index].rejectedAt = new Date().toISOString();
+            setSavedIdeas(ideas);
+            renderSavedIdeas();
+        }
+
+        function markSavedIdeaUsed(index) {
+            const ideas = getSavedIdeas();
+            if (!ideas[index]) return;
+            ideas[index].status = 'used';
+            ideas[index].usedAt = new Date().toISOString();
+            if (!ideas[index].usedDate) ideas[index].usedDate = 'označeno ručně';
+            setSavedIdeas(ideas);
+            renderSavedIdeas();
+        }
+
+        function openSavedIdeaListAction(index, listType) {
+            const ideas = getSavedIdeas();
+            const idea = ideas[index];
+            if (!idea) return;
+            openRiskActionModal(encodeURIComponent(idea.title || ''), listType, '', 'ideas', String(index));
+        }
+
+        function renderSavedIdeaCard(idea, index) {
+            const status = getIdeaStatusInfo(idea);
+            const created = idea.createdAt ? new Date(idea.createdAt).toLocaleString('cs-CZ') : '';
+            const showUse = status.group !== 'avoid' && status.group !== 'rejected';
+            const primaryButtons = [];
+            if (showUse) primaryButtons.push(`<button type="button" class="modal-btn" style="background:#27ae60" onclick="openUseIdeaModal(${index}, 'saved')">➕ Použít</button>`);
+            if (status.group !== 'used' && status.group !== 'avoid' && status.group !== 'rejected') primaryButtons.push(`<button type="button" class="modal-btn" style="background:#16a085" onclick="markSavedIdeaUsed(${index})">✅ Použité</button>`);
+            if (status.group !== 'watch' && status.group !== 'avoid' && status.group !== 'rejected') primaryButtons.push(`<button type="button" class="modal-btn" style="background:#e67e22" onclick="openSavedIdeaListAction(${index}, 'watch')">👀 Sledovat</button>`);
+            if (status.group !== 'avoid' && status.group !== 'rejected') primaryButtons.push(`<button type="button" class="modal-btn" style="background:#d35400" onclick="openSavedIdeaListAction(${index}, 'avoid')">🚫 Vyhnout se</button>`);
+            if (status.group !== 'rejected') primaryButtons.push(`<button type="button" class="modal-btn" style="background:#7f8c8d" onclick="setSavedIdeaStatus(${index}, 'rejected')">🙈 Zamítnout</button>`);
+            if (status.group !== 'new') primaryButtons.push(`<button type="button" class="modal-btn" style="background:#3498db" onclick="setSavedIdeaStatus(${index}, 'new')">↩️ Vrátit</button>`);
+            primaryButtons.push(`<button type="button" class="modal-btn" style="background:#95a5a6" onclick="deleteSavedIdea(${index})">🗑️ Smazat</button>`);
+
+            return `
+                <div class="idea-list-card idea-status-${escapeHtml(status.group)}">
+                    <div><b>${escapeHtml(idea.title || 'Nápad')}</b></div>
+                    ${idea.mealType ? `<div class="idea-list-meta">Typ: ${escapeHtml(idea.mealType)}</div>` : ''}
+                    <div class="idea-list-meta">Stav: ${escapeHtml(status.label)}${created ? ' · Uloženo: ' + escapeHtml(created) : ''}</div>
+                    <details style="margin-top:6px;"><summary style="cursor:pointer; font-weight:800; color:#2c3e50;">Zobrazit detail</summary><div style="white-space:pre-wrap; margin-top:6px;">${escapeHtml(idea.text || '')}</div></details>
+                    <div class="ai-idea-actions">${primaryButtons.join('')}</div>
+                </div>`;
+        }
+
         function renderSavedIdeas() {
             const box = document.getElementById('savedIdeasContent');
             if (!box) return;
-            const ideas = getSavedIdeas();
-            if (!ideas.length) {
+            const allIdeas = getSavedIdeas();
+            if (!allIdeas.length) {
                 box.innerHTML = '<div class="overview-box" style="color:#95a5a6;">Zatím zde nejsou uložené žádné nápady.</div>';
                 return;
             }
-            box.innerHTML = ideas.map((idea, index) => {
-                const statusText = idea.status === 'used' ? `Použito${idea.usedDate ? ' – ' + idea.usedDate : ''}${idea.usedMeal ? ' / ' + idea.usedMeal : ''}` : 'Nový nápad';
-                const created = idea.createdAt ? new Date(idea.createdAt).toLocaleString('cs-CZ') : '';
-                return `
-                    <div class="idea-list-card">
-                        <div><b>${escapeHtml(idea.title || 'Nápad')}</b></div>
-                        ${idea.mealType ? `<div class="idea-list-meta">Typ: ${escapeHtml(idea.mealType)}</div>` : ''}
-                        <div class="idea-list-meta">Stav: ${escapeHtml(statusText)}${created ? ' · Uloženo: ' + escapeHtml(created) : ''}</div>
-                        <details style="margin-top:6px;"><summary style="cursor:pointer; font-weight:800; color:#2c3e50;">Zobrazit detail</summary><div style="white-space:pre-wrap; margin-top:6px;">${escapeHtml(idea.text || '')}</div></details>
-                        <div class="ai-idea-actions">
-                            <button type="button" class="modal-btn" style="background:#27ae60" onclick="openUseIdeaModal(${index}, 'saved')">➕ Použít</button>
-                            <button type="button" class="modal-btn" style="background:#7f8c8d" onclick="deleteSavedIdea(${index})">🗑️ Smazat</button>
-                        </div>
-                    </div>`;
+
+            const statusFilter = document.getElementById('savedIdeasStatusFilter')?.value || 'active';
+            const mealFilter = document.getElementById('savedIdeasMealFilter')?.value || 'all';
+            const rows = allIdeas.map((idea, index) => ({ idea, index, status: getIdeaStatusInfo(idea) }))
+                .filter(row => mealFilter === 'all' || normalizeFoodName(row.idea.mealType || '') === normalizeFoodName(mealFilter))
+                .filter(row => {
+                    if (statusFilter === 'all') return true;
+                    if (statusFilter === 'active') return row.status.group !== 'rejected';
+                    return row.status.group === statusFilter;
+                });
+
+            if (!rows.length) {
+                box.innerHTML = '<div class="overview-box" style="color:#95a5a6;">Pro vybraný filtr nejsou žádné nápady.</div>';
+                return;
+            }
+
+            const groupOrder = [
+                { key: 'new', title: '💡 Nové nápady' },
+                { key: 'watch', title: '👀 Nápady ve Sledovat' },
+                { key: 'used', title: '✅ Použité nápady' },
+                { key: 'avoid', title: '🚫 Nápady ve Vyhnout se' },
+                { key: 'rejected', title: '🙈 Zamítnuté / skryté nápady' }
+            ];
+
+            box.innerHTML = groupOrder.map(group => {
+                const groupRows = rows.filter(row => row.status.group === group.key);
+                if (!groupRows.length) return '';
+                return `<div class="overview-box"><h4>${group.title}</h4>${groupRows.map(row => renderSavedIdeaCard(row.idea, row.index)).join('')}</div>`;
             }).join('');
         }
 
