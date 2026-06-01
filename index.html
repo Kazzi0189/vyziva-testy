@@ -2320,6 +2320,423 @@
             }
         }
 
+
+
+        /* === SJEDNOCENÍ MODALŮ A KARET 2026-06-01 === */
+        :root {
+            --ui-bg-soft: #fbf7ef;
+            --ui-surface: #fffdf8;
+            --ui-surface-2: #fff9ef;
+            --ui-border: #eadfcb;
+            --ui-border-strong: #dcc9a8;
+            --ui-text: #2f3a2c;
+            --ui-muted: #6d7769;
+            --ui-green: #7aa33e;
+            --ui-green-dark: #5e842b;
+            --ui-blue: #3f7fa6;
+            --ui-blue-dark: #2f6688;
+            --ui-orange: #d98520;
+            --ui-orange-dark: #a86415;
+            --ui-purple: #7b5bc0;
+            --ui-purple-dark: #6044a0;
+            --ui-red: #d95b49;
+            --ui-red-dark: #b94334;
+            --ui-gray: #7c8583;
+            --ui-shadow: 0 16px 36px rgba(85, 65, 31, 0.16);
+            --ui-shadow-soft: 0 8px 22px rgba(94, 72, 35, 0.10);
+        }
+
+        .modal-overlay {
+            background: rgba(47, 38, 24, 0.42);
+            backdrop-filter: blur(3px);
+            padding: 12px 0;
+            box-sizing: border-box;
+        }
+
+        .modal-box,
+        .draft-content {
+            background: linear-gradient(180deg, rgba(255, 253, 248, 0.99) 0%, rgba(255, 250, 240, 0.98) 100%);
+            border: 1px solid var(--ui-border);
+            border-radius: 24px;
+            box-shadow: var(--ui-shadow);
+            color: var(--ui-text);
+        }
+
+        .modal-box {
+            padding: 22px;
+        }
+
+        .draft-content {
+            border-radius: 24px;
+            padding: 18px;
+        }
+
+        .modal-title,
+        .draft-header {
+            color: var(--ui-text);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        .modal-title {
+            font-size: 1.22rem;
+            margin-bottom: 8px;
+        }
+
+        .draft-header {
+            color: var(--ui-green-dark);
+        }
+
+        .modal-text,
+        .small-help-text,
+        .idea-list-meta {
+            color: var(--ui-muted);
+            line-height: 1.45;
+        }
+
+        .modal-box label,
+        .draft-content label {
+            color: var(--ui-text) !important;
+            font-weight: 800 !important;
+        }
+
+        input,
+        select,
+        textarea,
+        .avoid-list-textarea,
+        .risk-custom-input,
+        #riskActionCustom,
+        #geminiApiKey,
+        #aiPlanCustomDays,
+        #deleteDateFrom,
+        #deleteDateTo,
+        #filterTextInput {
+            border-radius: 14px !important;
+            border: 1px solid var(--ui-border) !important;
+            background: rgba(255, 255, 255, 0.96) !important;
+            color: var(--ui-text) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus,
+        .avoid-list-textarea:focus,
+        .risk-custom-input:focus,
+        #riskActionCustom:focus,
+        #geminiApiKey:focus,
+        #aiPlanCustomDays:focus,
+        #deleteDateFrom:focus,
+        #deleteDateTo:focus,
+        #filterTextInput:focus {
+            outline: none;
+            border-color: #a8c777 !important;
+            box-shadow: 0 0 0 3px rgba(122, 163, 62, 0.16) !important;
+        }
+
+        .modal-btn {
+            border-radius: 15px !important;
+            border: 1px solid transparent;
+            min-height: 44px;
+            box-shadow: 0 7px 16px rgba(74, 55, 27, 0.10);
+            text-transform: none;
+            letter-spacing: 0.01em;
+            line-height: 1.2;
+            transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+        }
+
+        .modal-btn:active {
+            transform: scale(0.98);
+            filter: brightness(0.97);
+        }
+
+        .btn-merge,
+        .modal-btn.btn-merge {
+            background: linear-gradient(180deg, #98c95e 0%, #76a93d 100%) !important;
+            color: #fff !important;
+        }
+
+        .btn-import,
+        .modal-btn.btn-import {
+            background: linear-gradient(180deg, #5f9dc0 0%, #39799e 100%) !important;
+            color: #fff !important;
+        }
+
+        .btn-export,
+        .modal-btn.btn-export {
+            background: linear-gradient(180deg, #687b82 0%, #4d5d63 100%) !important;
+            color: #fff !important;
+        }
+
+        .btn-excel,
+        .modal-btn.btn-excel {
+            background: linear-gradient(180deg, #55ad70 0%, #368b52 100%) !important;
+            color: #fff !important;
+        }
+
+        .btn-overwrite,
+        .modal-btn.btn-overwrite,
+        .more-danger-btn {
+            background: linear-gradient(180deg, #e67862 0%, #cf4f3e 100%) !important;
+            color: #fff !important;
+        }
+
+        .btn-cancel,
+        .modal-btn.btn-cancel {
+            background: linear-gradient(180deg, #9ba4a2 0%, #78817f 100%) !important;
+            color: #fff !important;
+        }
+
+        .modal-btn:not(.btn-merge):not(.btn-import):not(.btn-export):not(.btn-excel):not(.btn-overwrite):not(.btn-cancel):not(.more-danger-btn) {
+            border-color: var(--ui-border);
+        }
+
+        .filter-block,
+        .overview-box,
+        .manual-section,
+        .idea-list-card,
+        .ai-idea-card,
+        .ai-suggestion-box,
+        .ai-loading-box,
+        .ai-status,
+        .risk-choice-item,
+        .day-note-wrap,
+        .draft-list,
+        .draft-item {
+            border-radius: 18px;
+            border: 1px solid var(--ui-border);
+            background: rgba(255, 255, 255, 0.78);
+            box-shadow: 0 4px 14px rgba(96, 73, 34, 0.06);
+        }
+
+        .filter-block,
+        .overview-box,
+        .manual-section,
+        .draft-list {
+            background: rgba(255, 252, 245, 0.88);
+        }
+
+        .filter-block label.filter-title,
+        .overview-box h4,
+        .manual-section summary,
+        .ai-idea-card-title {
+            color: var(--ui-text);
+        }
+
+        .manual-section summary {
+            background: linear-gradient(180deg, #fffdf8 0%, #faf4e8 100%);
+        }
+
+        .manual-section-content {
+            color: #405044;
+        }
+
+        .manual-note {
+            border-radius: 16px;
+            border-color: #f0d891;
+            background: #fff8df;
+        }
+
+        .ai-status {
+            background: #f8fbf2;
+            border-color: #dce9c9;
+        }
+
+        .ai-loading-box {
+            background: #fbf8f2;
+        }
+
+        .ai-loading-spinner {
+            border-color: #eee3d4;
+            border-top-color: var(--ui-purple);
+        }
+
+        .ai-suggestion-box {
+            background: #f7f3ff;
+            border-color: #dfd5fb;
+            color: #4d3b79;
+        }
+
+        .ai-idea-card,
+        .idea-list-card {
+            background: #fffaf2;
+            border-color: #f0dcc0;
+        }
+
+        .idea-status-used {
+            border-color: #bde0b1 !important;
+            background: #f4fbef !important;
+        }
+
+        .idea-status-watch {
+            border-color: #f2d099 !important;
+            background: #fff7e8 !important;
+        }
+
+        .idea-status-avoid {
+            border-color: #efb6aa !important;
+            background: #fff1ee !important;
+        }
+
+        .idea-status-rejected {
+            background: #f4f2ee !important;
+        }
+
+        .risk-choice-item {
+            background: #fffdf8;
+        }
+
+        .risk-choice-item input[type="radio"],
+        .filter-checks input[type="checkbox"] {
+            accent-color: var(--ui-green);
+        }
+
+        .filter-checks label {
+            border-radius: 14px;
+            border-color: var(--ui-border);
+            background: rgba(255, 255, 255, 0.90);
+        }
+
+        .filter-modal-actions,
+        .manual-section-content,
+        .modal-box .filter-modal-actions {
+            border-top-color: var(--ui-border) !important;
+        }
+
+        .date-input-row input {
+            min-width: 0;
+        }
+
+        .delete-toolbar {
+            border-radius: 18px;
+            border-color: var(--ui-red);
+            box-shadow: var(--ui-shadow);
+        }
+
+        .delete-toolbar button {
+            border-radius: 14px;
+        }
+
+        .draft-controls {
+            gap: 8px;
+        }
+
+        .draft-controls button,
+        .draft-controls select {
+            border-radius: 14px !important;
+        }
+
+        .btn-del-draft {
+            border-radius: 12px;
+            background: var(--ui-red);
+        }
+
+        .ai-close-x {
+            background: rgba(120, 129, 127, 0.95) !important;
+            box-shadow: 0 5px 14px rgba(52, 60, 58, 0.16);
+        }
+
+        #settingsModal .modal-box,
+        #aiModal .modal-box,
+        #aiPlanModal .modal-box,
+        #savedIdeasModal .modal-box,
+        #manualModal .modal-box,
+        #aiPlanResultModal .modal-box {
+            max-width: min(560px, 92vw) !important;
+        }
+
+        #moreMenuModal .modal-box,
+        #childProfileModal .modal-box,
+        #avoidListModal .modal-box,
+        #watchListModal .modal-box,
+        #riskActionModal .modal-box,
+        #ideaUseModal .modal-box,
+        #deleteManagerModal .modal-box,
+        #importModal .modal-box,
+        #plannerModal .modal-box,
+        #aiPlanDaysModal .modal-box {
+            max-width: min(430px, 92vw) !important;
+        }
+
+        .child-profile-row,
+        .child-age-box {
+            border-radius: 16px;
+            border-color: var(--ui-border);
+            background: rgba(255, 255, 255, 0.70);
+        }
+
+        .child-profile-field input {
+            border-radius: 13px;
+        }
+
+        .more-section {
+            box-shadow: 0 4px 14px rgba(96, 73, 34, 0.05);
+        }
+
+        .more-grid .modal-btn {
+            border-radius: 16px !important;
+            min-height: 58px;
+        }
+
+        .overview-box ul,
+        .manual-section-content ul {
+            color: #405044;
+        }
+
+        .watch-badge,
+        .reaction-badge {
+            border-radius: 999px;
+            box-shadow: 0 3px 10px rgba(94, 72, 35, 0.06);
+        }
+
+        .watch-badge {
+            background: #fff7e8;
+            border-color: #edc985;
+            color: #8a5a00;
+        }
+
+        .reaction-badge {
+            background: #fff1ec;
+            border-color: #efb9a9;
+            color: #a34020;
+        }
+
+        .w-box,
+        .n-box,
+        .rx-select {
+            border-radius: 14px !important;
+        }
+
+        .avoid-list-textarea {
+            min-height: 190px;
+        }
+
+        @media (max-width: 420px) {
+            .modal-box {
+                width: 92%;
+                padding: 18px;
+                border-radius: 22px;
+            }
+
+            .modal-title {
+                font-size: 1.14rem;
+            }
+
+            .modal-btn {
+                min-height: 42px;
+                padding: 12px 10px;
+                font-size: 0.8rem;
+            }
+
+            .overview-box,
+            .filter-block,
+            .manual-section,
+            .idea-list-card,
+            .ai-idea-card {
+                border-radius: 16px;
+            }
+        }
+
     </style>
 </head>
 
