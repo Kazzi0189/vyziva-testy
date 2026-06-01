@@ -1433,6 +1433,608 @@
 
 
 
+        /* === VIZUÁLNÍ OBNOVA 2026-05-31 === */
+        :root {
+            --accent: #7aa33e;
+            --danger: #d95b49;
+            --success: #8fca60;
+            --note: #f4c654;
+            --bg: #fbf7ef;
+            --surface: #fffdf8;
+            --card-border: #efe5d4;
+            --warm-text: #2f3a2c;
+            --soft-shadow: 0 10px 28px rgba(102, 78, 35, 0.10);
+            --soft-shadow-sm: 0 6px 18px rgba(102, 78, 35, 0.09);
+        }
+
+        body {
+            background: linear-gradient(180deg, #fdfbf5 0%, #f8f3ea 100%);
+            color: var(--warm-text);
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            background:
+                radial-gradient(circle at 8% 16%, rgba(162, 204, 112, 0.14) 0 62px, transparent 63px),
+                radial-gradient(circle at 93% 26%, rgba(255, 195, 121, 0.16) 0 70px, transparent 71px),
+                radial-gradient(circle at 89% 78%, rgba(255, 176, 146, 0.14) 0 60px, transparent 61px),
+                radial-gradient(circle at 7% 86%, rgba(255, 216, 158, 0.14) 0 78px, transparent 79px),
+                radial-gradient(circle at 82% 8%, rgba(188, 214, 156, 0.12) 0 48px, transparent 49px);
+        }
+
+        .sticky-header {
+            background: rgba(255, 251, 244, 0.96);
+            border-bottom: 1px solid #efe5d2;
+            box-shadow: 0 12px 30px rgba(88, 67, 30, 0.10);
+            backdrop-filter: blur(10px);
+        }
+
+        .menu-content.compact-menu {
+            gap: 12px;
+            padding: 12px 15px 14px;
+        }
+
+        .app-title.app-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 24px;
+            border: 1px solid #efe5d3;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(249, 243, 230, 0.94));
+            box-shadow: var(--soft-shadow-sm);
+            text-align: left;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .hero-copy {
+            min-width: 0;
+        }
+
+        .title-main {
+            font-size: 1.95rem;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -0.04em;
+        }
+
+        .title-food {
+            color: #6ea03b;
+        }
+
+        .title-pro {
+            color: #f0a32f;
+        }
+
+        .title-sub {
+            margin-top: 8px;
+            font-size: 0.96rem;
+            font-weight: 700;
+            color: #586356;
+        }
+
+        .title-pill {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            border: 1px solid #f4ddb2;
+            background: #fff7e4;
+            color: #ae7415;
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .hero-illustration {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            min-width: 92px;
+        }
+
+        .hero-family {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .hero-bowl {
+            font-size: 1.8rem;
+            line-height: 1;
+            padding: 8px 10px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid #f0e4cf;
+            box-shadow: 0 6px 15px rgba(118, 93, 42, 0.10);
+        }
+
+        .main-action-row {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .main-action-row button {
+            flex: none;
+            min-width: 0;
+            min-height: 76px;
+            padding: 12px 6px 10px;
+            border-radius: 18px;
+            font-size: 0.75rem;
+            color: #405036;
+            flex-direction: column;
+            gap: 7px;
+            border: 1px solid rgba(224, 214, 192, 0.95);
+            box-shadow: 0 8px 20px rgba(106, 83, 44, 0.10);
+        }
+
+        .top-action-btn .btn-icon {
+            font-size: 1.4rem;
+            line-height: 1;
+        }
+
+        .top-action-btn .btn-label {
+            font-size: 0.76rem;
+            font-weight: 900;
+            letter-spacing: 0.02em;
+        }
+
+        .top-action-new {
+            background: linear-gradient(180deg, #d9efba 0%, #b8da7d 100%);
+            color: #4f7e1f;
+        }
+
+        .top-action-today {
+            background: linear-gradient(180deg, #ffe7a8 0%, #ffd275 100%);
+            color: #b46d00;
+        }
+
+        .top-action-food {
+            background: linear-gradient(180deg, #e0efcb 0%, #c7e19d 100%);
+            color: #5e892a;
+        }
+
+        .top-action-note {
+            background: linear-gradient(180deg, #e6dcf7 0%, #d2c1ee 100%);
+            color: #6d53a6;
+        }
+
+        .top-action-more {
+            background: linear-gradient(180deg, #e3eef7 0%, #cfe3f3 100%);
+            color: #3a6e98;
+        }
+
+        .btn-mic.listening {
+            background: linear-gradient(180deg, #f8a6a6 0%, #e76a6a 100%) !important;
+            color: #fff !important;
+        }
+
+        .utility-row {
+            align-items: stretch;
+            gap: 8px;
+        }
+
+        .filter-open-btn,
+        .header-icon-btn {
+            min-height: 48px;
+            border-radius: 16px;
+            box-shadow: var(--soft-shadow-sm);
+            border: 1px solid #e7dfd1;
+            padding: 11px 12px;
+            font-size: 0.8rem;
+            color: #5a6761;
+            background: rgba(255, 255, 255, 0.94);
+        }
+
+        .filter-open-btn {
+            flex: 1 1 auto;
+            max-width: none;
+            color: #456b90;
+            border-color: #d5e5f2;
+            justify-content: center;
+        }
+
+        .header-icon-btn {
+            flex: 0 0 auto;
+            min-width: 112px;
+        }
+
+        .btn-inline-icon {
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .btn-inline-label {
+            font-weight: 900;
+            letter-spacing: 0.03em;
+        }
+
+        body.show-w .toggle-grams,
+        body.show-n .toggle-notes {
+            background: linear-gradient(180deg, #dff0ff 0%, #c8e2ff 100%);
+            border-color: #a9cceb;
+            color: #2d6f9d;
+        }
+
+        .content-area {
+            padding: 18px 15px 80px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 24px;
+            padding: 18px 16px;
+            margin-bottom: 18px;
+            box-shadow: var(--soft-shadow);
+            border: 1px solid var(--card-border);
+        }
+
+        .card-header {
+            font-size: 1.26rem;
+            font-weight: 900;
+            color: #2c3824;
+            margin-bottom: 12px;
+            border-bottom: none;
+            padding-bottom: 0;
+            min-width: 0;
+        }
+
+        .delete-check-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff7e7;
+            color: #8e6b1f;
+            border: 1px solid #f4e1b7;
+            border-radius: 12px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            font-weight: 900;
+        }
+
+        .day-note-wrap {
+            margin: 10px 0 14px;
+            background: linear-gradient(180deg, #f4faeb 0%, #eef6e2 100%);
+            border: 1px solid #dbe8c8;
+            border-radius: 18px;
+            padding: 10px 12px;
+        }
+
+        .day-note-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.73rem;
+            font-weight: 900;
+            color: #618a2b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 6px;
+        }
+
+        .day-note-label::before {
+            content: '🌿';
+            font-size: 0.9rem;
+            line-height: 1;
+        }
+
+        .day-note-box {
+            min-height: 24px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid #e0eacb;
+            border-radius: 12px;
+            padding: 8px 10px;
+            font-size: 0.92rem;
+            line-height: 1.4;
+        }
+
+        .meal-item {
+            align-items: stretch;
+            gap: 12px;
+            margin-bottom: 12px;
+            background: #fffdfa;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #efe7d9;
+            box-shadow: 0 4px 12px rgba(115, 90, 46, 0.06);
+        }
+
+        .meal-label {
+            width: 82px;
+            padding: 9px 6px;
+            border-radius: 16px;
+            border: 1px solid #f0e6d6;
+            background: #fff;
+            color: #697360;
+            font-size: 0.73rem;
+            line-height: 1.15;
+            text-transform: uppercase;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-align: center;
+            flex-shrink: 0;
+            padding-top: 9px;
+        }
+
+        .meal-label::before {
+            font-size: 1.55rem;
+            line-height: 1;
+        }
+
+        .meal-item[data-index="0"] .meal-label::before {
+            content: '🥣';
+        }
+
+        .meal-item[data-index="1"] .meal-label::before {
+            content: '🍏';
+        }
+
+        .meal-item[data-index="2"] .meal-label::before {
+            content: '🥗';
+        }
+
+        .meal-item[data-index="3"] .meal-label::before {
+            content: '🫐';
+        }
+
+        .meal-item[data-index="4"] .meal-label::before {
+            content: '🍲';
+        }
+
+        .m-box {
+            min-height: 28px;
+            padding: 8px 10px;
+            background: #fff;
+            border: 1px solid #e6dfd1;
+            border-radius: 12px;
+            font-size: 0.96rem;
+        }
+
+        .m-box:focus,
+        .day-note-box:focus,
+        .n-box:focus {
+            border-color: #a8c777;
+            background: #f9fdec;
+        }
+
+        .w-box,
+        .n-box,
+        .rx-select {
+            border-radius: 12px;
+        }
+
+        .n-box {
+            background: #fffdf2;
+            border-color: #f1dda1;
+        }
+
+        .rating {
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.03);
+            font-size: 1.35rem;
+        }
+
+        .reaction-badge {
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+
+        .planned-badge {
+            background: #edf7e4;
+            border: 1px solid #d0e4a9;
+            color: #5d8e24;
+        }
+
+        .plan-confirm-btn {
+            background: linear-gradient(180deg, #a5d770 0%, #7ebd42 100%);
+            border-radius: 14px;
+            box-shadow: var(--soft-shadow-sm);
+        }
+
+        .modal-box {
+            border-radius: 24px;
+            border: 1px solid #eee4d4;
+            box-shadow: 0 20px 40px rgba(87, 67, 33, 0.18);
+        }
+
+        .modal-title {
+            color: #2d3824;
+        }
+
+        .modal-text {
+            color: #69756a;
+        }
+
+        .more-section {
+            margin: 12px 0 14px;
+            padding: 12px;
+            border-radius: 18px;
+            background: #fbf8f2;
+            border: 1px solid #eee5d7;
+        }
+
+        .more-section-planning {
+            background: #f7f5ff;
+            border-color: #e3ddff;
+        }
+
+        .more-section-safety {
+            background: #fff8ee;
+            border-color: #fde1b7;
+        }
+
+        .more-section-records {
+            background: #f1f8ff;
+            border-color: #cfe5ff;
+        }
+
+        .more-section-settings {
+            background: #f7f8f8;
+            border-color: #dde4e4;
+        }
+
+        .more-section-title {
+            font-size: 0.84rem;
+            color: #2e3827;
+            margin: 0 0 10px;
+        }
+
+        .more-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .more-grid .modal-btn {
+            margin-bottom: 0;
+            min-height: 58px;
+            padding: 12px 8px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid #ece3d3;
+            color: #2f3a2c;
+            box-shadow: 0 6px 12px rgba(115, 90, 46, 0.08);
+            text-transform: none;
+            font-size: 0.8rem;
+            font-weight: 800;
+            line-height: 1.25;
+        }
+
+        .more-section-planning .modal-btn {
+            color: #58439b;
+            border-color: #ddd6fe;
+        }
+
+        .more-section-safety .modal-btn {
+            color: #a85d12;
+            border-color: #fed7aa;
+        }
+
+        .more-section-records .modal-btn {
+            color: #225f92;
+            border-color: #bfdbfe;
+        }
+
+        .more-section-settings .modal-btn {
+            color: #52676d;
+            border-color: #d7e2e0;
+        }
+
+        .more-grid .modal-btn.more-danger-btn {
+            color: #fff;
+            background: linear-gradient(180deg, #ea7a63 0%, #d55543 100%);
+            border-color: transparent;
+        }
+
+        .more-grid .modal-btn:active {
+            transform: scale(0.98);
+            filter: brightness(0.98);
+        }
+
+        @media (max-width: 640px) {
+            .title-main {
+                font-size: 1.8rem;
+            }
+
+            .main-action-row button {
+                min-height: 74px;
+            }
+
+            .header-icon-btn {
+                min-width: 0;
+                flex: 1 1 0;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .app-title.app-hero {
+                padding: 12px 12px;
+                gap: 10px;
+            }
+
+            .title-main {
+                font-size: 1.58rem;
+            }
+
+            .title-sub {
+                font-size: 0.84rem;
+            }
+
+            .title-pill {
+                font-size: 0.62rem;
+            }
+
+            .hero-family {
+                font-size: 1.8rem;
+            }
+
+            .hero-bowl {
+                font-size: 1.45rem;
+                padding: 6px 8px;
+            }
+
+            .main-action-row button {
+                min-height: 70px;
+                padding: 10px 4px;
+                border-radius: 16px;
+            }
+
+            .top-action-btn .btn-icon {
+                font-size: 1.22rem;
+            }
+
+            .top-action-btn .btn-label {
+                font-size: 0.68rem;
+            }
+
+            .utility-row {
+                flex-wrap: wrap;
+            }
+
+            .filter-open-btn {
+                flex: 1 1 100%;
+            }
+
+            .header-icon-btn {
+                flex: 1 1 calc(50% - 4px);
+            }
+
+            .meal-item {
+                gap: 9px;
+                padding: 9px;
+            }
+
+            .meal-label {
+                width: 72px;
+                font-size: 0.68rem;
+            }
+
+            .more-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .more-section-planning .more-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         /* === OPRAVA ČITELNOSTI JÍDEL 2026-05-31 === */
         .meal-item {
             display: grid;
@@ -1572,6 +2174,8 @@
             }
         }
 
+
+
     </style>
 </head>
 
@@ -1579,22 +2183,32 @@
 
     <div class="sticky-header" id="topMenu">
         <div class="menu-content compact-menu">
-            <div class="app-title">Výživa PRO - TESTOVACÍ VERZE</div>
+            <div class="app-title app-hero">
+                <div class="hero-copy">
+                    <div class="title-main"><span class="title-food">Výživa</span> <span class="title-pro">PRO</span></div>
+                    <div class="title-sub">deník jídla a plánování</div>
+                    <div class="title-pill">testovací verze</div>
+                </div>
+                <div class="hero-illustration" aria-hidden="true">
+                    <div class="hero-family">👨‍👩‍👧‍👦</div>
+                    <div class="hero-bowl">🥣</div>
+                </div>
+            </div>
             <div class="btn-row main-action-row">
-                <button style="background:var(--success)" onclick="addCard()">NOVÝ +</button>
-                <button style="background:#1abc9c" onclick="goToToday()">DNES</button>
-                <button id="micMain" class="btn-mic" onclick="runVoice('food')">🎤 JÍDLO</button>
-                <button id="micNote" style="background:var(--note)" class="btn-mic" onclick="runVoice('note')">🎤 POZNÁMKA</button>
-                <button style="background:#34495e" onclick="openMoreMenu()">⋯ DALŠÍ</button>
-                <button class="header-icon-btn" style="background:#9b59b6" title="Zobrazit/skrýt gramy" onclick="document.body.classList.toggle('show-w'); adjustSpacing();">⚖️</button>
-                <button class="header-icon-btn" style="background:#f39c12" title="Zobrazit/skrýt poznámky" onclick="document.body.classList.toggle('show-n'); adjustSpacing();">📝</button>
+                <button class="top-action-btn top-action-new" onclick="addCard()"><span class="btn-icon">＋</span><span class="btn-label">NOVÝ</span></button>
+                <button class="top-action-btn top-action-today" onclick="goToToday()"><span class="btn-icon">☀️</span><span class="btn-label">DNES</span></button>
+                <button id="micMain" class="btn-mic top-action-btn top-action-food" onclick="runVoice('food')"><span class="btn-icon">🎤</span><span class="btn-label">JÍDLO</span></button>
+                <button id="micNote" class="btn-mic top-action-btn top-action-note" onclick="runVoice('note')"><span class="btn-icon">🎤</span><span class="btn-label">POZNÁMKA</span></button>
+                <button class="top-action-btn top-action-more" onclick="openMoreMenu()"><span class="btn-icon">⋯</span><span class="btn-label">DALŠÍ</span></button>
             </div>
             <div class="reorder-active-strip">
                 <span>↕️ Přeskládání plánu je aktivní</span>
                 <button type="button" onclick="togglePlanReorderMode()">✅ HOTOVO</button>
             </div>
-            <div class="btn-row filter-row">
-                <button type="button" class="filter-open-btn" onclick="openFilterModal()">🔎 FILTRY</button>
+            <div class="btn-row filter-row utility-row">
+                <button type="button" class="filter-open-btn" onclick="openFilterModal()"><span class="btn-inline-icon">🔎</span><span class="btn-inline-label">FILTRY</span></button>
+                <button class="header-icon-btn toggle-grams" type="button" title="Zobrazit/skrýt gramy" onclick="document.body.classList.toggle('show-w'); adjustSpacing();"><span class="btn-inline-icon">⚖️</span><span class="btn-inline-label">GRAMY</span></button>
+                <button class="header-icon-btn toggle-notes" type="button" title="Zobrazit/skrýt poznámky" onclick="document.body.classList.toggle('show-n'); adjustSpacing();"><span class="btn-inline-icon">📝</span><span class="btn-inline-label">POZNÁMKY</span></button>
             </div>
         </div>
     </div>
@@ -1671,7 +2285,7 @@
                     <button class="modal-btn" onclick="closeMoreMenu(); openPlanner();">🗓️ Plán jídel</button>
                     <button class="modal-btn" onclick="closeMoreMenu(); openAiModal();">✨ 3 návrhy</button>
                     <button class="modal-btn" onclick="closeMoreMenu(); openAiPlanModal();">🤖 AI plán</button>
-                    <button class="modal-btn more-wide-btn" onclick="closeMoreMenu(); openSavedIdeasModal();">💡 Nápady jídel</button>
+                    <button class="modal-btn" onclick="closeMoreMenu(); openSavedIdeasModal();">💡 Nápady jídel</button>
                 </div>
             </div>
 
@@ -2338,7 +2952,7 @@ květák..."></textarea>
         let currentAiIdeaSuggestions = [];
         let pendingIdeaUse = null;
         const DATA_VERSION = 3;
-        const APP_VERSION = '2026-05-31-visual-meal-layout-v1';
+        const APP_VERSION = '2026-05-29-ai-split-v1';
 
         function getChildProfile() {
             const raw = localStorage.getItem(CHILD_PROFILE_KEY);
