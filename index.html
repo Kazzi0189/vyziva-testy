@@ -3506,6 +3506,10 @@ květák..."></textarea>
         const RESOLVED_RISKS_KEY = 'nutri_resolved_risks_v1';
         const SAVED_IDEAS_KEY = 'nutri_saved_ideas_v1';
         const AUTO_BACKUP_KEY = 'nutri_last_auto_backup_v1';
+        const EDIT_AUTO_BACKUP_LAST_AT_KEY = 'nutri_edit_auto_backup_last_at_v1';
+        const EDIT_AUTO_BACKUP_DELAY_MS = 30000;
+        const EDIT_AUTO_BACKUP_MIN_INTERVAL_MS = 5 * 60 * 1000;
+        let editAutoBackupTimer = null;
         let currentAiIdeaSuggestions = [];
         let pendingIdeaUse = null;
         const DATA_VERSION = 3;
@@ -3596,6 +3600,7 @@ květák..."></textarea>
 
         function saveAvoidListFromModal() {
             const box = document.getElementById('avoidListText');
+            createAutoBackup('před úpravou seznamu Vyhnout se');
             setAvoidList((box ? box.value : '').split('\n'));
             closeAvoidListModal();
             alert('Seznam „Vyhnout se“ byl uložen. Použije se pro offline plán i pro AI prompt.');
@@ -3625,6 +3630,7 @@ květák..."></textarea>
 
         function saveWatchListFromModal() {
             const box = document.getElementById('watchListText');
+            createAutoBackup('před úpravou seznamu Sledovat');
             setWatchList((box ? box.value : '').split('\n'));
             closeWatchListModal();
             alert('Seznam „Sledovat“ byl uložen. Použije se jako upozornění v přehledu a v AI podkladu.');
@@ -3788,26 +3794,48 @@ květák..."></textarea>
             alert('Toto jídlo obsahuje položku ze seznamu „Sledovat":\n\n- ' + items.join('\n- ') + '\n\nPokud jídlo podáte, sledujte případnou reakci dítěte. Nejde o zákaz jako u „Vyhnout se“, ale o upozornění.');
         }
 
+        function buildAutoBackupSnapshot(reason) {
+            return {
+                dataVersion: DATA_VERSION,
+                createdAt: new Date().toISOString(),
+                reason: reason || 'automatická záloha',
+                entries: getMainData(),
+                childProfile: getChildProfile(),
+                avoidList: getAvoidList(),
+                watchList: getWatchList(),
+                resolvedRisks: getResolvedRisks(),
+                savedIdeas: getSavedIdeas(),
+                draft: getDraftData ? getDraftData() : []
+            };
+        }
+
         function createAutoBackup(reason) {
             try {
-                const backup = {
-                    dataVersion: DATA_VERSION,
-                    createdAt: new Date().toISOString(),
-                    reason: reason || 'automatická záloha',
-                    entries: getMainData(),
-                    childProfile: getChildProfile(),
-                    avoidList: getAvoidList(),
-                    watchList: getWatchList(),
-                    resolvedRisks: getResolvedRisks(),
-                    savedIdeas: getSavedIdeas(),
-                    draft: getDraftData ? getDraftData() : []
-                };
-                localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(backup));
+                localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(buildAutoBackupSnapshot(reason)));
                 return true;
             } catch (err) {
                 console.warn('Auto záloha se nepodařila:', err);
                 return false;
             }
+        }
+
+        function scheduleEditAutoBackup(reason = 'automatická záloha po úpravě jídelníčku') {
+            if (isRendering) return;
+            if (editAutoBackupTimer) clearTimeout(editAutoBackupTimer);
+            editAutoBackupTimer = setTimeout(() => {
+                editAutoBackupTimer = null;
+                const now = Date.now();
+                const last = parseInt(localStorage.getItem(EDIT_AUTO_BACKUP_LAST_AT_KEY) || '0', 10) || 0;
+                if (now - last < EDIT_AUTO_BACKUP_MIN_INTERVAL_MS) return;
+                if (createAutoBackup(reason)) {
+                    localStorage.setItem(EDIT_AUTO_BACKUP_LAST_AT_KEY, String(now));
+                }
+            }, EDIT_AUTO_BACKUP_DELAY_MS);
+        }
+
+        function cancelPendingEditAutoBackup() {
+            if (editAutoBackupTimer) clearTimeout(editAutoBackupTimer);
+            editAutoBackupTimer = null;
         }
 
         function restoreLastAutoBackup() {
@@ -3824,6 +3852,8 @@ květák..."></textarea>
             }
             const when = backup.createdAt ? new Date(backup.createdAt).toLocaleString('cs-CZ') : 'neznámý čas';
             if (!confirm(`Obnovit poslední automatickou zálohu?\n\nVytvořeno: ${when}\nDůvod: ${backup.reason || 'neuvedeno'}\n\nAktuální data budou nahrazena touto zálohou.`)) return;
+            cancelPendingEditAutoBackup();
+            createAutoBackup('před obnovou automatické zálohy');
             localStorage.setItem('nutri_data_v13', JSON.stringify(normalizeAllEntries(backup.entries)));
             if (backup.childProfile) localStorage.setItem(CHILD_PROFILE_KEY, JSON.stringify(backup.childProfile));
             if (Array.isArray(backup.avoidList)) setAvoidList(backup.avoidList);
@@ -4095,6 +4125,7 @@ květák..."></textarea>
                 alert('Vyberte položku nebo napište vlastní text.');
                 return;
             }
+            createAutoBackup(pendingRiskAction.listType === 'watch' ? 'před přidáním položky do Sledovat' : 'před přidáním položky do Vyhnout se');
             const result = addToNamedList(value, pendingRiskAction.listType);
             const listName = pendingRiskAction.listType === 'watch' ? 'Sledovat' : 'Vyhnout se';
             if (result === 'exists') {
@@ -4526,6 +4557,7 @@ květák..."></textarea>
             });
 
             setMainData(fullData);
+            scheduleEditAutoBackup();
         }
 
         function saveAndReload() {
@@ -6219,6 +6251,7 @@ Tuto akci nelze vrátit zpět.`)) return;
         function setSavedIdeaStatus(index, status) {
             const ideas = getSavedIdeas();
             if (!ideas[index]) return;
+            createAutoBackup('před změnou stavu uloženého nápadu');
             ideas[index].status = status || 'new';
             ideas[index].statusChangedAt = new Date().toISOString();
             if (status === 'new') {
@@ -6236,6 +6269,7 @@ Tuto akci nelze vrátit zpět.`)) return;
         function markSavedIdeaUsed(index) {
             const ideas = getSavedIdeas();
             if (!ideas[index]) return;
+            createAutoBackup('před označením nápadu jako použitého');
             ideas[index].status = 'used';
             ideas[index].usedAt = new Date().toISOString();
             if (!ideas[index].usedDate) ideas[index].usedDate = 'označeno ručně';
@@ -6316,6 +6350,7 @@ Tuto akci nelze vrátit zpět.`)) return;
             const ideas = getSavedIdeas();
             if (!ideas[index]) return;
             if (!confirm('Smazat uložený nápad: ' + (ideas[index].title || 'Nápad') + '?')) return;
+            createAutoBackup('před smazáním uloženého nápadu');
             ideas.splice(index, 1);
             setSavedIdeas(ideas);
             renderSavedIdeas();
@@ -7332,6 +7367,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
 
             if (!confirm(`Odeslat ${draftData.length} dní do hlavního deníku? (Existující dny se stejným datem budou přepsány!)`)) return;
 
+            createAutoBackup('před přenosem rozpracovaných zápisů do hlavního deníku');
             let mainRaw = localStorage.getItem('nutri_data_v13');
             let mainData = mainRaw ? JSON.parse(mainRaw) : [];
 
@@ -7349,6 +7385,8 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
         function clearAllMainData() {
             if (confirm("🚨 POZOR! Chystáte se smazat CELOU HISTORII vašeho stravování. Máte vytvořenou zálohu?")) {
                 if (confirm("Poslední varování: Opravdu smazat VŠECHNA DATA z hlavního deníku?")) {
+                    cancelPendingEditAutoBackup();
+                    createAutoBackup('před úplným smazáním hlavního deníku');
                     localStorage.removeItem('nutri_data_v13');
                     load(); // Znovu načte aplikaci (vytvoří prázdný den)
                     closeSettings();
