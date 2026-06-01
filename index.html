@@ -1433,1307 +1433,45 @@
 
 
 
-        /* === VIZUÁLNÍ OBNOVA 2026-05-31 === */
-        :root {
-            --accent: #7aa33e;
-            --danger: #d95b49;
-            --success: #8fca60;
-            --note: #f4c654;
-            --bg: #fbf7ef;
-            --surface: #fffdf8;
-            --card-border: #efe5d4;
-            --warm-text: #2f3a2c;
-            --soft-shadow: 0 10px 28px rgba(102, 78, 35, 0.10);
-            --soft-shadow-sm: 0 6px 18px rgba(102, 78, 35, 0.09);
-        }
-
-        body {
-            background: linear-gradient(180deg, #fdfbf5 0%, #f8f3ea 100%);
-            color: var(--warm-text);
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: -1;
-            background:
-                radial-gradient(circle at 8% 16%, rgba(162, 204, 112, 0.14) 0 62px, transparent 63px),
-                radial-gradient(circle at 93% 26%, rgba(255, 195, 121, 0.16) 0 70px, transparent 71px),
-                radial-gradient(circle at 89% 78%, rgba(255, 176, 146, 0.14) 0 60px, transparent 61px),
-                radial-gradient(circle at 7% 86%, rgba(255, 216, 158, 0.14) 0 78px, transparent 79px),
-                radial-gradient(circle at 82% 8%, rgba(188, 214, 156, 0.12) 0 48px, transparent 49px);
-        }
-
-        .sticky-header {
-            background: rgba(255, 251, 244, 0.96);
-            border-bottom: 1px solid #efe5d2;
-            box-shadow: 0 12px 30px rgba(88, 67, 30, 0.10);
-            backdrop-filter: blur(10px);
-        }
-
-        .menu-content.compact-menu {
-            gap: 12px;
-            padding: 12px 15px 14px;
-        }
-
-        .app-title.app-hero {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 14px 16px;
-            border-radius: 24px;
-            border: 1px solid #efe5d3;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(249, 243, 230, 0.94));
-            box-shadow: var(--soft-shadow-sm);
-            text-align: left;
-            text-transform: none;
-            letter-spacing: 0;
-        }
-
-        .hero-copy {
-            min-width: 0;
-        }
-
-        .title-main {
-            font-size: 1.95rem;
-            font-weight: 900;
-            line-height: 1;
-            letter-spacing: -0.04em;
-        }
-
-        .title-food {
-            color: #6ea03b;
-        }
-
-        .title-pro {
-            color: #f0a32f;
-        }
-
-        .title-sub {
-            margin-top: 8px;
-            font-size: 0.96rem;
-            font-weight: 700;
-            color: #586356;
-        }
-
-        .title-pill {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 5px 10px;
-            border-radius: 999px;
-            border: 1px solid #f4ddb2;
-            background: #fff7e4;
-            color: #ae7415;
-            font-size: 0.7rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .hero-illustration {
-            flex: 0 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            min-width: 92px;
-        }
-
-        .hero-family {
-            font-size: 2rem;
-            line-height: 1;
-        }
-
-        .hero-bowl {
-            font-size: 1.8rem;
-            line-height: 1;
-            padding: 8px 10px;
-            border-radius: 999px;
-            background: #fff;
-            border: 1px solid #f0e4cf;
-            box-shadow: 0 6px 15px rgba(118, 93, 42, 0.10);
-        }
-
-        .main-action-row {
-            display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 10px;
-        }
-
-        .main-action-row button {
-            flex: none;
-            min-width: 0;
-            min-height: 76px;
-            padding: 12px 6px 10px;
-            border-radius: 18px;
-            font-size: 0.75rem;
-            color: #405036;
-            flex-direction: column;
-            gap: 7px;
-            border: 1px solid rgba(224, 214, 192, 0.95);
-            box-shadow: 0 8px 20px rgba(106, 83, 44, 0.10);
-        }
-
-        .top-action-btn .btn-icon {
-            font-size: 1.4rem;
-            line-height: 1;
-        }
-
-        .top-action-btn .btn-label {
-            font-size: 0.76rem;
-            font-weight: 900;
-            letter-spacing: 0.02em;
-        }
-
-        .top-action-new {
-            background: linear-gradient(180deg, #d9efba 0%, #b8da7d 100%);
-            color: #4f7e1f;
-        }
-
-        .top-action-today {
-            background: linear-gradient(180deg, #ffe7a8 0%, #ffd275 100%);
-            color: #b46d00;
-        }
-
-        .top-action-food {
-            background: linear-gradient(180deg, #e0efcb 0%, #c7e19d 100%);
-            color: #5e892a;
-        }
-
-        .top-action-note {
-            background: linear-gradient(180deg, #e6dcf7 0%, #d2c1ee 100%);
-            color: #6d53a6;
-        }
-
-        .top-action-more {
-            background: linear-gradient(180deg, #e3eef7 0%, #cfe3f3 100%);
-            color: #3a6e98;
-        }
-
-        .btn-mic.listening {
-            background: linear-gradient(180deg, #f8a6a6 0%, #e76a6a 100%) !important;
-            color: #fff !important;
-        }
-
-        .utility-row {
-            align-items: stretch;
-            gap: 8px;
-        }
-
-        .filter-open-btn,
-        .header-icon-btn {
-            min-height: 48px;
-            border-radius: 16px;
-            box-shadow: var(--soft-shadow-sm);
-            border: 1px solid #e7dfd1;
-            padding: 11px 12px;
-            font-size: 0.8rem;
-            color: #5a6761;
-            background: rgba(255, 255, 255, 0.94);
-        }
-
-        .filter-open-btn {
-            flex: 1 1 auto;
-            max-width: none;
-            color: #456b90;
-            border-color: #d5e5f2;
-            justify-content: center;
-        }
-
-        .header-icon-btn {
-            flex: 0 0 auto;
-            min-width: 112px;
-        }
-
-        .btn-inline-icon {
-            font-size: 1rem;
-            line-height: 1;
-        }
-
-        .btn-inline-label {
-            font-weight: 900;
-            letter-spacing: 0.03em;
-        }
-
-        body.show-w .toggle-grams,
-        body.show-n .toggle-notes {
-            background: linear-gradient(180deg, #dff0ff 0%, #c8e2ff 100%);
-            border-color: #a9cceb;
-            color: #2d6f9d;
-        }
-
+        /* JEMNÝ WALLPAPER RODINY – 2026-06-01 */
         .content-area {
-            padding: 18px 15px 80px;
+            position: relative;
+            isolation: isolate;
+        }
+
+        .content-area::before {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(92%, 640px);
+            height: 330px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.16;
+            background-repeat: no-repeat;
+            background-position: center top;
+            background-size: contain;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='330' viewBox='0 0 640 330' fill='none'%3E%3Cg stroke='%239db57f' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='214' cy='104' r='30'/%3E%3Cpath d='M162 198c12-33 32-50 52-50s40 17 52 50'/%3E%3Ccircle cx='314' cy='92' r='38'/%3E%3Cpath d='M246 210c18-48 43-72 68-72s50 24 68 72'/%3E%3Ccircle cx='424' cy='104' r='30'/%3E%3Cpath d='M372 198c12-33 32-50 52-50s40 17 52 50'/%3E%3Ccircle cx='319' cy='152' r='22'/%3E%3Cpath d='M280 222c10-26 24-40 39-40s29 14 39 40'/%3E%3Cpath d='M92 250c18-26 38-40 58-44'/%3E%3Cpath d='M120 224c-10 12-18 26-22 42'/%3E%3Cpath d='M548 250c-18-26-38-40-58-44'/%3E%3Cpath d='M520 224c10 12 18 26 22 42'/%3E%3Cpath d='M238 270c29 16 63 24 102 24s73-8 102-24'/%3E%3Cpath d='M268 266c8-10 19-16 32-16h40c13 0 24 6 32 16'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .content-area > * {
+            position: relative;
+            z-index: 1;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.96);
-            border-radius: 24px;
-            padding: 18px 16px;
-            margin-bottom: 18px;
-            box-shadow: var(--soft-shadow);
-            border: 1px solid var(--card-border);
-        }
-
-        .card-header {
-            font-size: 1.26rem;
-            font-weight: 900;
-            color: #2c3824;
-            margin-bottom: 12px;
-            border-bottom: none;
-            padding-bottom: 0;
-            min-width: 0;
-        }
-
-        .delete-check-wrap {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #fff7e7;
-            color: #8e6b1f;
-            border: 1px solid #f4e1b7;
-            border-radius: 12px;
-            padding: 6px 10px;
-            font-size: 0.78rem;
-            font-weight: 900;
-        }
-
-        .day-note-wrap {
-            margin: 10px 0 14px;
-            background: linear-gradient(180deg, #f4faeb 0%, #eef6e2 100%);
-            border: 1px solid #dbe8c8;
-            border-radius: 18px;
-            padding: 10px 12px;
-        }
-
-        .day-note-label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.73rem;
-            font-weight: 900;
-            color: #618a2b;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            margin-bottom: 6px;
-        }
-
-        .day-note-label::before {
-            content: '🌿';
-            font-size: 0.9rem;
-            line-height: 1;
-        }
-
-        .day-note-box {
-            min-height: 24px;
-            background: rgba(255, 255, 255, 0.88);
-            border: 1px solid #e0eacb;
-            border-radius: 12px;
-            padding: 8px 10px;
-            font-size: 0.92rem;
-            line-height: 1.4;
-        }
-
-        .meal-item {
-            align-items: stretch;
-            gap: 12px;
-            margin-bottom: 12px;
-            background: #fffdfa;
-            padding: 10px;
-            border-radius: 20px;
-            border: 1px solid #efe7d9;
-            box-shadow: 0 4px 12px rgba(115, 90, 46, 0.06);
-        }
-
-        .meal-label {
-            width: 82px;
-            padding: 9px 6px;
-            border-radius: 16px;
-            border: 1px solid #f0e6d6;
-            background: #fff;
-            color: #697360;
-            font-size: 0.73rem;
-            line-height: 1.15;
-            text-transform: uppercase;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            text-align: center;
-            flex-shrink: 0;
-            padding-top: 9px;
-        }
-
-        .meal-label::before {
-            font-size: 1.55rem;
-            line-height: 1;
-        }
-
-        .meal-item[data-index="0"] .meal-label::before {
-            content: '🥣';
-        }
-
-        .meal-item[data-index="1"] .meal-label::before {
-            content: '🍏';
-        }
-
-        .meal-item[data-index="2"] .meal-label::before {
-            content: '🥗';
-        }
-
-        .meal-item[data-index="3"] .meal-label::before {
-            content: '🫐';
-        }
-
-        .meal-item[data-index="4"] .meal-label::before {
-            content: '🍲';
-        }
-
-        .m-box {
-            min-height: 28px;
-            padding: 8px 10px;
-            background: #fff;
-            border: 1px solid #e6dfd1;
-            border-radius: 12px;
-            font-size: 0.96rem;
-        }
-
-        .m-box:focus,
-        .day-note-box:focus,
-        .n-box:focus {
-            border-color: #a8c777;
-            background: #f9fdec;
-        }
-
-        .w-box,
-        .n-box,
-        .rx-select {
-            border-radius: 12px;
-        }
-
-        .n-box {
-            background: #fffdf2;
-            border-color: #f1dda1;
-        }
-
-        .rating {
-            min-width: 44px;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 16px;
-            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.03);
-            font-size: 1.35rem;
-        }
-
-        .reaction-badge {
-            border-radius: 12px;
-            font-size: 0.75rem;
-        }
-
-        .planned-badge {
-            background: #edf7e4;
-            border: 1px solid #d0e4a9;
-            color: #5d8e24;
-        }
-
-        .plan-confirm-btn {
-            background: linear-gradient(180deg, #a5d770 0%, #7ebd42 100%);
-            border-radius: 14px;
-            box-shadow: var(--soft-shadow-sm);
-        }
-
-        .modal-box {
-            border-radius: 24px;
-            border: 1px solid #eee4d4;
-            box-shadow: 0 20px 40px rgba(87, 67, 33, 0.18);
-        }
-
-        .modal-title {
-            color: #2d3824;
-        }
-
-        .modal-text {
-            color: #69756a;
-        }
-
-        .more-section {
-            margin: 12px 0 14px;
-            padding: 12px;
-            border-radius: 18px;
-            background: #fbf8f2;
-            border: 1px solid #eee5d7;
-        }
-
-        .more-section-planning {
-            background: #f7f5ff;
-            border-color: #e3ddff;
-        }
-
-        .more-section-safety {
-            background: #fff8ee;
-            border-color: #fde1b7;
-        }
-
-        .more-section-records {
-            background: #f1f8ff;
-            border-color: #cfe5ff;
-        }
-
-        .more-section-settings {
-            background: #f7f8f8;
-            border-color: #dde4e4;
-        }
-
-        .more-section-title {
-            font-size: 0.84rem;
-            color: #2e3827;
-            margin: 0 0 10px;
-        }
-
-        .more-grid {
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .more-grid .modal-btn {
-            margin-bottom: 0;
-            min-height: 58px;
-            padding: 12px 8px;
-            border-radius: 16px;
             background: rgba(255, 255, 255, 0.94);
-            border: 1px solid #ece3d3;
-            color: #2f3a2c;
-            box-shadow: 0 6px 12px rgba(115, 90, 46, 0.08);
-            text-transform: none;
-            font-size: 0.8rem;
-            font-weight: 800;
-            line-height: 1.25;
-        }
-
-        .more-section-planning .modal-btn {
-            color: #58439b;
-            border-color: #ddd6fe;
-        }
-
-        .more-section-safety .modal-btn {
-            color: #a85d12;
-            border-color: #fed7aa;
-        }
-
-        .more-section-records .modal-btn {
-            color: #225f92;
-            border-color: #bfdbfe;
-        }
-
-        .more-section-settings .modal-btn {
-            color: #52676d;
-            border-color: #d7e2e0;
-        }
-
-        .more-grid .modal-btn.more-danger-btn {
-            color: #fff;
-            background: linear-gradient(180deg, #ea7a63 0%, #d55543 100%);
-            border-color: transparent;
-        }
-
-        .more-grid .modal-btn:active {
-            transform: scale(0.98);
-            filter: brightness(0.98);
-        }
-
-        @media (max-width: 640px) {
-            .title-main {
-                font-size: 1.8rem;
-            }
-
-            .main-action-row button {
-                min-height: 74px;
-            }
-
-            .header-icon-btn {
-                min-width: 0;
-                flex: 1 1 0;
-            }
-        }
-
-        @media (max-width: 420px) {
-            .app-title.app-hero {
-                padding: 12px 12px;
-                gap: 10px;
-            }
-
-            .title-main {
-                font-size: 1.58rem;
-            }
-
-            .title-sub {
-                font-size: 0.84rem;
-            }
-
-            .title-pill {
-                font-size: 0.62rem;
-            }
-
-            .hero-family {
-                font-size: 1.8rem;
-            }
-
-            .hero-bowl {
-                font-size: 1.45rem;
-                padding: 6px 8px;
-            }
-
-            .main-action-row button {
-                min-height: 70px;
-                padding: 10px 4px;
-                border-radius: 16px;
-            }
-
-            .top-action-btn .btn-icon {
-                font-size: 1.22rem;
-            }
-
-            .top-action-btn .btn-label {
-                font-size: 0.68rem;
-            }
-
-            .utility-row {
-                flex-wrap: wrap;
-            }
-
-            .filter-open-btn {
-                flex: 1 1 100%;
-            }
-
-            .header-icon-btn {
-                flex: 1 1 calc(50% - 4px);
-            }
-
-            .meal-item {
-                gap: 9px;
-                padding: 9px;
-            }
-
-            .meal-label {
-                width: 72px;
-                font-size: 0.68rem;
-            }
-
-            .more-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .more-section-planning .more-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        /* === OPRAVA ČITELNOSTI JÍDEL 2026-05-31 === */
-        .meal-item {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            grid-template-areas:
-                "label rating"
-                "content content";
-            align-items: start;
-            gap: 10px 12px;
-        }
-
-        .meal-label {
-            grid-area: label;
-            width: auto;
-            min-height: 44px;
-            padding: 8px 10px;
-            flex-direction: row;
-            justify-content: flex-start;
-            text-align: left;
-            gap: 9px;
-            font-size: 0.76rem;
-        }
-
-        .meal-label::before {
-            font-size: 1.35rem;
-            flex: 0 0 auto;
-        }
-
-        .meal-content {
-            grid-area: content;
-            width: 100%;
-            min-width: 0;
-        }
-
-        .meal-content .m-box {
-            width: 100%;
-            box-sizing: border-box;
-            min-height: 42px;
-            font-size: 1rem;
-        }
-
-        .rating {
-            grid-area: rating;
-            align-self: stretch;
-            min-width: 50px;
-            min-height: 44px;
-            padding: 4px 8px;
-        }
-
-        .ai-suggestion-box,
-        .watch-badge,
-        .reaction-badge,
-        .rx-select,
-        .n-box {
-            max-width: 100%;
-            box-sizing: border-box;
-        }
-
-        @media (max-width: 420px) {
-            .menu-content.compact-menu {
-                padding: 10px 12px 12px;
-                gap: 10px;
-            }
-
-            .app-title.app-hero {
-                border-radius: 20px;
-            }
-
-            .main-action-row {
-                gap: 8px;
-            }
-
-            .main-action-row button {
-                min-height: 64px;
-                padding: 9px 4px 8px;
-                border-radius: 15px;
-            }
-
-            .utility-row {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-            }
-
-            .utility-row .filter-open-btn {
-                grid-column: 1 / -1;
-                min-height: 46px;
-            }
-
-            .utility-row .header-icon-btn {
-                min-height: 42px;
-                min-width: 0;
-                padding: 9px 8px;
-                font-size: 0.74rem;
-            }
-
-            .content-area {
-                padding-left: 10px;
-                padding-right: 10px;
-            }
-
-            .card {
-                padding: 14px 12px;
-                border-radius: 22px;
-            }
-
-            .meal-item {
-                grid-template-columns: minmax(0, 1fr) auto;
-                gap: 8px 9px;
-                padding: 9px;
-                border-radius: 18px;
-            }
-
-            .meal-label {
-                width: auto;
-                min-height: 40px;
-                padding: 7px 9px;
-                font-size: 0.68rem;
-            }
-
-            .meal-label::before {
-                font-size: 1.18rem;
-            }
-
-            .rating {
-                min-width: 46px;
-                min-height: 40px;
-                border-radius: 14px;
-                font-size: 1.22rem;
-            }
-
-            .meal-content .m-box {
-                min-height: 40px;
-                padding: 9px 10px;
-                font-size: 0.98rem;
-                line-height: 1.4;
-            }
-        }
-
-
-
-
-
-        /* === DOLADĚNÍ KOMPAKTNÍ HLAVIČKY 2026-06-01 === */
-        .app-title.app-hero.compact-hero {
-            justify-content: flex-start;
-            padding: 10px 13px;
-            min-height: 0;
-            border-radius: 18px;
-        }
-
-        .compact-hero .hero-copy {
-            width: 100%;
-        }
-
-        .compact-hero .title-main {
-            font-size: 1.45rem;
-            line-height: 1.02;
-        }
-
-        .compact-hero .title-sub {
-            margin-top: 5px;
-            font-size: 0.78rem;
-        }
-
-        .compact-hero .title-pill {
-            margin-top: 7px;
-            padding: 4px 9px;
-            font-size: 0.62rem;
-        }
-
-        .hero-illustration,
-        .hero-family,
-        .hero-bowl {
-            display: none !important;
-        }
-
-        .main-action-row button {
-            min-height: 64px;
-            padding: 8px 4px;
-            border-radius: 15px;
-        }
-
-        .top-action-btn .btn-icon {
-            font-size: 1.12rem;
-        }
-
-        .top-action-btn .btn-label {
-            font-size: 0.66rem;
-        }
-
-        .utility-row {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 44px 44px;
-            gap: 8px;
-            align-items: stretch;
-        }
-
-        .utility-row .filter-open-btn {
-            grid-column: auto;
-            min-height: 44px;
-        }
-
-        .utility-row .icon-only-btn {
-            flex: none;
-            width: 44px;
-            min-width: 44px;
-            max-width: 44px;
-            min-height: 44px;
-            padding: 0;
-            font-size: 1rem;
-        }
-
-        .utility-row .icon-only-btn .btn-inline-label {
-            display: none;
-        }
-
-        body.show-w .toggle-grams,
-        body.show-n .toggle-notes {
-            background: linear-gradient(180deg, #dff0ff 0%, #c8e2ff 100%);
-            border-color: #a9cceb;
-            color: #2d6f9d;
-        }
-
-        .delete-check-wrap {
-            position: relative;
-            top: auto;
-            left: auto;
-            display: none;
-            width: max-content;
-            margin: 0 0 10px 0;
-            box-shadow: none;
-        }
-
-        body.delete-mode .delete-check-wrap {
-            display: inline-flex;
-        }
-
-        .card-header {
-            display: block;
-            width: calc(100% - 62px);
-            min-width: 0;
-            margin-bottom: 10px;
-            clear: both;
-        }
-
-        .planned-badge {
-            margin-left: 0;
-            margin-bottom: 10px;
-        }
-
-        @media (max-width: 420px) {
-            .app-title.app-hero.compact-hero {
-                padding: 9px 12px;
-                border-radius: 17px;
-            }
-
-            .compact-hero .title-main {
-                font-size: 1.32rem;
-            }
-
-            .compact-hero .title-sub {
-                font-size: 0.74rem;
-            }
-
-            .main-action-row button {
-                min-height: 60px;
-            }
-
-            .utility-row {
-                grid-template-columns: minmax(0, 1fr) 42px 42px;
-            }
-
-            .utility-row .icon-only-btn {
-                width: 42px;
-                min-width: 42px;
-                max-width: 42px;
-                min-height: 42px;
-            }
-
-            .card-header {
-                width: calc(100% - 58px);
-            }
-        }
-
-
-
-        /* === SJEDNOCENÍ MODALŮ A KARET 2026-06-01 === */
-        :root {
-            --ui-bg-soft: #fbf7ef;
-            --ui-surface: #fffdf8;
-            --ui-surface-2: #fff9ef;
-            --ui-border: #eadfcb;
-            --ui-border-strong: #dcc9a8;
-            --ui-text: #2f3a2c;
-            --ui-muted: #6d7769;
-            --ui-green: #7aa33e;
-            --ui-green-dark: #5e842b;
-            --ui-blue: #3f7fa6;
-            --ui-blue-dark: #2f6688;
-            --ui-orange: #d98520;
-            --ui-orange-dark: #a86415;
-            --ui-purple: #7b5bc0;
-            --ui-purple-dark: #6044a0;
-            --ui-red: #d95b49;
-            --ui-red-dark: #b94334;
-            --ui-gray: #7c8583;
-            --ui-shadow: 0 16px 36px rgba(85, 65, 31, 0.16);
-            --ui-shadow-soft: 0 8px 22px rgba(94, 72, 35, 0.10);
-        }
-
-        .modal-overlay {
-            background: rgba(47, 38, 24, 0.42);
-            backdrop-filter: blur(3px);
-            padding: 12px 0;
-            box-sizing: border-box;
-        }
-
-        .modal-box,
-        .draft-content {
-            background: linear-gradient(180deg, rgba(255, 253, 248, 0.99) 0%, rgba(255, 250, 240, 0.98) 100%);
-            border: 1px solid var(--ui-border);
-            border-radius: 24px;
-            box-shadow: var(--ui-shadow);
-            color: var(--ui-text);
-        }
-
-        .modal-box {
-            padding: 22px;
-        }
-
-        .draft-content {
-            border-radius: 24px;
-            padding: 18px;
-        }
-
-        .modal-title,
-        .draft-header {
-            color: var(--ui-text);
-            font-weight: 900;
-            letter-spacing: -0.02em;
-        }
-
-        .modal-title {
-            font-size: 1.22rem;
-            margin-bottom: 8px;
-        }
-
-        .draft-header {
-            color: var(--ui-green-dark);
-        }
-
-        .modal-text,
-        .small-help-text,
-        .idea-list-meta {
-            color: var(--ui-muted);
-            line-height: 1.45;
-        }
-
-        .modal-box label,
-        .draft-content label {
-            color: var(--ui-text) !important;
-            font-weight: 800 !important;
-        }
-
-        input,
-        select,
-        textarea,
-        .avoid-list-textarea,
-        .risk-custom-input,
-        #riskActionCustom,
-        #geminiApiKey,
-        #aiPlanCustomDays,
-        #deleteDateFrom,
-        #deleteDateTo,
-        #filterTextInput {
-            border-radius: 14px !important;
-            border: 1px solid var(--ui-border) !important;
-            background: rgba(255, 255, 255, 0.96) !important;
-            color: var(--ui-text) !important;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus,
-        .avoid-list-textarea:focus,
-        .risk-custom-input:focus,
-        #riskActionCustom:focus,
-        #geminiApiKey:focus,
-        #aiPlanCustomDays:focus,
-        #deleteDateFrom:focus,
-        #deleteDateTo:focus,
-        #filterTextInput:focus {
-            outline: none;
-            border-color: #a8c777 !important;
-            box-shadow: 0 0 0 3px rgba(122, 163, 62, 0.16) !important;
-        }
-
-        .modal-btn {
-            border-radius: 15px !important;
-            border: 1px solid transparent;
-            min-height: 44px;
-            box-shadow: 0 7px 16px rgba(74, 55, 27, 0.10);
-            text-transform: none;
-            letter-spacing: 0.01em;
-            line-height: 1.2;
-            transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
-        }
-
-        .modal-btn:active {
-            transform: scale(0.98);
-            filter: brightness(0.97);
-        }
-
-        .btn-merge,
-        .modal-btn.btn-merge {
-            background: linear-gradient(180deg, #98c95e 0%, #76a93d 100%) !important;
-            color: #fff !important;
-        }
-
-        .btn-import,
-        .modal-btn.btn-import {
-            background: linear-gradient(180deg, #5f9dc0 0%, #39799e 100%) !important;
-            color: #fff !important;
-        }
-
-        .btn-export,
-        .modal-btn.btn-export {
-            background: linear-gradient(180deg, #687b82 0%, #4d5d63 100%) !important;
-            color: #fff !important;
-        }
-
-        .btn-excel,
-        .modal-btn.btn-excel {
-            background: linear-gradient(180deg, #55ad70 0%, #368b52 100%) !important;
-            color: #fff !important;
-        }
-
-        .btn-overwrite,
-        .modal-btn.btn-overwrite,
-        .more-danger-btn {
-            background: linear-gradient(180deg, #e67862 0%, #cf4f3e 100%) !important;
-            color: #fff !important;
-        }
-
-        .btn-cancel,
-        .modal-btn.btn-cancel {
-            background: linear-gradient(180deg, #9ba4a2 0%, #78817f 100%) !important;
-            color: #fff !important;
-        }
-
-        .modal-btn:not(.btn-merge):not(.btn-import):not(.btn-export):not(.btn-excel):not(.btn-overwrite):not(.btn-cancel):not(.more-danger-btn) {
-            border-color: var(--ui-border);
-        }
-
-        .filter-block,
-        .overview-box,
-        .manual-section,
-        .idea-list-card,
-        .ai-idea-card,
-        .ai-suggestion-box,
-        .ai-loading-box,
-        .ai-status,
-        .risk-choice-item,
-        .day-note-wrap,
-        .draft-list,
-        .draft-item {
-            border-radius: 18px;
-            border: 1px solid var(--ui-border);
-            background: rgba(255, 255, 255, 0.78);
-            box-shadow: 0 4px 14px rgba(96, 73, 34, 0.06);
-        }
-
-        .filter-block,
-        .overview-box,
-        .manual-section,
-        .draft-list {
-            background: rgba(255, 252, 245, 0.88);
-        }
-
-        .filter-block label.filter-title,
-        .overview-box h4,
-        .manual-section summary,
-        .ai-idea-card-title {
-            color: var(--ui-text);
-        }
-
-        .manual-section summary {
-            background: linear-gradient(180deg, #fffdf8 0%, #faf4e8 100%);
-        }
-
-        .manual-section-content {
-            color: #405044;
-        }
-
-        .manual-note {
-            border-radius: 16px;
-            border-color: #f0d891;
-            background: #fff8df;
-        }
-
-        .ai-status {
-            background: #f8fbf2;
-            border-color: #dce9c9;
-        }
-
-        .ai-loading-box {
-            background: #fbf8f2;
-        }
-
-        .ai-loading-spinner {
-            border-color: #eee3d4;
-            border-top-color: var(--ui-purple);
-        }
-
-        .ai-suggestion-box {
-            background: #f7f3ff;
-            border-color: #dfd5fb;
-            color: #4d3b79;
-        }
-
-        .ai-idea-card,
-        .idea-list-card {
-            background: #fffaf2;
-            border-color: #f0dcc0;
-        }
-
-        .idea-status-used {
-            border-color: #bde0b1 !important;
-            background: #f4fbef !important;
-        }
-
-        .idea-status-watch {
-            border-color: #f2d099 !important;
-            background: #fff7e8 !important;
-        }
-
-        .idea-status-avoid {
-            border-color: #efb6aa !important;
-            background: #fff1ee !important;
-        }
-
-        .idea-status-rejected {
-            background: #f4f2ee !important;
-        }
-
-        .risk-choice-item {
-            background: #fffdf8;
-        }
-
-        .risk-choice-item input[type="radio"],
-        .filter-checks input[type="checkbox"] {
-            accent-color: var(--ui-green);
-        }
-
-        .filter-checks label {
-            border-radius: 14px;
-            border-color: var(--ui-border);
-            background: rgba(255, 255, 255, 0.90);
-        }
-
-        .filter-modal-actions,
-        .manual-section-content,
-        .modal-box .filter-modal-actions {
-            border-top-color: var(--ui-border) !important;
-        }
-
-        .date-input-row input {
-            min-width: 0;
-        }
-
-        .delete-toolbar {
-            border-radius: 18px;
-            border-color: var(--ui-red);
-            box-shadow: var(--ui-shadow);
-        }
-
-        .delete-toolbar button {
-            border-radius: 14px;
-        }
-
-        .draft-controls {
-            gap: 8px;
-        }
-
-        .draft-controls button,
-        .draft-controls select {
-            border-radius: 14px !important;
-        }
-
-        .btn-del-draft {
-            border-radius: 12px;
-            background: var(--ui-red);
-        }
-
-        .ai-close-x {
-            background: rgba(120, 129, 127, 0.95) !important;
-            box-shadow: 0 5px 14px rgba(52, 60, 58, 0.16);
-        }
-
-        #settingsModal .modal-box,
-        #aiModal .modal-box,
-        #aiPlanModal .modal-box,
-        #savedIdeasModal .modal-box,
-        #manualModal .modal-box,
-        #aiPlanResultModal .modal-box {
-            max-width: min(560px, 92vw) !important;
-        }
-
-        #moreMenuModal .modal-box,
-        #childProfileModal .modal-box,
-        #avoidListModal .modal-box,
-        #watchListModal .modal-box,
-        #riskActionModal .modal-box,
-        #ideaUseModal .modal-box,
-        #deleteManagerModal .modal-box,
-        #importModal .modal-box,
-        #plannerModal .modal-box,
-        #aiPlanDaysModal .modal-box {
-            max-width: min(430px, 92vw) !important;
-        }
-
-        .child-profile-row,
-        .child-age-box {
-            border-radius: 16px;
-            border-color: var(--ui-border);
-            background: rgba(255, 255, 255, 0.70);
-        }
-
-        .child-profile-field input {
-            border-radius: 13px;
-        }
-
-        .more-section {
-            box-shadow: 0 4px 14px rgba(96, 73, 34, 0.05);
-        }
-
-        .more-grid .modal-btn {
-            border-radius: 16px !important;
-            min-height: 58px;
-        }
-
-        .overview-box ul,
-        .manual-section-content ul {
-            color: #405044;
-        }
-
-        .watch-badge,
-        .reaction-badge {
-            border-radius: 999px;
-            box-shadow: 0 3px 10px rgba(94, 72, 35, 0.06);
-        }
-
-        .watch-badge {
-            background: #fff7e8;
-            border-color: #edc985;
-            color: #8a5a00;
-        }
-
-        .reaction-badge {
-            background: #fff1ec;
-            border-color: #efb9a9;
-            color: #a34020;
-        }
-
-        .w-box,
-        .n-box,
-        .rx-select {
-            border-radius: 14px !important;
-        }
-
-        .avoid-list-textarea {
-            min-height: 190px;
-        }
-
-        @media (max-width: 420px) {
-            .modal-box {
-                width: 92%;
-                padding: 18px;
-                border-radius: 22px;
-            }
-
-            .modal-title {
-                font-size: 1.14rem;
-            }
-
-            .modal-btn {
-                min-height: 42px;
-                padding: 12px 10px;
-                font-size: 0.8rem;
-            }
-
-            .overview-box,
-            .filter-block,
-            .manual-section,
-            .idea-list-card,
-            .ai-idea-card {
-                border-radius: 16px;
+            backdrop-filter: blur(1px);
+        }
+
+        @media (max-width: 520px) {
+            .content-area::before {
+                top: 18px;
+                width: calc(100% - 30px);
+                height: 270px;
+                opacity: 0.14;
             }
         }
 
@@ -2744,28 +1482,22 @@
 
     <div class="sticky-header" id="topMenu">
         <div class="menu-content compact-menu">
-            <div class="app-title app-hero compact-hero">
-                <div class="hero-copy">
-                    <div class="title-main"><span class="title-food">Výživa</span> <span class="title-pro">PRO</span></div>
-                    <div class="title-sub">deník jídla a plánování</div>
-                    <div class="title-pill">testovací verze</div>
-                </div>
-            </div>
+            <div class="app-title">Výživa PRO - TESTOVACÍ VERZE</div>
             <div class="btn-row main-action-row">
-                <button class="top-action-btn top-action-new" onclick="addCard()"><span class="btn-icon">＋</span><span class="btn-label">NOVÝ</span></button>
-                <button class="top-action-btn top-action-today" onclick="goToToday()"><span class="btn-icon">☀️</span><span class="btn-label">DNES</span></button>
-                <button id="micMain" class="btn-mic top-action-btn top-action-food" onclick="runVoice('food')"><span class="btn-icon">🎤</span><span class="btn-label">JÍDLO</span></button>
-                <button id="micNote" class="btn-mic top-action-btn top-action-note" onclick="runVoice('note')"><span class="btn-icon">🎤</span><span class="btn-label">POZNÁMKA</span></button>
-                <button class="top-action-btn top-action-more" onclick="openMoreMenu()"><span class="btn-icon">⋯</span><span class="btn-label">DALŠÍ</span></button>
+                <button style="background:var(--success)" onclick="addCard()">NOVÝ +</button>
+                <button style="background:#1abc9c" onclick="goToToday()">DNES</button>
+                <button id="micMain" class="btn-mic" onclick="runVoice('food')">🎤 JÍDLO</button>
+                <button id="micNote" style="background:var(--note)" class="btn-mic" onclick="runVoice('note')">🎤 POZNÁMKA</button>
+                <button style="background:#34495e" onclick="openMoreMenu()">⋯ DALŠÍ</button>
+                <button class="header-icon-btn" style="background:#9b59b6" title="Zobrazit/skrýt gramy" onclick="document.body.classList.toggle('show-w'); adjustSpacing();">⚖️</button>
+                <button class="header-icon-btn" style="background:#f39c12" title="Zobrazit/skrýt poznámky" onclick="document.body.classList.toggle('show-n'); adjustSpacing();">📝</button>
             </div>
             <div class="reorder-active-strip">
                 <span>↕️ Přeskládání plánu je aktivní</span>
                 <button type="button" onclick="togglePlanReorderMode()">✅ HOTOVO</button>
             </div>
-            <div class="btn-row filter-row utility-row">
-                <button type="button" class="filter-open-btn" onclick="openFilterModal()"><span class="btn-inline-icon">🔎</span><span class="btn-inline-label">FILTRY</span></button>
-                <button class="header-icon-btn toggle-grams icon-only-btn" type="button" title="Zobrazit/skrýt gramy" aria-label="Zobrazit nebo skrýt gramy" onclick="document.body.classList.toggle('show-w'); adjustSpacing();"><span class="btn-inline-icon">⚖️</span></button>
-                <button class="header-icon-btn toggle-notes icon-only-btn" type="button" title="Zobrazit/skrýt poznámky" aria-label="Zobrazit nebo skrýt poznámky" onclick="document.body.classList.toggle('show-n'); adjustSpacing();"><span class="btn-inline-icon">📝</span></button>
+            <div class="btn-row filter-row">
+                <button type="button" class="filter-open-btn" onclick="openFilterModal()">🔎 FILTRY</button>
             </div>
         </div>
     </div>
@@ -2842,7 +1574,7 @@
                     <button class="modal-btn" onclick="closeMoreMenu(); openPlanner();">🗓️ Plán jídel</button>
                     <button class="modal-btn" onclick="closeMoreMenu(); openAiModal();">✨ 3 návrhy</button>
                     <button class="modal-btn" onclick="closeMoreMenu(); openAiPlanModal();">🤖 AI plán</button>
-                    <button class="modal-btn" onclick="closeMoreMenu(); openSavedIdeasModal();">💡 Nápady jídel</button>
+                    <button class="modal-btn more-wide-btn" onclick="closeMoreMenu(); openSavedIdeasModal();">💡 Nápady jídel</button>
                 </div>
             </div>
 
@@ -3506,10 +2238,6 @@ květák..."></textarea>
         const RESOLVED_RISKS_KEY = 'nutri_resolved_risks_v1';
         const SAVED_IDEAS_KEY = 'nutri_saved_ideas_v1';
         const AUTO_BACKUP_KEY = 'nutri_last_auto_backup_v1';
-        const EDIT_AUTO_BACKUP_LAST_AT_KEY = 'nutri_edit_auto_backup_last_at_v1';
-        const EDIT_AUTO_BACKUP_DELAY_MS = 30000;
-        const EDIT_AUTO_BACKUP_MIN_INTERVAL_MS = 5 * 60 * 1000;
-        let editAutoBackupTimer = null;
         let currentAiIdeaSuggestions = [];
         let pendingIdeaUse = null;
         const DATA_VERSION = 3;
@@ -3600,7 +2328,6 @@ květák..."></textarea>
 
         function saveAvoidListFromModal() {
             const box = document.getElementById('avoidListText');
-            createAutoBackup('před úpravou seznamu Vyhnout se');
             setAvoidList((box ? box.value : '').split('\n'));
             closeAvoidListModal();
             alert('Seznam „Vyhnout se“ byl uložen. Použije se pro offline plán i pro AI prompt.');
@@ -3630,7 +2357,6 @@ květák..."></textarea>
 
         function saveWatchListFromModal() {
             const box = document.getElementById('watchListText');
-            createAutoBackup('před úpravou seznamu Sledovat');
             setWatchList((box ? box.value : '').split('\n'));
             closeWatchListModal();
             alert('Seznam „Sledovat“ byl uložen. Použije se jako upozornění v přehledu a v AI podkladu.');
@@ -3794,48 +2520,26 @@ květák..."></textarea>
             alert('Toto jídlo obsahuje položku ze seznamu „Sledovat":\n\n- ' + items.join('\n- ') + '\n\nPokud jídlo podáte, sledujte případnou reakci dítěte. Nejde o zákaz jako u „Vyhnout se“, ale o upozornění.');
         }
 
-        function buildAutoBackupSnapshot(reason) {
-            return {
-                dataVersion: DATA_VERSION,
-                createdAt: new Date().toISOString(),
-                reason: reason || 'automatická záloha',
-                entries: getMainData(),
-                childProfile: getChildProfile(),
-                avoidList: getAvoidList(),
-                watchList: getWatchList(),
-                resolvedRisks: getResolvedRisks(),
-                savedIdeas: getSavedIdeas(),
-                draft: getDraftData ? getDraftData() : []
-            };
-        }
-
         function createAutoBackup(reason) {
             try {
-                localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(buildAutoBackupSnapshot(reason)));
+                const backup = {
+                    dataVersion: DATA_VERSION,
+                    createdAt: new Date().toISOString(),
+                    reason: reason || 'automatická záloha',
+                    entries: getMainData(),
+                    childProfile: getChildProfile(),
+                    avoidList: getAvoidList(),
+                    watchList: getWatchList(),
+                    resolvedRisks: getResolvedRisks(),
+                    savedIdeas: getSavedIdeas(),
+                    draft: getDraftData ? getDraftData() : []
+                };
+                localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(backup));
                 return true;
             } catch (err) {
                 console.warn('Auto záloha se nepodařila:', err);
                 return false;
             }
-        }
-
-        function scheduleEditAutoBackup(reason = 'automatická záloha po úpravě jídelníčku') {
-            if (isRendering) return;
-            if (editAutoBackupTimer) clearTimeout(editAutoBackupTimer);
-            editAutoBackupTimer = setTimeout(() => {
-                editAutoBackupTimer = null;
-                const now = Date.now();
-                const last = parseInt(localStorage.getItem(EDIT_AUTO_BACKUP_LAST_AT_KEY) || '0', 10) || 0;
-                if (now - last < EDIT_AUTO_BACKUP_MIN_INTERVAL_MS) return;
-                if (createAutoBackup(reason)) {
-                    localStorage.setItem(EDIT_AUTO_BACKUP_LAST_AT_KEY, String(now));
-                }
-            }, EDIT_AUTO_BACKUP_DELAY_MS);
-        }
-
-        function cancelPendingEditAutoBackup() {
-            if (editAutoBackupTimer) clearTimeout(editAutoBackupTimer);
-            editAutoBackupTimer = null;
         }
 
         function restoreLastAutoBackup() {
@@ -3852,8 +2556,6 @@ květák..."></textarea>
             }
             const when = backup.createdAt ? new Date(backup.createdAt).toLocaleString('cs-CZ') : 'neznámý čas';
             if (!confirm(`Obnovit poslední automatickou zálohu?\n\nVytvořeno: ${when}\nDůvod: ${backup.reason || 'neuvedeno'}\n\nAktuální data budou nahrazena touto zálohou.`)) return;
-            cancelPendingEditAutoBackup();
-            createAutoBackup('před obnovou automatické zálohy');
             localStorage.setItem('nutri_data_v13', JSON.stringify(normalizeAllEntries(backup.entries)));
             if (backup.childProfile) localStorage.setItem(CHILD_PROFILE_KEY, JSON.stringify(backup.childProfile));
             if (Array.isArray(backup.avoidList)) setAvoidList(backup.avoidList);
@@ -3996,53 +2698,20 @@ květák..."></textarea>
             return reasons.filter(Boolean).join(', ') || 'riziková poznámka / reakce';
         }
 
-        function getRiskCleanText(value) {
-            let text = normalizeSearchText(value || '');
-            if (!text) return '';
-
-            // Kuchařské výrazy typu „dušené maso“ nejsou zdravotní riziko.
-            text = text.replace(/\bdusen(a|e|y|ou|ym|ych|ymi|eho|emu|ou)?\b/g, ' ');
-            text = text.replace(/\bdusena\b|\bdusene\b|\bduseny\b|\bdusenou\b|\bdusenym\b/g, ' ');
-
-            // Běžné negace nemají spouštět varování. Skutečné pozitivní riziko v jiné části věty zůstane zachované.
-            const ignorePatterns = [
-                /\bbez\s+(zvraceni|prujmu|kasle|vyrazky|osypani|alergie|reakce|bolesti|nevolnosti)\b/g,
-                /\bbez\s+alergicke\s+reakce\b/g,
-                /\bzadna\s+(reakce|vyrazka|alergie)\b/g,
-                /\bzadne\s+(zvraceni|osypani|potize|problemy)\b/g,
-                /\bnebyl[ao]?\s+(zvraceni|prujem|kasel|vyrazka|osypani|reakce)\b/g,
-                /\bnebyla\s+(vyrazka|alergie|reakce)\b/g,
-                /\bnezvracel[ao]?\b/g,
-                /\bnezvraci\b/g,
-                /\bnemel[ao]?\s+prujem\b/g,
-                /\bneosypal[ao]?\s*(se)?\b/g,
-                /\bneobjevila\s+se\s+(vyrazka|reakce|alergie)\b/g,
-                /\bneobjevil[ao]?\s+se\s+(prujem|kasel|zvraceni|osypani)\b/g
-            ];
-            ignorePatterns.forEach(pattern => { text = text.replace(pattern, ' '); });
-            return text.replace(/\s+/g, ' ').trim();
-        }
-
-        function getRiskHits(value) {
-            const text = getRiskCleanText(value);
-            const hits = [];
-            if (!text) return hits;
-            if (/\balerg/.test(text)) hits.push('alergie');
-            if (/vyraz|osyp/.test(text)) hits.push('vyrážka/osypání');
-            if (/zvracen|zvraceni|zvracel|zvraci/.test(text)) hits.push('zvracení');
-            if (/prujem/.test(text)) hits.push('průjem');
-            if (/bolest|nevol/.test(text)) hits.push('bolest/nevolnost');
-            if (/kasel|\bduseni\b|\bdusnost\b|\bdusil[ao]?\b|\bdusila\b|\bdusi\s+se\b|ztizene\s+dychani|nemohl[ao]?\s+dychat/.test(text)) hits.push('kašel/dušení');
-            if (/reakc/.test(text)) hits.push('reakce');
-            return Array.from(new Set(hits));
-        }
-
         function hasRiskWords(value) {
-            return getRiskHits(value).length > 0;
+            return /alerg|vyráž|vyraz|zvracen|zvracení|reakc|průjem|prujem|bolest|nevol|osyp|dušen|dusil|kašel|kasel/i.test(value || '');
         }
 
         function getRiskReason(value) {
-            const hits = getRiskHits(value);
+            const text = String(value || '').toLowerCase();
+            const hits = [];
+            if (/alerg/.test(text)) hits.push('alergie');
+            if (/vyráž|vyraz|osyp/.test(text)) hits.push('vyrážka/osypání');
+            if (/zvracen|zvracení/.test(text)) hits.push('zvracení');
+            if (/průjem|prujem/.test(text)) hits.push('průjem');
+            if (/bolest|nevol/.test(text)) hits.push('bolest/nevolnost');
+            if (/dušen|dusil|kašel|kasel/.test(text)) hits.push('kašel/dušení');
+            if (/reakc/.test(text)) hits.push('reakce');
             return hits.length ? hits.join(', ') : 'riziková poznámka';
         }
 
@@ -4125,7 +2794,6 @@ květák..."></textarea>
                 alert('Vyberte položku nebo napište vlastní text.');
                 return;
             }
-            createAutoBackup(pendingRiskAction.listType === 'watch' ? 'před přidáním položky do Sledovat' : 'před přidáním položky do Vyhnout se');
             const result = addToNamedList(value, pendingRiskAction.listType);
             const listName = pendingRiskAction.listType === 'watch' ? 'Sledovat' : 'Vyhnout se';
             if (result === 'exists') {
@@ -4557,7 +3225,6 @@ květák..."></textarea>
             });
 
             setMainData(fullData);
-            scheduleEditAutoBackup();
         }
 
         function saveAndReload() {
@@ -6122,7 +4789,7 @@ Tuto akci nelze vrátit zpět.`)) return;
                 if (/^riziko\s*[:：].*(sledovat|vyssi|vyšší|stredni|střední|radeji\s*ne|raději\s*ne|nevhod|vysoke|vysoké)/i.test(normalized)) return true;
 
                 // Tvrdší riziková slova mimo samotný řádek „Riziko“.
-                return /raději\s*ne|radeji\s*ne|vyhnout|nevhod/i.test(normalized) || hasRiskWords(text);
+                return /raději\s*ne|radeji\s*ne|vyhnout|alerg|vyráž|vyraz|zvracen|zvracení|reakc|průjem|prujem|osyp|dušen|dusil|kašel|kasel/i.test(text);
             }
 
             const snippets = parts.filter(isRiskSnippet);
@@ -6251,7 +4918,6 @@ Tuto akci nelze vrátit zpět.`)) return;
         function setSavedIdeaStatus(index, status) {
             const ideas = getSavedIdeas();
             if (!ideas[index]) return;
-            createAutoBackup('před změnou stavu uloženého nápadu');
             ideas[index].status = status || 'new';
             ideas[index].statusChangedAt = new Date().toISOString();
             if (status === 'new') {
@@ -6269,7 +4935,6 @@ Tuto akci nelze vrátit zpět.`)) return;
         function markSavedIdeaUsed(index) {
             const ideas = getSavedIdeas();
             if (!ideas[index]) return;
-            createAutoBackup('před označením nápadu jako použitého');
             ideas[index].status = 'used';
             ideas[index].usedAt = new Date().toISOString();
             if (!ideas[index].usedDate) ideas[index].usedDate = 'označeno ručně';
@@ -6350,7 +5015,6 @@ Tuto akci nelze vrátit zpět.`)) return;
             const ideas = getSavedIdeas();
             if (!ideas[index]) return;
             if (!confirm('Smazat uložený nápad: ' + (ideas[index].title || 'Nápad') + '?')) return;
-            createAutoBackup('před smazáním uloženého nápadu');
             ideas.splice(index, 1);
             setSavedIdeas(ideas);
             renderSavedIdeas();
@@ -7367,7 +6031,6 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
 
             if (!confirm(`Odeslat ${draftData.length} dní do hlavního deníku? (Existující dny se stejným datem budou přepsány!)`)) return;
 
-            createAutoBackup('před přenosem rozpracovaných zápisů do hlavního deníku');
             let mainRaw = localStorage.getItem('nutri_data_v13');
             let mainData = mainRaw ? JSON.parse(mainRaw) : [];
 
@@ -7385,8 +6048,6 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
         function clearAllMainData() {
             if (confirm("🚨 POZOR! Chystáte se smazat CELOU HISTORII vašeho stravování. Máte vytvořenou zálohu?")) {
                 if (confirm("Poslední varování: Opravdu smazat VŠECHNA DATA z hlavního deníku?")) {
-                    cancelPendingEditAutoBackup();
-                    createAutoBackup('před úplným smazáním hlavního deníku');
                     localStorage.removeItem('nutri_data_v13');
                     load(); // Znovu načte aplikaci (vytvoří prázdný den)
                     closeSettings();
