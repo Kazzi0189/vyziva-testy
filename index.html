@@ -1433,748 +1433,154 @@
 
 
 
-        /* === VIZUÁLNÍ OBNOVA 2026-05-31 === */
-        :root {
-            --accent: #7aa33e;
-            --danger: #d95b49;
-            --success: #8fca60;
-            --note: #f4c654;
-            --bg: #fbf7ef;
-            --surface: #fffdf8;
-            --card-border: #efe5d4;
-            --warm-text: #2f3a2c;
-            --soft-shadow: 0 10px 28px rgba(102, 78, 35, 0.10);
-            --soft-shadow-sm: 0 6px 18px rgba(102, 78, 35, 0.09);
-        }
-
-        body {
-            background: linear-gradient(180deg, #fdfbf5 0%, #f8f3ea 100%);
-            color: var(--warm-text);
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: -1;
-            background:
-                radial-gradient(circle at 8% 16%, rgba(162, 204, 112, 0.14) 0 62px, transparent 63px),
-                radial-gradient(circle at 93% 26%, rgba(255, 195, 121, 0.16) 0 70px, transparent 71px),
-                radial-gradient(circle at 89% 78%, rgba(255, 176, 146, 0.14) 0 60px, transparent 61px),
-                radial-gradient(circle at 7% 86%, rgba(255, 216, 158, 0.14) 0 78px, transparent 79px),
-                radial-gradient(circle at 82% 8%, rgba(188, 214, 156, 0.12) 0 48px, transparent 49px);
-        }
-
-        .sticky-header {
-            background: rgba(255, 251, 244, 0.96);
-            border-bottom: 1px solid #efe5d2;
-            box-shadow: 0 12px 30px rgba(88, 67, 30, 0.10);
-            backdrop-filter: blur(10px);
-        }
-
+        /* === DOLADĚNÍ HLAVIČKY A OVLÁDÁNÍ 2026-06-01 === */
         .menu-content.compact-menu {
-            gap: 12px;
-            padding: 12px 15px 14px;
+            gap: 10px;
+            padding: 10px 15px 12px;
         }
 
-        .app-title.app-hero {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 14px 16px;
-            border-radius: 24px;
-            border: 1px solid #efe5d3;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(249, 243, 230, 0.94));
-            box-shadow: var(--soft-shadow-sm);
-            text-align: left;
-            text-transform: none;
-            letter-spacing: 0;
+        .compact-hero {
+            padding: 10px 12px;
+            border: 1px solid #ece3d2;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #fffdf8 0%, #faf4e8 100%);
+            box-shadow: 0 3px 12px rgba(94, 73, 31, 0.06);
         }
 
-        .hero-copy {
-            min-width: 0;
-        }
-
-        .title-main {
-            font-size: 1.95rem;
+        .hero-title-line {
+            font-size: 1.25rem;
             font-weight: 900;
-            line-height: 1;
-            letter-spacing: -0.04em;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
         }
 
-        .title-food {
-            color: #6ea03b;
-        }
+        .title-food { color: #7aa33e; }
+        .title-pro { color: #e89f2e; }
 
-        .title-pro {
-            color: #f0a32f;
-        }
-
-        .title-sub {
-            margin-top: 8px;
-            font-size: 0.96rem;
+        .hero-subtitle {
+            margin-top: 4px;
+            font-size: 0.8rem;
             font-weight: 700;
-            color: #586356;
+            color: #555;
         }
 
-        .title-pill {
+        .hero-pill {
             display: inline-block;
-            margin-top: 10px;
-            padding: 5px 10px;
+            margin-top: 8px;
+            padding: 4px 9px;
             border-radius: 999px;
-            border: 1px solid #f4ddb2;
-            background: #fff7e4;
-            color: #ae7415;
-            font-size: 0.7rem;
+            background: #fff7e3;
+            border: 1px solid #f1d8a4;
+            color: #ad7a16;
+            font-size: 0.62rem;
             font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .hero-illustration {
-            flex: 0 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            min-width: 92px;
-        }
-
-        .hero-family {
-            font-size: 2rem;
-            line-height: 1;
-        }
-
-        .hero-bowl {
-            font-size: 1.8rem;
-            line-height: 1;
-            padding: 8px 10px;
-            border-radius: 999px;
-            background: #fff;
-            border: 1px solid #f0e4cf;
-            box-shadow: 0 6px 15px rgba(118, 93, 42, 0.10);
+            letter-spacing: 0.03em;
         }
 
         .main-action-row {
             display: grid;
             grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 10px;
-        }
-
-        .main-action-row button {
-            flex: none;
-            min-width: 0;
-            min-height: 76px;
-            padding: 12px 6px 10px;
-            border-radius: 18px;
-            font-size: 0.75rem;
-            color: #405036;
-            flex-direction: column;
-            gap: 7px;
-            border: 1px solid rgba(224, 214, 192, 0.95);
-            box-shadow: 0 8px 20px rgba(106, 83, 44, 0.10);
-        }
-
-        .top-action-btn .btn-icon {
-            font-size: 1.4rem;
-            line-height: 1;
-        }
-
-        .top-action-btn .btn-label {
-            font-size: 0.76rem;
-            font-weight: 900;
-            letter-spacing: 0.02em;
-        }
-
-        .top-action-new {
-            background: linear-gradient(180deg, #d9efba 0%, #b8da7d 100%);
-            color: #4f7e1f;
-        }
-
-        .top-action-today {
-            background: linear-gradient(180deg, #ffe7a8 0%, #ffd275 100%);
-            color: #b46d00;
-        }
-
-        .top-action-food {
-            background: linear-gradient(180deg, #e0efcb 0%, #c7e19d 100%);
-            color: #5e892a;
-        }
-
-        .top-action-note {
-            background: linear-gradient(180deg, #e6dcf7 0%, #d2c1ee 100%);
-            color: #6d53a6;
-        }
-
-        .top-action-more {
-            background: linear-gradient(180deg, #e3eef7 0%, #cfe3f3 100%);
-            color: #3a6e98;
-        }
-
-        .btn-mic.listening {
-            background: linear-gradient(180deg, #f8a6a6 0%, #e76a6a 100%) !important;
-            color: #fff !important;
-        }
-
-        .utility-row {
-            align-items: stretch;
             gap: 8px;
         }
 
-        .filter-open-btn,
-        .header-icon-btn {
-            min-height: 48px;
-            border-radius: 16px;
-            box-shadow: var(--soft-shadow-sm);
-            border: 1px solid #e7dfd1;
-            padding: 11px 12px;
-            font-size: 0.8rem;
-            color: #5a6761;
-            background: rgba(255, 255, 255, 0.94);
-        }
-
-        .filter-open-btn {
-            flex: 1 1 auto;
-            max-width: none;
-            color: #456b90;
-            border-color: #d5e5f2;
-            justify-content: center;
-        }
-
-        .header-icon-btn {
-            flex: 0 0 auto;
-            min-width: 112px;
-        }
-
-        .btn-inline-icon {
-            font-size: 1rem;
-            line-height: 1;
-        }
-
-        .btn-inline-label {
-            font-weight: 900;
-            letter-spacing: 0.03em;
-        }
-
-        body.show-w .toggle-grams,
-        body.show-n .toggle-notes {
-            background: linear-gradient(180deg, #dff0ff 0%, #c8e2ff 100%);
-            border-color: #a9cceb;
-            color: #2d6f9d;
-        }
-
-        .content-area {
-            padding: 18px 15px 80px;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.96);
-            border-radius: 24px;
-            padding: 18px 16px;
-            margin-bottom: 18px;
-            box-shadow: var(--soft-shadow);
-            border: 1px solid var(--card-border);
-        }
-
-        .card-header {
-            font-size: 1.26rem;
-            font-weight: 900;
-            color: #2c3824;
-            margin-bottom: 12px;
-            border-bottom: none;
-            padding-bottom: 0;
+        .main-action-row button,
+        .top-menu-btn {
             min-width: 0;
-        }
-
-        .delete-check-wrap {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #fff7e7;
-            color: #8e6b1f;
-            border: 1px solid #f4e1b7;
-            border-radius: 12px;
-            padding: 6px 10px;
-            font-size: 0.78rem;
-            font-weight: 900;
-        }
-
-        .day-note-wrap {
-            margin: 10px 0 14px;
-            background: linear-gradient(180deg, #f4faeb 0%, #eef6e2 100%);
-            border: 1px solid #dbe8c8;
-            border-radius: 18px;
-            padding: 10px 12px;
-        }
-
-        .day-note-label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.73rem;
-            font-weight: 900;
-            color: #618a2b;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            margin-bottom: 6px;
-        }
-
-        .day-note-label::before {
-            content: '🌿';
-            font-size: 0.9rem;
-            line-height: 1;
-        }
-
-        .day-note-box {
-            min-height: 24px;
-            background: rgba(255, 255, 255, 0.88);
-            border: 1px solid #e0eacb;
-            border-radius: 12px;
-            padding: 8px 10px;
-            font-size: 0.92rem;
-            line-height: 1.4;
-        }
-
-        .meal-item {
-            align-items: stretch;
-            gap: 12px;
-            margin-bottom: 12px;
-            background: #fffdfa;
-            padding: 10px;
-            border-radius: 20px;
-            border: 1px solid #efe7d9;
-            box-shadow: 0 4px 12px rgba(115, 90, 46, 0.06);
-        }
-
-        .meal-label {
-            width: 82px;
-            padding: 9px 6px;
-            border-radius: 16px;
-            border: 1px solid #f0e6d6;
-            background: #fff;
-            color: #697360;
-            font-size: 0.73rem;
-            line-height: 1.15;
-            text-transform: uppercase;
+            min-height: 66px;
+            padding: 8px 4px;
+            border-radius: 14px;
+            font-size: 0.68rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            text-align: center;
-            flex-shrink: 0;
-            padding-top: 9px;
+            gap: 5px;
+            box-shadow: 0 4px 10px rgba(97, 72, 33, 0.08);
         }
 
-        .meal-label::before {
-            font-size: 1.55rem;
+        .menu-btn-icon {
+            font-size: 1.2rem;
             line-height: 1;
         }
 
-        .meal-item[data-index="0"] .meal-label::before {
-            content: '🥣';
+        .menu-btn-label {
+            font-size: 0.68rem;
+            font-weight: 900;
         }
 
-        .meal-item[data-index="1"] .meal-label::before {
-            content: '🍏';
+        .top-btn-new { background: #bddf8a !important; color: #40651d; }
+        .top-btn-today { background: #f4cf74 !important; color: #8d6100; }
+        .top-btn-food { background: #cfe2ac !important; color: #53762d; }
+        .top-btn-note { background: #d9c8f0 !important; color: #684e97; }
+        .top-btn-more { background: #d3e2ef !important; color: #446b8a; }
+
+        .utility-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 42px 42px;
+            gap: 8px;
+            align-items: stretch;
         }
 
-        .meal-item[data-index="2"] .meal-label::before {
-            content: '🥗';
-        }
-
-        .meal-item[data-index="3"] .meal-label::before {
-            content: '🫐';
-        }
-
-        .meal-item[data-index="4"] .meal-label::before {
-            content: '🍲';
-        }
-
-        .m-box {
-            min-height: 28px;
-            padding: 8px 10px;
-            background: #fff;
-            border: 1px solid #e6dfd1;
-            border-radius: 12px;
-            font-size: 0.96rem;
-        }
-
-        .m-box:focus,
-        .day-note-box:focus,
-        .n-box:focus {
-            border-color: #a8c777;
-            background: #f9fdec;
-        }
-
-        .w-box,
-        .n-box,
-        .rx-select {
-            border-radius: 12px;
-        }
-
-        .n-box {
-            background: #fffdf2;
-            border-color: #f1dda1;
-        }
-
-        .rating {
-            min-width: 44px;
+        .filter-open-btn {
+            flex: initial;
             min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 16px;
-            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.03);
-            font-size: 1.35rem;
         }
 
-        .reaction-badge {
-            border-radius: 12px;
-            font-size: 0.75rem;
+        .utility-icon-btn {
+            flex: initial;
+            max-width: none;
+            width: 42px;
+            min-width: 42px;
+            min-height: 44px;
+            padding: 8px 0;
+            font-size: 1rem;
+            background: #ffffff;
+            color: #556;
+            border: 1px solid #dcdfe4;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        body.show-w .utility-icon-btn[title*="gramy"],
+        body.show-n .utility-icon-btn[title*="poznámky"] {
+            background: #eef6ff;
+            border-color: #b9d4f2;
+        }
+
+        .delete-check-wrap {
+            top: auto;
+            left: auto;
+            position: relative;
+            margin-bottom: 10px;
+            box-shadow: none;
+        }
+
+        .card-header {
+            display: block;
+            min-width: 0;
+            width: calc(100% - 68px);
+            margin-bottom: 10px;
         }
 
         .planned-badge {
-            background: #edf7e4;
-            border: 1px solid #d0e4a9;
-            color: #5d8e24;
+            margin-left: 0;
+            margin-bottom: 10px;
         }
 
         .plan-confirm-btn {
-            background: linear-gradient(180deg, #a5d770 0%, #7ebd42 100%);
-            border-radius: 14px;
-            box-shadow: var(--soft-shadow-sm);
-        }
-
-        .modal-box {
-            border-radius: 24px;
-            border: 1px solid #eee4d4;
-            box-shadow: 0 20px 40px rgba(87, 67, 33, 0.18);
-        }
-
-        .modal-title {
-            color: #2d3824;
-        }
-
-        .modal-text {
-            color: #69756a;
-        }
-
-        .more-section {
-            margin: 12px 0 14px;
-            padding: 12px;
-            border-radius: 18px;
-            background: #fbf8f2;
-            border: 1px solid #eee5d7;
-        }
-
-        .more-section-planning {
-            background: #f7f5ff;
-            border-color: #e3ddff;
-        }
-
-        .more-section-safety {
-            background: #fff8ee;
-            border-color: #fde1b7;
-        }
-
-        .more-section-records {
-            background: #f1f8ff;
-            border-color: #cfe5ff;
-        }
-
-        .more-section-settings {
-            background: #f7f8f8;
-            border-color: #dde4e4;
-        }
-
-        .more-section-title {
-            font-size: 0.84rem;
-            color: #2e3827;
-            margin: 0 0 10px;
-        }
-
-        .more-grid {
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .more-grid .modal-btn {
-            margin-bottom: 0;
-            min-height: 58px;
-            padding: 12px 8px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.94);
-            border: 1px solid #ece3d3;
-            color: #2f3a2c;
-            box-shadow: 0 6px 12px rgba(115, 90, 46, 0.08);
-            text-transform: none;
-            font-size: 0.8rem;
-            font-weight: 800;
-            line-height: 1.25;
-        }
-
-        .more-section-planning .modal-btn {
-            color: #58439b;
-            border-color: #ddd6fe;
-        }
-
-        .more-section-safety .modal-btn {
-            color: #a85d12;
-            border-color: #fed7aa;
-        }
-
-        .more-section-records .modal-btn {
-            color: #225f92;
-            border-color: #bfdbfe;
-        }
-
-        .more-section-settings .modal-btn {
-            color: #52676d;
-            border-color: #d7e2e0;
-        }
-
-        .more-grid .modal-btn.more-danger-btn {
-            color: #fff;
-            background: linear-gradient(180deg, #ea7a63 0%, #d55543 100%);
-            border-color: transparent;
-        }
-
-        .more-grid .modal-btn:active {
-            transform: scale(0.98);
-            filter: brightness(0.98);
-        }
-
-        @media (max-width: 640px) {
-            .title-main {
-                font-size: 1.8rem;
-            }
-
-            .main-action-row button {
-                min-height: 74px;
-            }
-
-            .header-icon-btn {
-                min-width: 0;
-                flex: 1 1 0;
-            }
+            margin-top: 0;
         }
 
         @media (max-width: 420px) {
-            .app-title.app-hero {
-                padding: 12px 12px;
-                gap: 10px;
-            }
-
-            .title-main {
-                font-size: 1.58rem;
-            }
-
-            .title-sub {
-                font-size: 0.84rem;
-            }
-
-            .title-pill {
-                font-size: 0.62rem;
-            }
-
-            .hero-family {
-                font-size: 1.8rem;
-            }
-
-            .hero-bowl {
-                font-size: 1.45rem;
-                padding: 6px 8px;
-            }
-
-            .main-action-row button {
-                min-height: 70px;
-                padding: 10px 4px;
-                border-radius: 16px;
-            }
-
-            .top-action-btn .btn-icon {
-                font-size: 1.22rem;
-            }
-
-            .top-action-btn .btn-label {
-                font-size: 0.68rem;
-            }
-
-            .utility-row {
-                flex-wrap: wrap;
-            }
-
-            .filter-open-btn {
-                flex: 1 1 100%;
-            }
-
-            .header-icon-btn {
-                flex: 1 1 calc(50% - 4px);
-            }
-
-            .meal-item {
-                gap: 9px;
-                padding: 9px;
-            }
-
-            .meal-label {
-                width: 72px;
-                font-size: 0.68rem;
-            }
-
-            .more-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .more-section-planning .more-grid {
-                grid-template-columns: 1fr 1fr;
-            }
+            .hero-title-line { font-size: 1.16rem; }
+            .hero-subtitle { font-size: 0.75rem; }
+            .main-action-row button,
+            .top-menu-btn { min-height: 62px; }
+            .menu-btn-icon { font-size: 1.08rem; }
+            .menu-btn-label { font-size: 0.64rem; }
+            .utility-row { grid-template-columns: minmax(0, 1fr) 40px 40px; }
+            .utility-icon-btn { width: 40px; min-width: 40px; }
+            .card-header { width: calc(100% - 60px); }
         }
-
-        /* === OPRAVA ČITELNOSTI JÍDEL 2026-05-31 === */
-        .meal-item {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            grid-template-areas:
-                "label rating"
-                "content content";
-            align-items: start;
-            gap: 10px 12px;
-        }
-
-        .meal-label {
-            grid-area: label;
-            width: auto;
-            min-height: 44px;
-            padding: 8px 10px;
-            flex-direction: row;
-            justify-content: flex-start;
-            text-align: left;
-            gap: 9px;
-            font-size: 0.76rem;
-        }
-
-        .meal-label::before {
-            font-size: 1.35rem;
-            flex: 0 0 auto;
-        }
-
-        .meal-content {
-            grid-area: content;
-            width: 100%;
-            min-width: 0;
-        }
-
-        .meal-content .m-box {
-            width: 100%;
-            box-sizing: border-box;
-            min-height: 42px;
-            font-size: 1rem;
-        }
-
-        .rating {
-            grid-area: rating;
-            align-self: stretch;
-            min-width: 50px;
-            min-height: 44px;
-            padding: 4px 8px;
-        }
-
-        .ai-suggestion-box,
-        .watch-badge,
-        .reaction-badge,
-        .rx-select,
-        .n-box {
-            max-width: 100%;
-            box-sizing: border-box;
-        }
-
-        @media (max-width: 420px) {
-            .menu-content.compact-menu {
-                padding: 10px 12px 12px;
-                gap: 10px;
-            }
-
-            .app-title.app-hero {
-                border-radius: 20px;
-            }
-
-            .main-action-row {
-                gap: 8px;
-            }
-
-            .main-action-row button {
-                min-height: 64px;
-                padding: 9px 4px 8px;
-                border-radius: 15px;
-            }
-
-            .utility-row {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-            }
-
-            .utility-row .filter-open-btn {
-                grid-column: 1 / -1;
-                min-height: 46px;
-            }
-
-            .utility-row .header-icon-btn {
-                min-height: 42px;
-                min-width: 0;
-                padding: 9px 8px;
-                font-size: 0.74rem;
-            }
-
-            .content-area {
-                padding-left: 10px;
-                padding-right: 10px;
-            }
-
-            .card {
-                padding: 14px 12px;
-                border-radius: 22px;
-            }
-
-            .meal-item {
-                grid-template-columns: minmax(0, 1fr) auto;
-                gap: 8px 9px;
-                padding: 9px;
-                border-radius: 18px;
-            }
-
-            .meal-label {
-                width: auto;
-                min-height: 40px;
-                padding: 7px 9px;
-                font-size: 0.68rem;
-            }
-
-            .meal-label::before {
-                font-size: 1.18rem;
-            }
-
-            .rating {
-                min-width: 46px;
-                min-height: 40px;
-                border-radius: 14px;
-                font-size: 1.22rem;
-            }
-
-            .meal-content .m-box {
-                min-height: 40px;
-                padding: 9px 10px;
-                font-size: 0.98rem;
-                line-height: 1.4;
-            }
-        }
-
-
 
     </style>
 </head>
@@ -2183,32 +1589,26 @@
 
     <div class="sticky-header" id="topMenu">
         <div class="menu-content compact-menu">
-            <div class="app-title app-hero">
-                <div class="hero-copy">
-                    <div class="title-main"><span class="title-food">Výživa</span> <span class="title-pro">PRO</span></div>
-                    <div class="title-sub">deník jídla a plánování</div>
-                    <div class="title-pill">testovací verze</div>
-                </div>
-                <div class="hero-illustration" aria-hidden="true">
-                    <div class="hero-family">👨‍👩‍👧‍👦</div>
-                    <div class="hero-bowl">🥣</div>
-                </div>
+            <div class="app-title compact-hero">
+                <div class="hero-title-line"><span class="title-food">Výživa</span> <span class="title-pro">PRO</span></div>
+                <div class="hero-subtitle">deník jídla a plánování</div>
+                <div class="hero-pill">TESTOVACÍ VERZE</div>
             </div>
             <div class="btn-row main-action-row">
-                <button class="top-action-btn top-action-new" onclick="addCard()"><span class="btn-icon">＋</span><span class="btn-label">NOVÝ</span></button>
-                <button class="top-action-btn top-action-today" onclick="goToToday()"><span class="btn-icon">☀️</span><span class="btn-label">DNES</span></button>
-                <button id="micMain" class="btn-mic top-action-btn top-action-food" onclick="runVoice('food')"><span class="btn-icon">🎤</span><span class="btn-label">JÍDLO</span></button>
-                <button id="micNote" class="btn-mic top-action-btn top-action-note" onclick="runVoice('note')"><span class="btn-icon">🎤</span><span class="btn-label">POZNÁMKA</span></button>
-                <button class="top-action-btn top-action-more" onclick="openMoreMenu()"><span class="btn-icon">⋯</span><span class="btn-label">DALŠÍ</span></button>
+                <button class="top-menu-btn top-btn-new" onclick="addCard()"><span class="menu-btn-icon">＋</span><span class="menu-btn-label">NOVÝ</span></button>
+                <button class="top-menu-btn top-btn-today" onclick="goToToday()"><span class="menu-btn-icon">☀️</span><span class="menu-btn-label">DNES</span></button>
+                <button id="micMain" class="btn-mic top-menu-btn top-btn-food" onclick="runVoice('food')"><span class="menu-btn-icon">🎤</span><span class="menu-btn-label">JÍDLO</span></button>
+                <button id="micNote" class="btn-mic top-menu-btn top-btn-note" onclick="runVoice('note')"><span class="menu-btn-icon">🎤</span><span class="menu-btn-label">POZNÁMKA</span></button>
+                <button class="top-menu-btn top-btn-more" onclick="openMoreMenu()"><span class="menu-btn-icon">⋯</span><span class="menu-btn-label">DALŠÍ</span></button>
             </div>
             <div class="reorder-active-strip">
                 <span>↕️ Přeskládání plánu je aktivní</span>
                 <button type="button" onclick="togglePlanReorderMode()">✅ HOTOVO</button>
             </div>
             <div class="btn-row filter-row utility-row">
-                <button type="button" class="filter-open-btn" onclick="openFilterModal()"><span class="btn-inline-icon">🔎</span><span class="btn-inline-label">FILTRY</span></button>
-                <button class="header-icon-btn toggle-grams" type="button" title="Zobrazit/skrýt gramy" onclick="document.body.classList.toggle('show-w'); adjustSpacing();"><span class="btn-inline-icon">⚖️</span><span class="btn-inline-label">GRAMY</span></button>
-                <button class="header-icon-btn toggle-notes" type="button" title="Zobrazit/skrýt poznámky" onclick="document.body.classList.toggle('show-n'); adjustSpacing();"><span class="btn-inline-icon">📝</span><span class="btn-inline-label">POZNÁMKY</span></button>
+                <button type="button" class="filter-open-btn" onclick="openFilterModal()">🔎 FILTRY</button>
+                <button class="header-icon-btn utility-icon-btn" type="button" title="Zobrazit/skrýt gramy" aria-label="Zobrazit nebo skrýt gramy" onclick="document.body.classList.toggle('show-w'); adjustSpacing();">⚖️</button>
+                <button class="header-icon-btn utility-icon-btn" type="button" title="Zobrazit/skrýt poznámky" aria-label="Zobrazit nebo skrýt poznámky" onclick="document.body.classList.toggle('show-n'); adjustSpacing();">📝</button>
             </div>
         </div>
     </div>
@@ -2285,7 +1685,7 @@
                     <button class="modal-btn" onclick="closeMoreMenu(); openPlanner();">🗓️ Plán jídel</button>
                     <button class="modal-btn" onclick="closeMoreMenu(); openAiModal();">✨ 3 návrhy</button>
                     <button class="modal-btn" onclick="closeMoreMenu(); openAiPlanModal();">🤖 AI plán</button>
-                    <button class="modal-btn" onclick="closeMoreMenu(); openSavedIdeasModal();">💡 Nápady jídel</button>
+                    <button class="modal-btn more-wide-btn" onclick="closeMoreMenu(); openSavedIdeasModal();">💡 Nápady jídel</button>
                 </div>
             </div>
 
