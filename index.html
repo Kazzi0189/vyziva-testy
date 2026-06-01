@@ -3549,20 +3549,53 @@ květák..."></textarea>
             return reasons.filter(Boolean).join(', ') || 'riziková poznámka / reakce';
         }
 
+        function getRiskCleanText(value) {
+            let text = normalizeSearchText(value || '');
+            if (!text) return '';
+
+            // Kuchařské výrazy typu „dušené maso“ nejsou zdravotní riziko.
+            text = text.replace(/\bdusen(a|e|y|ou|ym|ych|ymi|eho|emu|ou)?\b/g, ' ');
+            text = text.replace(/\bdusena\b|\bdusene\b|\bduseny\b|\bdusenou\b|\bdusenym\b/g, ' ');
+
+            // Běžné negace nemají spouštět varování. Skutečné pozitivní riziko v jiné části věty zůstane zachované.
+            const ignorePatterns = [
+                /\bbez\s+(zvraceni|prujmu|kasle|vyrazky|osypani|alergie|reakce|bolesti|nevolnosti)\b/g,
+                /\bbez\s+alergicke\s+reakce\b/g,
+                /\bzadna\s+(reakce|vyrazka|alergie)\b/g,
+                /\bzadne\s+(zvraceni|osypani|potize|problemy)\b/g,
+                /\bnebyl[ao]?\s+(zvraceni|prujem|kasel|vyrazka|osypani|reakce)\b/g,
+                /\bnebyla\s+(vyrazka|alergie|reakce)\b/g,
+                /\bnezvracel[ao]?\b/g,
+                /\bnezvraci\b/g,
+                /\bnemel[ao]?\s+prujem\b/g,
+                /\bneosypal[ao]?\s*(se)?\b/g,
+                /\bneobjevila\s+se\s+(vyrazka|reakce|alergie)\b/g,
+                /\bneobjevil[ao]?\s+se\s+(prujem|kasel|zvraceni|osypani)\b/g
+            ];
+            ignorePatterns.forEach(pattern => { text = text.replace(pattern, ' '); });
+            return text.replace(/\s+/g, ' ').trim();
+        }
+
+        function getRiskHits(value) {
+            const text = getRiskCleanText(value);
+            const hits = [];
+            if (!text) return hits;
+            if (/\balerg/.test(text)) hits.push('alergie');
+            if (/vyraz|osyp/.test(text)) hits.push('vyrážka/osypání');
+            if (/zvracen|zvraceni|zvracel|zvraci/.test(text)) hits.push('zvracení');
+            if (/prujem/.test(text)) hits.push('průjem');
+            if (/bolest|nevol/.test(text)) hits.push('bolest/nevolnost');
+            if (/kasel|\bduseni\b|\bdusnost\b|\bdusil[ao]?\b|\bdusila\b|\bdusi\s+se\b|ztizene\s+dychani|nemohl[ao]?\s+dychat/.test(text)) hits.push('kašel/dušení');
+            if (/reakc/.test(text)) hits.push('reakce');
+            return Array.from(new Set(hits));
+        }
+
         function hasRiskWords(value) {
-            return /alerg|vyráž|vyraz|zvracen|zvracení|reakc|průjem|prujem|bolest|nevol|osyp|dušen|dusil|kašel|kasel/i.test(value || '');
+            return getRiskHits(value).length > 0;
         }
 
         function getRiskReason(value) {
-            const text = String(value || '').toLowerCase();
-            const hits = [];
-            if (/alerg/.test(text)) hits.push('alergie');
-            if (/vyráž|vyraz|osyp/.test(text)) hits.push('vyrážka/osypání');
-            if (/zvracen|zvracení/.test(text)) hits.push('zvracení');
-            if (/průjem|prujem/.test(text)) hits.push('průjem');
-            if (/bolest|nevol/.test(text)) hits.push('bolest/nevolnost');
-            if (/dušen|dusil|kašel|kasel/.test(text)) hits.push('kašel/dušení');
-            if (/reakc/.test(text)) hits.push('reakce');
+            const hits = getRiskHits(value);
             return hits.length ? hits.join(', ') : 'riziková poznámka';
         }
 
@@ -5640,7 +5673,7 @@ Tuto akci nelze vrátit zpět.`)) return;
                 if (/^riziko\s*[:：].*(sledovat|vyssi|vyšší|stredni|střední|radeji\s*ne|raději\s*ne|nevhod|vysoke|vysoké)/i.test(normalized)) return true;
 
                 // Tvrdší riziková slova mimo samotný řádek „Riziko“.
-                return /raději\s*ne|radeji\s*ne|vyhnout|alerg|vyráž|vyraz|zvracen|zvracení|reakc|průjem|prujem|osyp|dušen|dusil|kašel|kasel/i.test(text);
+                return /raději\s*ne|radeji\s*ne|vyhnout|nevhod/i.test(normalized) || hasRiskWords(text);
             }
 
             const snippets = parts.filter(isRiskSnippet);
