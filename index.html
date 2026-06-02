@@ -2755,11 +2755,11 @@
             height: 320px;
             pointer-events: none;
             z-index: 0;
-            opacity: 0.14;
+            opacity: 0.34;
             background-repeat: no-repeat;
             background-position: center top;
             background-size: contain;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='330' viewBox='0 0 640 330' fill='none'%3E%3Cg stroke='%239db57f' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='214' cy='104' r='30'/%3E%3Cpath d='M162 198c12-33 32-50 52-50s40 17 52 50'/%3E%3Ccircle cx='314' cy='92' r='38'/%3E%3Cpath d='M246 210c18-48 43-72 68-72s50 24 68 72'/%3E%3Ccircle cx='424' cy='104' r='30'/%3E%3Cpath d='M372 198c12-33 32-50 52-50s40 17 52 50'/%3E%3Ccircle cx='319' cy='152' r='22'/%3E%3Cpath d='M280 222c10-26 24-40 39-40s29 14 39 40'/%3E%3Cpath d='M92 250c18-26 38-40 58-44'/%3E%3Cpath d='M120 224c-10 12-18 26-22 42'/%3E%3Cpath d='M548 250c-18-26-38-40-58-44'/%3E%3Cpath d='M520 224c10 12 18 26 22 42'/%3E%3Cpath d='M238 270c29 16 63 24 102 24s73-8 102-24'/%3E%3Cpath d='M268 266c8-10 19-16 32-16h40c13 0 24 6 32 16'/%3E%3C/g%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='330' viewBox='0 0 640 330' fill='none'%3E%3Cg stroke='%23789755' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='214' cy='104' r='30'/%3E%3Cpath d='M162 198c12-33 32-50 52-50s40 17 52 50'/%3E%3Ccircle cx='314' cy='92' r='38'/%3E%3Cpath d='M246 210c18-48 43-72 68-72s50 24 68 72'/%3E%3Ccircle cx='424' cy='104' r='30'/%3E%3Cpath d='M372 198c12-33 32-50 52-50s40 17 52 50'/%3E%3Ccircle cx='319' cy='152' r='22'/%3E%3Cpath d='M280 222c10-26 24-40 39-40s29 14 39 40'/%3E%3Cpath d='M92 250c18-26 38-40 58-44'/%3E%3Cpath d='M120 224c-10 12-18 26-22 42'/%3E%3Cpath d='M548 250c-18-26-38-40-58-44'/%3E%3Cpath d='M520 224c10 12 18 26 22 42'/%3E%3Cpath d='M238 270c29 16 63 24 102 24s73-8 102-24'/%3E%3Cpath d='M268 266c8-10 19-16 32-16h40c13 0 24 6 32 16'/%3E%3C/g%3E%3C/svg%3E");
         }
 
         .content-area > * {
@@ -2768,7 +2768,7 @@
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.94);
+            background: rgba(255, 255, 255, 0.90);
             backdrop-filter: blur(1px);
         }
 
@@ -2777,7 +2777,37 @@
                 top: 18px;
                 width: calc(100% - 30px);
                 height: 270px;
-                opacity: 0.12;
+                opacity: 0.26;
+            }
+        }
+
+        /* ZVIDITELNĚNÍ WALLPAPERU – jemně i uvnitř karet */
+        .card::before {
+            content: '';
+            position: absolute;
+            right: 12px;
+            bottom: 10px;
+            width: 150px;
+            height: 90px;
+            pointer-events: none;
+            opacity: 0.08;
+            z-index: 0;
+            background-repeat: no-repeat;
+            background-position: right bottom;
+            background-size: contain;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='140' viewBox='0 0 220 140' fill='none'%3E%3Cg stroke='%23789755' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='75' cy='43' r='16'/%3E%3Cpath d='M44 100c8-28 23-42 31-42s24 14 32 42'/%3E%3Ccircle cx='119' cy='34' r='20'/%3E%3Cpath d='M82 108c10-36 26-54 37-54s27 18 37 54'/%3E%3Ccircle cx='164' cy='43' r='16'/%3E%3Cpath d='M132 100c8-28 24-42 32-42s23 14 31 42'/%3E%3Cpath d='M77 120c26 10 58 10 84 0'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 520px) {
+            .card::before {
+                width: 132px;
+                height: 84px;
+                opacity: 0.07;
             }
         }
 
