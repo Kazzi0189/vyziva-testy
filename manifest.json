@@ -15,10 +15,19 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "./index.html?v=2026-05-26-bezpecnost",
-  "background_color": "#f4f7f6",
+  "start_url": "./index.html?v=2026-06-05-recepty-share",
+  "background_color": "#fbf7ef",
   "display": "standalone",
   "scope": "./",
-  "theme_color": "#4a90e2",
-  "id": "./?app=vyziva-pro-test"
+  "theme_color": "#7aa33e",
+  "id": "./?app=vyziva-pro-test",
+  "share_target": {
+    "action": "./index.html",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }

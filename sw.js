@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vyziva-v4-2026-05-27-sledovat';
+const CACHE_NAME = 'vyziva-v5-2026-06-05-recepty-share';
 const ASSETS = [
   './',
   './index.html',
