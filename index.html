@@ -3239,6 +3239,133 @@
             margin-bottom: 0;
         }
 
+
+
+        /* === ÚPRAVA HORNÍHO PANELU 2026-06-05 === */
+        .app-title.app-hero.compact-hero.hero-topbar {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px 8px 12px;
+            min-height: 0;
+        }
+
+        .hero-topbar .hero-copy {
+            width: auto;
+            min-width: 0;
+        }
+
+        .hero-topbar .title-main {
+            font-size: 1.28rem;
+            line-height: 1;
+        }
+
+        .hero-topbar .title-sub {
+            margin-top: 3px;
+            font-size: 0.72rem;
+        }
+
+        .hero-topbar .title-pill {
+            margin-top: 5px;
+            padding: 3px 8px;
+            font-size: 0.58rem;
+        }
+
+        .hero-top-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 7px;
+        }
+
+        .hero-top-actions .header-mini-btn {
+            flex: 0 0 auto;
+            width: 42px;
+            height: 42px;
+            min-height: 42px;
+            padding: 0;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #516149;
+            border: 1px solid #eadfca;
+            box-shadow: 0 5px 14px rgba(89, 69, 35, 0.10);
+            font-size: 1.08rem;
+            font-weight: 900;
+        }
+
+        .hero-top-actions .header-mini-btn:nth-child(1) {
+            background: #d3e2ef;
+            color: #446b8a;
+        }
+
+        .hero-top-actions .header-mini-btn:nth-child(2) {
+            background: #fff7e3;
+            color: #98660d;
+        }
+
+        .hero-top-actions .header-mini-btn:nth-child(3) {
+            background: #f4f4ef;
+            color: #566354;
+        }
+
+        .main-action-row {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 9px;
+        }
+
+        .main-action-row button {
+            min-height: 60px;
+        }
+
+        .utility-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 44px 44px;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        @media (max-width: 420px) {
+            .app-title.app-hero.compact-hero.hero-topbar {
+                padding: 7px 8px 7px 10px;
+                gap: 8px;
+            }
+
+            .hero-topbar .title-main {
+                font-size: 1.14rem;
+            }
+
+            .hero-topbar .title-sub {
+                font-size: 0.68rem;
+            }
+
+            .hero-topbar .title-pill {
+                font-size: 0.54rem;
+                padding: 3px 7px;
+            }
+
+            .hero-top-actions {
+                gap: 6px;
+            }
+
+            .hero-top-actions .header-mini-btn {
+                width: 38px;
+                height: 38px;
+                min-height: 38px;
+                border-radius: 13px;
+                font-size: 1rem;
+            }
+
+            .main-action-row {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+
+            .main-action-row button {
+                min-height: 58px;
+            }
+        }
+
     </style>
 </head>
 
@@ -3246,11 +3373,16 @@
 
     <div class="sticky-header" id="topMenu">
         <div class="menu-content compact-menu">
-            <div class="app-title app-hero compact-hero">
+            <div class="app-title app-hero compact-hero hero-topbar">
                 <div class="hero-copy">
                     <div class="title-main"><span class="title-food">Výživa</span> <span class="title-pro">PRO</span></div>
                     <div class="title-sub">deník jídla a plánování</div>
                     <div class="title-pill">testovací verze</div>
+                </div>
+                <div class="hero-top-actions" aria-label="Rychlé funkce">
+                    <button class="header-mini-btn" type="button" title="Další funkce" aria-label="Další funkce" onclick="openMoreMenu()">⋯</button>
+                    <button class="header-mini-btn" type="button" title="Manuál a nápověda" aria-label="Manuál a nápověda" onclick="openManualModal()">?</button>
+                    <button class="header-mini-btn" type="button" title="Nastavení a správa" aria-label="Nastavení a správa" onclick="openSettings()">⚙️</button>
                 </div>
             </div>
             <div class="btn-row main-action-row">
@@ -3258,7 +3390,6 @@
                 <button class="top-action-btn top-action-today" onclick="goToToday()"><span class="btn-icon">☀️</span><span class="btn-label">DNES</span></button>
                 <button id="micMain" class="btn-mic top-action-btn top-action-food" onclick="runVoice('food')"><span class="btn-icon">🎤</span><span class="btn-label">JÍDLO</span></button>
                 <button id="micNote" class="btn-mic top-action-btn top-action-note" onclick="runVoice('note')"><span class="btn-icon">🎤</span><span class="btn-label">POZNÁMKA</span></button>
-                <button class="top-action-btn top-action-more" onclick="openMoreMenu()"><span class="btn-icon">⋯</span><span class="btn-label">DALŠÍ</span></button>
             </div>
             <div class="reorder-active-strip">
                 <span>↕️ Přeskládání plánu je aktivní</span>
@@ -3268,8 +3399,6 @@
                 <button type="button" class="filter-open-btn" onclick="openFilterModal()"><span class="btn-inline-icon">🔎</span><span class="btn-inline-label">FILTRY</span></button>
                 <button class="header-icon-btn toggle-grams icon-only-btn" type="button" title="Zobrazit/skrýt gramy" aria-label="Zobrazit nebo skrýt gramy" onclick="document.body.classList.toggle('show-w'); adjustSpacing();"><span class="btn-inline-icon">⚖️</span></button>
                 <button class="header-icon-btn toggle-notes icon-only-btn" type="button" title="Zobrazit/skrýt poznámky" aria-label="Zobrazit nebo skrýt poznámky" onclick="document.body.classList.toggle('show-n'); adjustSpacing();"><span class="btn-inline-icon">📝</span></button>
-                <button class="header-icon-btn utility-settings-btn icon-only-btn" type="button" title="Nastavení a správa" aria-label="Nastavení a správa" onclick="openSettings()"><span class="btn-inline-icon">⚙️</span></button>
-                <button class="header-icon-btn utility-help-btn icon-only-btn" type="button" title="Manuál a nápověda" aria-label="Manuál a nápověda" onclick="openManualModal()"><span class="btn-inline-icon">?</span></button>
             </div>
         </div>
     </div>
