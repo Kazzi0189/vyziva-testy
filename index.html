@@ -2739,78 +2739,9 @@
 
 
 
-        /* === JEMNÝ WALLPAPER RODINY – 2026-06-01 === */
-        .content-area {
-            position: relative;
-            isolation: isolate;
-        }
 
-        .content-area::before {
-            content: '';
-            position: absolute;
-            top: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: min(92%, 640px);
-            height: 320px;
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.34;
-            background-repeat: no-repeat;
-            background-position: center top;
-            background-size: contain;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='330' viewBox='0 0 640 330' fill='none'%3E%3Cg stroke='%23789755' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='214' cy='104' r='30'/%3E%3Cpath d='M162 198c12-33 32-50 52-50s40 17 52 50'/%3E%3Ccircle cx='314' cy='92' r='38'/%3E%3Cpath d='M246 210c18-48 43-72 68-72s50 24 68 72'/%3E%3Ccircle cx='424' cy='104' r='30'/%3E%3Cpath d='M372 198c12-33 32-50 52-50s40 17 52 50'/%3E%3Ccircle cx='319' cy='152' r='22'/%3E%3Cpath d='M280 222c10-26 24-40 39-40s29 14 39 40'/%3E%3Cpath d='M92 250c18-26 38-40 58-44'/%3E%3Cpath d='M120 224c-10 12-18 26-22 42'/%3E%3Cpath d='M548 250c-18-26-38-40-58-44'/%3E%3Cpath d='M520 224c10 12 18 26 22 42'/%3E%3Cpath d='M238 270c29 16 63 24 102 24s73-8 102-24'/%3E%3Cpath d='M268 266c8-10 19-16 32-16h40c13 0 24 6 32 16'/%3E%3C/g%3E%3C/svg%3E");
-        }
 
-        .content-area > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.90);
-            backdrop-filter: blur(1px);
-        }
-
-        @media (max-width: 520px) {
-            .content-area::before {
-                top: 18px;
-                width: calc(100% - 30px);
-                height: 270px;
-                opacity: 0.26;
-            }
-        }
-
-        /* ZVIDITELNĚNÍ WALLPAPERU – jemně i uvnitř karet */
-        .card::before {
-            content: '';
-            position: absolute;
-            right: 12px;
-            bottom: 10px;
-            width: 150px;
-            height: 90px;
-            pointer-events: none;
-            opacity: 0.08;
-            z-index: 0;
-            background-repeat: no-repeat;
-            background-position: right bottom;
-            background-size: contain;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='140' viewBox='0 0 220 140' fill='none'%3E%3Cg stroke='%23789755' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='75' cy='43' r='16'/%3E%3Cpath d='M44 100c8-28 23-42 31-42s24 14 32 42'/%3E%3Ccircle cx='119' cy='34' r='20'/%3E%3Cpath d='M82 108c10-36 26-54 37-54s27 18 37 54'/%3E%3Ccircle cx='164' cy='43' r='16'/%3E%3Cpath d='M132 100c8-28 24-42 32-42s23 14 31 42'/%3E%3Cpath d='M77 120c26 10 58 10 84 0'/%3E%3C/g%3E%3C/svg%3E");
-        }
-
-        .card > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        @media (max-width: 520px) {
-            .card::before {
-                width: 132px;
-                height: 84px;
-                opacity: 0.07;
-            }
-        }
-
+        /* Wallpaper rodiny odstraněn – čistší a čitelnější hlavní plocha. */
 
 
 
@@ -3806,6 +3737,515 @@
                 VŠECHNY KONCEPTY</button>
         </div>
     </div>
+
+    <div class="modal-overlay" id="recipesModal">
+        <div class="modal-box" style="text-align:left;">
+            <div class="modal-title" style="text-align:center;">📖 Recepty</div>
+            <div class="modal-text" style="text-align:left;">Ukládejte vlastní recepty, YouTube odkazy a později i AI návrhy s postupem. Před použitím vždy zkontrolujte suroviny.</div>
+            <div id="recipeInboxContent"></div>
+            <div class="recipe-toolbar">
+                <input id="recipeSearchInput" type="text" placeholder="Hledat recept..." oninput="renderRecipes()">
+                <select id="recipeMealFilter" onchange="renderRecipes()">
+                    <option value="all">Všechny typy</option>
+                    <option value="Snídaně">Snídaně</option>
+                    <option value="Dop. Svačina">Dop. svačina</option>
+                    <option value="Oběd">Oběd</option>
+                    <option value="Odp. Svačina">Odp. svačina</option>
+                    <option value="Večeře">Večeře</option>
+                </select>
+                <select id="recipeSourceFilter" onchange="renderRecipes()">
+                    <option value="all">Všechny zdroje</option>
+                    <option value="own">Vlastní</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="ai">AI</option>
+                </select>
+                <select id="recipeStatusFilter" onchange="renderRecipes()">
+                    <option value="active">Aktivní</option>
+                    <option value="all">Vše</option>
+                    <option value="tested">Ověřené</option>
+                    <option value="new">Čeká na vyzkoušení</option>
+                    <option value="favorite">Oblíbené</option>
+                    <option value="watch">Sledovat</option>
+                    <option value="avoid">Vyhnout se</option>
+                </select>
+            </div>
+            <div class="recipe-actions" style="margin-bottom:12px;">
+                <button class="modal-btn btn-merge" onclick="openRecipeEditModal()">➕ Přidat vlastní</button>
+                <button class="modal-btn" style="background:#d32f2f" onclick="openRecipeYoutubeModal()">🎥 YouTube recept</button>
+            </div>
+            <div id="recipesContent"></div>
+            <button class="modal-btn btn-cancel" style="margin-top:12px;" onclick="closeRecipesModal(true)">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="recipeEditModal">
+        <div class="modal-box" style="text-align:left;">
+            <div class="modal-title" id="recipeEditTitle" style="text-align:center;">Přidat recept</div>
+            <div class="modal-text" style="text-align:left;">Vyplňte alespoň název. U YouTube receptu stačí odkaz, poznámka a případně vlastní suroviny/postup.</div>
+            <div class="recipe-form">
+                <input type="hidden" id="recipeEditId">
+                <div>
+                    <label for="recipeTitleInput">Název receptu</label>
+                    <input id="recipeTitleInput" type="text" placeholder="např. Jáhlová kaše s hruškou">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div>
+                        <label for="recipeMealTypeInput">Typ jídla</label>
+                        <select id="recipeMealTypeInput">
+                            <option value="Snídaně">Snídaně</option>
+                            <option value="Dop. Svačina">Dop. svačina</option>
+                            <option value="Oběd">Oběd</option>
+                            <option value="Odp. Svačina">Odp. svačina</option>
+                            <option value="Večeře">Večeře</option>
+                            <option value="Jiné">Jiné</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="recipeStatusInput">Stav</label>
+                        <select id="recipeStatusInput">
+                            <option value="new">Čeká na vyzkoušení</option>
+                            <option value="tested">Ověřené</option>
+                            <option value="favorite">Oblíbené</option>
+                            <option value="watch">Sledovat</option>
+                            <option value="avoid">Vyhnout se</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label for="recipeSourceInput">Zdroj</label>
+                    <select id="recipeSourceInput" onchange="toggleRecipeYoutubeField()">
+                        <option value="own">Vlastní</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="ai">AI návrh</option>
+                    </select>
+                </div>
+                <div id="recipeYoutubeWrap">
+                    <label for="recipeYoutubeInput">YouTube odkaz</label>
+                    <input id="recipeYoutubeInput" type="url" placeholder="https://www.youtube.com/watch?v=...">
+                </div>
+                <div>
+                    <label for="recipeIngredientsInput">Suroviny</label>
+                    <textarea id="recipeIngredientsInput" placeholder="Každá surovina na nový řádek nebo volný text..."></textarea>
+                </div>
+                <div>
+                    <label for="recipeStepsInput">Postup</label>
+                    <textarea id="recipeStepsInput" placeholder="Jednoduchý postup přípravy..."></textarea>
+                </div>
+                <div>
+                    <label for="recipeNoteInput">Poznámka</label>
+                    <textarea id="recipeNoteInput" placeholder="Poznámka k věku, konzistenci, reakci, úpravě receptu..."></textarea>
+                </div>
+            </div>
+            <button class="modal-btn btn-merge" style="margin-top:12px;" onclick="saveRecipeFromModal()">💾 ULOŽIT RECEPT</button>
+            <button class="modal-btn btn-cancel" onclick="closeRecipeEditModal(true)">ZAVŘÍT</button>
+        </div>
+    </div>
+
+
+    <div class="modal-overlay" id="recipeShareChoiceModal">
+        <div class="modal-box" style="text-align:left; max-width:460px;">
+            <div class="modal-title" style="text-align:center;">📥 Nové YouTube video</div>
+            <div class="modal-text" style="text-align:left;">Vyberte, kam se má sdílené video uložit.</div>
+            <div id="recipeShareChoiceContent"></div>
+            <div id="recipeShareExistingWrap" class="shared-recipe-select-wrap">
+                <label for="recipeShareExistingSelect">Přidat k receptu</label>
+                <select id="recipeShareExistingSelect"></select>
+                <button class="modal-btn btn-merge" style="margin-top:10px;" onclick="savePendingVideoToExistingRecipe()">📎 PŘIDAT K VYBRANÉMU RECEPTU</button>
+            </div>
+            <div class="recipe-actions">
+                <button class="modal-btn btn-merge" onclick="createRecipeFromPendingVideo()">➕ VYTVOŘIT NOVÝ RECEPT</button>
+                <button class="modal-btn" style="background:#3498db" onclick="showExistingRecipeVideoTarget()">📎 PŘIDAT K EXISTUJÍCÍMU</button>
+                <button class="modal-btn btn-cancel" onclick="discardPendingRecipeVideoAndClose()">ZAHODIT</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="childProfileModal">
+        <div class="modal-box">
+            <div class="modal-title">Údaje dítěte</div>
+            <div class="modal-text">Údaje se použijí hlavně pro AI podklad. Do AI se neposílá datum narození, jen vypočtený věk.</div>
+            <div class="child-profile-row" aria-label="Údaje o dítěti">
+                <div class="child-profile-field">
+                    <label for="childBirthDate">Datum narození</label>
+                    <input id="childBirthDate" type="date" onchange="saveChildProfile()">
+                </div>
+                <div class="child-profile-field">
+                    <label for="childWeight">Váha kg</label>
+                    <input id="childWeight" type="number" inputmode="decimal" step="0.1" min="0" placeholder="např. 9,5" oninput="saveChildProfile()">
+                </div>
+                <div class="child-profile-field">
+                    <label for="childHeight">Výška cm</label>
+                    <input id="childHeight" type="number" inputmode="decimal" step="0.1" min="0" placeholder="volitelné" oninput="saveChildProfile()">
+                </div>
+                <div class="child-profile-field">
+                    <label>Věk</label>
+                    <div class="child-age-box" id="childAgeDisplay">nezadáno</div>
+                </div>
+            </div>
+            <button class="modal-btn btn-merge" style="margin-top:15px;" onclick="closeChildModal(true)">ULOŽIT A ZAVŘÍT</button>
+        </div>
+    </div>
+
+
+    <div class="modal-overlay" id="avoidListModal">
+        <div class="modal-box" style="max-width:430px; text-align:left;">
+            <div class="modal-title" style="text-align:center;">Vyhnout se</div>
+            <div class="modal-text" style="text-align:left;">Sem napište potraviny, jídla nebo kombinace, které se nemají používat v offline plánu ani v AI promptu. Každý řádek jedna položka.</div>
+            <textarea id="avoidListText" class="avoid-list-textarea" placeholder="např. vejce\nkousky mrkve\nkonkrétní sklenička..."></textarea>
+            <button class="modal-btn btn-merge" style="margin-top:12px;" onclick="saveAvoidListFromModal()">💾 ULOŽIT</button>
+            <button class="modal-btn btn-cancel" onclick="closeAvoidListModal(true)">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="watchListModal">
+        <div class="modal-box" style="max-width:430px; text-align:left;">
+            <div class="modal-title" style="text-align:center;">Sledovat</div>
+            <div class="modal-text" style="text-align:left;">Sem napište podezřelé potraviny, jídla nebo kombinace, které ještě nejsou jistě zakázané, ale mají být vidět v přehledu a v AI podkladu. Každý řádek jedna položka.</div>
+            <textarea id="watchListText" class="avoid-list-textarea" placeholder="např. cottage
+sardinky
+květák..."></textarea>
+            <button class="modal-btn btn-merge" style="margin-top:12px; background:#e67e22;" onclick="saveWatchListFromModal()">💾 ULOŽIT</button>
+            <button class="modal-btn btn-cancel" onclick="closeWatchListModal(true)">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="riskActionModal" onclick="if (event.target === this) closeRiskActionModal()">
+        <div class="modal-box" style="max-width:430px; text-align:left;">
+            <div class="modal-title" id="riskActionTitle" style="text-align:center;">Co přidat?</div>
+            <div class="modal-text" id="riskActionText" style="text-align:left; margin-bottom:12px;"></div>
+            <div id="riskActionChoices" class="risk-choice-list"></div>
+            <label style="display:block; font-size:0.8rem; font-weight:800; margin:12px 0 5px; color:#2c3e50;">Nebo vlastní text</label>
+            <input id="riskActionCustom" type="text" placeholder="např. jen sardinky" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:12px;">
+            <button class="modal-btn btn-merge" onclick="confirmRiskActionChoice()">✅ PŘIDAT VYBRANÉ</button>
+            <button class="modal-btn btn-cancel" onclick="closeRiskActionModal()">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="ideaUseModal" onclick="if (event.target === this) closeIdeaUseModal()">
+        <div class="modal-box" style="max-width:430px; text-align:left;">
+            <div class="modal-title" style="text-align:center;">Kam vložit návrh?</div>
+            <div class="modal-text" id="ideaUseSummary" style="text-align:left; margin-bottom:12px;"></div>
+
+            <label style="display:block; font-size:0.8rem; font-weight:800; margin:10px 0 5px; color:#2c3e50;">Datum</label>
+            <input id="ideaUseDate" type="date" onchange="updateIdeaUseAutoMode()" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+
+            <label style="display:block; font-size:0.8rem; font-weight:800; margin:10px 0 5px; color:#2c3e50;">Typ jídla</label>
+            <select id="ideaUseMealIndex" style="width:100%; margin-bottom:10px;">
+                <option value="0">Snídaně</option>
+                <option value="1">Dop. svačina</option>
+                <option value="2">Oběd</option>
+                <option value="3">Odp. svačina</option>
+                <option value="4">Večeře</option>
+            </select>
+
+            <label style="display:block; font-size:0.8rem; font-weight:800; margin:10px 0 5px; color:#2c3e50;">Režim dne</label>
+            <select id="ideaUseDayMode" style="width:100%; margin-bottom:10px;">
+                <option value="auto" selected>Automaticky podle data</option>
+                <option value="real">Skutečný den</option>
+                <option value="plan">PLÁN</option>
+            </select>
+            <div id="ideaUseAutoModeHint" class="small-help-text" style="margin-top:-4px;">Budoucí datum se uloží jako PLÁN, dnešek a minulost jako skutečný den.</div>
+
+            <label style="display:block; font-size:0.8rem; font-weight:800; margin:10px 0 5px; color:#2c3e50;">Jak vložit</label>
+            <select id="ideaUseInsertMode" style="width:100%; margin-bottom:12px;">
+                <option value="ai" selected>Jako AI návrh pod jídlo</option>
+                <option value="main">Jako hlavní jídlo</option>
+                <option value="append">Přidat za stávající text</option>
+            </select>
+
+            <div id="ideaUseWarning" class="ai-status" style="display:none; cursor:pointer;" title="Kliknutím zobrazíte detail upozornění" onclick="showIdeaUseWarningDetails()"></div>
+            <button class="modal-btn btn-merge" onclick="confirmUseIdea()">✅ VLOŽIT NÁVRH</button>
+            <button class="modal-btn btn-cancel" onclick="closeIdeaUseModal()">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="savedIdeasModal">
+        <div class="modal-box" style="max-width:560px; text-align:left;">
+            <div class="modal-title" style="text-align:center;">💡 Nápady jídel</div>
+            <div class="modal-text" style="text-align:left;">Zásobník uložených AI nápadů. Nápady můžete použít do dne/plánu, označit jako použité, přesunout do Sledovat/Vyhnout se nebo skrýt jako zamítnuté.</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+                <div>
+                    <label style="display:block; font-size:0.76rem; font-weight:800; color:#7f8c8d; margin-bottom:4px;">Zobrazit stav</label>
+                    <select id="savedIdeasStatusFilter" onchange="renderSavedIdeas()" style="width:100%;">
+                        <option value="active" selected>Aktivní nápady</option>
+                        <option value="new">Jen nové</option>
+                        <option value="used">Použité</option>
+                        <option value="watch">Ve Sledovat</option>
+                        <option value="avoid">Ve Vyhnout se</option>
+                        <option value="rejected">Zamítnuté/skryté</option>
+                        <option value="all">Vše</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.76rem; font-weight:800; color:#7f8c8d; margin-bottom:4px;">Typ jídla</label>
+                    <select id="savedIdeasMealFilter" onchange="renderSavedIdeas()" style="width:100%;">
+                        <option value="all" selected>Všechny typy</option>
+                        <option value="Snídaně">Snídaně</option>
+                        <option value="Dop. Svačina">Dop. svačina</option>
+                        <option value="Oběd">Oběd</option>
+                        <option value="Odp. Svačina">Odp. svačina</option>
+                        <option value="Večeře">Večeře</option>
+                    </select>
+                </div>
+            </div>
+            <div id="savedIdeasContent"></div>
+            <button class="modal-btn btn-cancel" onclick="closeSavedIdeasModal(true)">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="overviewModal">
+        <div class="modal-box" style="max-width:460px; text-align:left;">
+            <div class="modal-title" style="text-align:center;">Rozbor jídelníčku</div>
+            <div id="overviewContent"></div>
+            <button class="modal-btn btn-cancel" onclick="closeOverviewModal(true)">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="manualModal">
+        <div class="modal-box manual-modal-box">
+            <button type="button" class="ai-close-x" onclick="closeManualModal(true)">×</button>
+            <div class="modal-title" style="text-align:center;">Manuál aplikace</div>
+            <div class="manual-intro">
+                Tento manuál popisuje hlavní funkce deníku výživy, plánování jídelníčku a práci s AI. Většinu méně častých nástrojů najdete přes tlačítko <b>⋯ DALŠÍ</b>.
+            </div>
+
+            <details class="manual-section" open>
+                <summary>🟢 Rychlé zapisování dne</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li><b>NOVÝ +</b> vytvoří nový den s dnešním datem.</li>
+                        <li><b>DNES</b> skočí na dnešní záznam. Pokud dnešek ještě neexistuje, aplikace ho nabídne vytvořit.</li>
+                        <li><b>🎤 JÍDLO</b> zapisuje nadiktované jídlo.</li>
+                        <li><b>🎤 POZNÁMKA</b> zapisuje poznámku k vybranému jídlu.</li>
+                        <li>Když klepnete do konkrétní buňky, diktování zapisuje přímo do ní.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>🔎 Filtry a zobrazení</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li><b>🔎 FILTRY</b> otevřou jedno přehledné okno pro všechny filtry.</li>
+                        <li><b>Hledat slovo</b> najde text v datu, denní poznámce, jídlech, poznámkách i AI návrzích.</li>
+                        <li><b>Druhy jídel</b> lze kombinovat, například snídaně + svačiny nebo oběd + večeře.</li>
+                        <li><b>Hodnocení</b> zobrazí jen vybrané smajlíky.</li>
+                        <li><b>Zobrazení</b> přepíná mezi vším, skutečným deníkem a plánem.</li>
+                        <li><b>⚖️</b> zobrazí nebo skryje gramy. <b>📝</b> zobrazí nebo skryje poznámky.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>🙂 Hodnocení jídel</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Hodnocení se přepíná klepnutím na smajlíka u jídla.</li>
+                        <li><b>😍</b> znamená velmi chutnalo.</li>
+                        <li><b>🙂</b> znamená dobré.</li>
+                        <li><b>😐</b> je základní výchozí hodnocení.</li>
+                        <li><b>☹️</b> znamená nechutnalo nebo nevhodné.</li>
+                        <li>Po zapnutí <b>📝 poznámek</b> je u každého jídla také pole <b>Reakce</b>, kde lze ručně označit vyrážku, zvracení, průjem, kašel/dušení, nechutnalo nebo jinou reakci.</li>
+                    </ul>
+                    <div class="manual-note">AI i offline plán se snaží vycházet hlavně z lepších hodnocení a vyhýbat se negativním položkám. Ručně označená reakce má přednost před smajlíkem, takže i jídlo s 🙂 se po označení reakce objeví v rozboru rizik.</div>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>🗓️ Offline plán</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Najdete ho přes <b>⋯ DALŠÍ → Plán</b>.</li>
+                        <li>Plán se skládá z minulých jídel podle zvoleného hodnocení.</li>
+                        <li>Lze vytvořit plán na 7, 14 nebo 30 dní.</li>
+                        <li>Plánované dny mají štítek <b>PLÁN</b>.</li>
+                        <li>Offline plán nepoužívá internet ani API klíč.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>🤖 AI jídelníček a Gemini</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Rychlé návrhy najdete přes <b>⋯ DALŠÍ → 3 návrhy</b> a celý plán přes <b>⋯ DALŠÍ → AI plán</b>.</li>
+                        <li>Nejdřív lze vytvořit podklad pro AI a ručně ho zkopírovat.</li>
+                        <li>Po vložení Gemini API klíče ve <b>Správě dat</b> lze vytvořit plán přímo přes Gemini.</li>
+                        <li>Gemini má vracet přesný počet dní a formát vhodný pro import.</li>
+                        <li>Odpověď se zobrazí ke kontrole a teprve potom ji lze importovat jako plán.</li>
+                    </ul>
+                    <div class="manual-note">API klíč se ukládá jen v tomto zařízení a není součástí záloh. U čisté HTML aplikace ale nejde klíč stoprocentně skrýt před uživatelem zařízení.</div>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>✨ AI návrhy u jídel</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Gemini může pod hlavní jídlo přidat <b>AI návrh na rozšíření</b>.</li>
+                        <li>Hlavní jídlo vychází hlavně z historie.</li>
+                        <li>AI návrh má být nová věkově přiměřená možnost, kterou jste ještě nezkoušeli.</li>
+                        <li><b>POUŽÍT</b> přesune návrh do hlavního jídla.</li>
+                        <li><b>ZAMÍTNOUT</b> návrh odstraní.</li>
+                        <li>V AI okně je také režim <b>✨ 3 návrhy pro pestrost</b>, který nevytváří celý plán, ale jen tři opatrné nápady. Pestrost hodnotí podle zvoleného období, ale bezpečnost, rizika, seznam „Vyhnout se“ a seznam „Sledovat“ kontroluje z celé historie.</li><li>Uložené návrhy najdete v <b>💡 Nápady jídel</b>. Lze je použít do dne/plánu, označit jako použité, dát do Sledovat/Vyhnout se nebo skrýt jako zamítnuté.</li>
+                        <li>U návrhů lze použít <b>➕ Použít</b> pro vložení do konkrétního dne/plánu, <b>💡 Uložit</b> pro odložení do Nápadů jídel nebo <b>🗑️ Zahodit</b>.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>↕️ Přeskládání plánu</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Spustíte přes <b>⋯ DALŠÍ → Přeskládat</b>.</li>
+                        <li>Přeskládání funguje jen pro záznamy označené jako <b>PLÁN</b>.</li>
+                        <li>Kartu lze přetáhnout prstem. Při tažení k okraji se stránka posouvá.</li>
+                        <li>Jako jistota jsou u karet také tlačítka <b>⬆️</b>, <b>⬇️</b> a <b>⇄</b>.</li>
+                        <li>Po přesunu se datumy plánovaných dnů automaticky přepočítají.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>📅 Ruční změna data a prohození dnů</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Datum lze upravit přímo v hlavičce karty.</li>
+                        <li>Když cílové datum už existuje, aplikace nabídne možnosti tlačítky.</li>
+                        <li><b>Prohodit dny/karty</b> vymění obsah dvou dnů.</li>
+                        <li><b>Přepsat cílové datum</b> nahradí cílový záznam touto kartou.</li>
+                        <li>U plánovaných záznamů se při přepsání umí vytvořit prázdná plánovaná karta na původním datu, aby v plánu nevznikla mezera.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>🧹 Mazání a zrušení plánu</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Najdete přes <b>⋯ DALŠÍ → Smazat</b>.</li>
+                        <li>Lze mazat období od data do data.</li>
+                        <li>Lze zapnout ruční označování dnů a smazat vybrané karty.</li>
+                        <li><b>Zrušit jen plán</b> smaže pouze záznamy označené jako <b>PLÁN</b>.</li>
+                        <li>Skutečné historické záznamy se při zrušení plánu nemažou.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>✅ Převod plánu na skutečný den</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>U plánované karty je tlačítko <b>✅ SKUTEČNÝ DEN</b>.</li>
+                        <li>Po potvrzení se záznam přestane brát jako plán a stane se běžným deníkem.</li>
+                        <li>Je vhodné ho použít až po skutečném proběhnutí dne a případné ruční úpravě toho, co dítě opravdu snědlo.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>👶 Údaje dítěte a 🚫 Vyhnout se</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li><b>Údaje dítěte</b> slouží hlavně pro AI plánování.</li>
+                        <li>Datum narození se do AI neposílá, posílá se jen vypočtený věk v měsících.</li>
+                        <li>Váha a výška se do AI použijí jen tehdy, když jsou vyplněné.</li>
+                        <li><b>Vyhnout se</b> je ruční seznam jídel, surovin nebo kombinací, které nemá používat offline plán ani AI.</li>
+                        <li><b>Sledovat</b> je ruční seznam podezřelých položek, které ještě nejsou jistě zakázané, ale mají být vidět v přehledu, AI podkladu a přímo u jídel jako oranžové upozornění.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>📊 Rozbor jídelníčku</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Zobrazí nejčastější jídla, oblíbená jídla, nechutnalo/rizikové položky, AI nápady, ruční seznam Vyhnout se a ruční seznam Sledovat.</li>
+                        <li>Hlídá i riziková slova v denní poznámce a poznámkách u jídel, například vyrážka, alergie nebo zvracení.</li>
+                        <li>U rizikového jídla nabídne přidání celého jídla, jedné složky nebo vlastního textu buď do 🚫 Vyhnout se, nebo do 👀 Sledovat.</li>
+                        <li>Přehled bere jako základ hlavně skutečný deník, ne plán.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>📥 Rozpracované zápisy</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li>Slouží pro digitalizaci starých papírů nebo průběžné zapisování bokem.</li>
+                        <li>Zápisy lze později odeslat do hlavního deníku.</li>
+                        <li>Při shodném datu se hlavní deník může přepsat rozpracovaným záznamem.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="manual-section">
+                <summary>⚙️ Správa dat a zálohy</summary>
+                <div class="manual-section-content">
+                    <ul>
+                        <li><b>Export JSON</b> vytvoří zálohu celé aplikace.</li>
+                        <li><b>Import JSON</b> obnoví nebo sloučí zálohu.</li>
+                        <li><b>CSV export/import</b> slouží pro práci s tabulkami.</li>
+                        <li>Aplikace si před rizikovými akcemi vytváří automatickou vnitřní zálohu.</li>
+                        <li><b>Obnovit poslední auto zálohu</b> vrátí poslední bezpečně uložený stav.</li>
+                    </ul>
+                    <div class="manual-note">Doporučení: před většími úpravami nebo importem si udělejte ruční JSON zálohu.</div>
+                </div>
+            </details>
+
+            <button class="modal-btn btn-cancel" onclick="closeManualModal(true)">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-box">
+            <div class="modal-title">Správa dat</div>
+            <div class="modal-text">Záloha, obnova a export do PC</div>
+            <div id="appVersionText" class="small-help-text" style="text-align:center; margin-top:-8px;">Verze aplikace: načítám…</div>
+            <button class="modal-btn btn-excel" onclick="exportCSV()">📊 EXPORT DO EXCELU (.csv)</button>
+            <button class="modal-btn style-csv-import" style="background:#27ae60; margin-bottom: 20px;"
+                onclick="triggerCSVImport()">📂 IMPORT Z EXCELU (.csv)</button>
+            <div style="border-top: 1px solid #eee; margin-bottom: 15px;"></div>
+            <button class="modal-btn btn-export" onclick="exportData()">💾 ZÁLOHA APLIKACE (.json)</button>
+            <button class="modal-btn btn-import" onclick="triggerImport()">📂 OBNOVA APLIKACE (.json)</button>
+            <button class="modal-btn" style="background:#16a085" onclick="restoreLastAutoBackup()">↩️ OBNOVIT POSLEDNÍ AUTO ZÁLOHU</button>
+
+            <div style="border-top: 1px solid #eee; margin: 18px 0 15px;"></div>
+            <div class="modal-title" style="font-size:1.05rem; margin-bottom:6px;">Gemini AI</div>
+            <div class="small-help-text">API klíč se uloží jen v tomto zařízení a není součástí záloh. U čisté HTML aplikace ale nejde klíč stoprocentně skrýt před uživatelem zařízení.</div>
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Gemini API klíč</label>
+            <input type="password" id="geminiApiKey" placeholder="AIza..." autocomplete="off" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin:10px 0 5px; color:#2c3e50;">Model</label>
+            <select id="geminiModel" style="width:100%; margin-bottom:10px;">
+                <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash</option>
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+            </select>
+            <div id="geminiSettingsStatus" class="ai-status"></div>
+            <button class="modal-btn btn-merge" onclick="saveGeminiSettings()">💾 ULOŽIT GEMINI</button>
+            <button class="modal-btn btn-import" onclick="testGeminiConnection()">🔌 OTESTOVAT GEMINI</button>
+            <button class="modal-btn btn-overwrite" onclick="deleteGeminiSettings()">🗑️ SMAZAT API KLÍČ</button>
+
+            <button class="modal-btn" style="background:#2980b9" onclick="closeSettings(); openManualModal();">📘 OTEVŘÍT MANUÁL</button>
+            <button class="modal-btn btn-cancel" onclick="closeSettings(true)">ZAVŘÍT</button>
+            <button class="modal-btn btn-overwrite" style="margin-top: 30px;" onclick="clearAllMainData()">🔥 SMAZAT
+                ÚPLNĚ VŠECHNA DATA</button>
+            <input type="file" id="importFile" style="display:none" accept=".json" onchange="handleFileSelect(event)">
+            <input type="file" id="csvImportFile" style="display:none" accept=".csv" onchange="handleCSVSelect(event)">
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="importModal">
+        <div class="modal-box">
+            <div class="modal-title">Zpracování Importu</div>
+            <div class="modal-text">Jak chcete data nahrát?</div>
+            <button class="modal-btn btn-overwrite" onclick="executeImport('overwrite')">PŘEPSAT VŠE (Smazat
+                stávající)</button>
+            <button class="modal-btn btn-merge" onclick="executeImport('merge')">SLOUČIT S EXISTUJÍCÍMI</button>
+            <button class="modal-btn btn-cancel" onclick="cancelImport()">ZRUŠIT</button>
+        </div>
+    </div>
+
 
     <script>
         const container = document.getElementById('cardContainer');
