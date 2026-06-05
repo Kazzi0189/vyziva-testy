@@ -3219,6 +3219,26 @@
             }
         }
 
+
+
+        /* DOLADĚNÍ NASTAVENÍ – zavřít až dole a bez návratu do Další */
+        .settings-danger-zone {
+            margin: 22px 0 14px;
+            padding: 12px;
+            border-radius: 18px;
+            background: #fff4f1;
+            border: 1px solid #f4c7bd;
+        }
+
+        .settings-danger-zone .more-section-title {
+            color: #b13f30;
+        }
+
+        .settings-close-final {
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+
     </style>
 </head>
 
@@ -3404,9 +3424,13 @@
             <button class="modal-btn btn-import" onclick="testGeminiConnection()">🔌 OTESTOVAT GEMINI</button>
             <button class="modal-btn btn-overwrite" onclick="deleteGeminiSettings()">🗑️ SMAZAT API KLÍČ</button>
 
-            <button class="modal-btn btn-cancel" onclick="closeSettings(true)">ZAVŘÍT</button>
-            <button class="modal-btn btn-overwrite" style="margin-top: 30px;" onclick="clearAllMainData()">🔥 SMAZAT
-                ÚPLNĚ VŠECHNA DATA</button>
+            <div class="settings-danger-zone">
+                <div class="more-section-title">⚠️ Nebezpečná zóna</div>
+                <div class="small-help-text" style="margin-bottom:10px;">Tyto akce mohou odstranit důležitá data. Před použitím doporučuji zálohu.</div>
+                <button class="modal-btn btn-overwrite" onclick="clearAllMainData()">🔥 SMAZAT ÚPLNĚ VŠECHNA DATA</button>
+            </div>
+
+            <button class="modal-btn btn-cancel settings-close-final" onclick="closeSettings(false)">ZAVŘÍT</button>
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="handleFileSelect(event)">
             <input type="file" id="csvImportFile" style="display:none" accept=".csv" onchange="handleCSVSelect(event)">
         </div>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vyziva-v6-2026-06-05-menu-cleanup';
+const CACHE_NAME = 'vyziva-v4-2026-06-05-menu-settings-close-fix';
 const ASSETS = [
   './',
   './index.html',
