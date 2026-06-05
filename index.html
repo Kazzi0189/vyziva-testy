@@ -2813,6 +2813,17 @@
 
 
 
+
+        /* AI návrhy: bezpečné hledání receptů bez vymyšlených odkazů */
+        #recipeEditModal {
+            z-index: 7200;
+        }
+
+        #recipeEditModal .modal-box {
+            position: relative;
+            z-index: 7201;
+        }
+
         /* === RECEPTY A YOUTUBE RECEPTY 2026-06-05 === */
         .more-section-recipes {
             background: #fff8ee;
@@ -6762,13 +6773,91 @@ Tuto akci nelze vrátit zpět.`)) return;
                 <div class="ai-idea-card" data-idea-index="${index}">
                     <div class="ai-idea-card-title">Návrh ${index + 1}: ${escapeHtml(idea.title)}</div>
                     <div class="ai-idea-card-text">${escapeHtml(idea.text)}</div>
+                    <div class="small-help-text" style="margin-top:8px;">
+                        Odkazy se nevymýšlí. Tlačítka níže otevřou skutečné hledání receptu na webu nebo YouTube podle názvu jídla.
+                    </div>
                     <div class="ai-idea-actions">
                         <button type="button" class="modal-btn" style="background:#27ae60" onclick="openUseIdeaModal(${index})">➕ Použít</button>
                         <button type="button" class="modal-btn" style="background:#e67e22" onclick="saveAiIdea(${index})">💡 Uložit</button>
+                        <button type="button" class="modal-btn" style="background:#8e44ad" onclick="openAiIdeaRecipeDraft(${index})">📖 Postup</button>
+                        <button type="button" class="modal-btn" style="background:#2980b9" onclick="searchAiIdeaRecipe(${index})">🔎 Recept</button>
+                        <button type="button" class="modal-btn" style="background:#c0392b" onclick="searchAiIdeaYoutube(${index})">▶️ YouTube</button>
                         <button type="button" class="modal-btn" style="background:#7f8c8d" onclick="discardAiIdea(${index})">🗑️ Zahodit</button>
                     </div>
                 </div>
             `).join('');
+        }
+
+        function getIdeaSearchText(idea) {
+            if (!idea) return '';
+            const title = String(idea.title || idea.text || '').replace(/\s+/g, ' ').trim();
+            const mealType = String(idea.mealType || '').replace(/\s+/g, ' ').trim();
+            const childHint = 'recept pro dítě';
+            return [title, mealType, childHint].filter(Boolean).join(' ');
+        }
+
+        function openSearchUrl(url) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+
+        function searchAiIdeaRecipe(index) {
+            const idea = currentAiIdeaSuggestions[index];
+            if (!idea) return;
+            const query = 'recept ' + getIdeaSearchText(idea);
+            openSearchUrl('https://www.google.com/search?q=' + encodeURIComponent(query));
+        }
+
+        function searchAiIdeaYoutube(index) {
+            const idea = currentAiIdeaSuggestions[index];
+            if (!idea) return;
+            const query = getIdeaSearchText(idea) + ' recept';
+            openSearchUrl('https://www.youtube.com/results?search_query=' + encodeURIComponent(query));
+        }
+
+        function searchSavedIdeaRecipe(index) {
+            const idea = getSavedIdeas()[index];
+            if (!idea) return;
+            const query = 'recept ' + getIdeaSearchText(idea);
+            openSearchUrl('https://www.google.com/search?q=' + encodeURIComponent(query));
+        }
+
+        function searchSavedIdeaYoutube(index) {
+            const idea = getSavedIdeas()[index];
+            if (!idea) return;
+            const query = getIdeaSearchText(idea) + ' recept';
+            openSearchUrl('https://www.youtube.com/results?search_query=' + encodeURIComponent(query));
+        }
+
+        function buildRecipeDraftFromIdea(idea) {
+            const title = String(idea?.title || 'AI recept').trim() || 'AI recept';
+            const detail = String(idea?.text || '').trim();
+            const steps = [
+                'AI návrh jídla:',
+                detail || title,
+                '',
+                'Jednoduchý postup k úpravě:',
+                '1. Zkontrolujte suroviny proti seznamům Vyhnout se a Sledovat.',
+                '2. Připravte suroviny uvedené v názvu jídla a upravte je do měkka.',
+                '3. Konzistenci přizpůsobte věku dítěte – nakrájet, pomačkat nebo rozmixovat.',
+                '4. Podávejte v malé porci a sledujte reakci, hlavně pokud je v jídle méně častá surovina.',
+                '',
+                'Poznámka: Tento postup je pracovní návrh. Před uložením doplňte přesné suroviny, množství a vlastní ověřený postup.'
+            ].join('\n');
+            return {
+                title,
+                mealType: idea?.mealType || 'Jiné',
+                source: 'ai',
+                status: 'new',
+                ingredients: '',
+                steps,
+                note: 'Uloženo z AI návrhu. Externí odkazy aplikace nevymýšlí – použijte tlačítka Hledat recept / YouTube a konkrétní ověřený odkaz si případně uložte ručně.'
+            };
+        }
+
+        function openAiIdeaRecipeDraft(index) {
+            const idea = currentAiIdeaSuggestions[index];
+            if (!idea) return;
+            openRecipeEditModal('', buildRecipeDraftFromIdea(idea));
         }
 
         function discardAiIdea(index) {
@@ -7028,20 +7117,13 @@ Tuto akci nelze vrátit zpět.`)) return;
             if (!idea) return;
             const recipes = getRecipes();
             createAutoBackup('uložení AI nápadu jako receptu');
-            recipes.unshift(normalizeRecipe({
+            recipes.unshift(normalizeRecipe(Object.assign({
                 id: makeRecipeId(),
-                title: idea.title || 'AI recept',
-                mealType: idea.mealType || 'Jiné',
-                source: 'ai',
-                status: 'new',
-                ingredients: '',
-                steps: idea.text || '',
-                note: 'Uloženo z AI nápadu. Před podáním zkontrolujte suroviny, věk dítěte a seznamy Vyhnout se / Sledovat.',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
-            }));
+            }, buildRecipeDraftFromIdea(idea))));
             setRecipes(recipes);
-            alert('AI nápad byl uložen jako recept. Postup je zatím převzatý z textu nápadu, před použitím ho upravte a zkontrolujte.');
+            alert('AI nápad byl uložen jako recept. Postup je pracovní návrh – před použitím doplňte přesné suroviny, množství a případný ověřený odkaz.');
         }
 
         function renderSavedIdeaCard(idea, index) {
@@ -7051,6 +7133,8 @@ Tuto akci nelze vrátit zpět.`)) return;
             const primaryButtons = [];
             if (showUse) primaryButtons.push(`<button type="button" class="modal-btn" style="background:#27ae60" onclick="openUseIdeaModal(${index}, 'saved')">➕ Použít</button>`);
             primaryButtons.push(`<button type="button" class="modal-btn" style="background:#d97706" onclick="saveSavedIdeaAsRecipe(${index})">📖 Recept</button>`);
+            primaryButtons.push(`<button type="button" class="modal-btn" style="background:#2980b9" onclick="searchSavedIdeaRecipe(${index})">🔎 Najít recept</button>`);
+            primaryButtons.push(`<button type="button" class="modal-btn" style="background:#c0392b" onclick="searchSavedIdeaYoutube(${index})">▶️ YouTube</button>`);
             if (status.group !== 'used' && status.group !== 'avoid' && status.group !== 'rejected') primaryButtons.push(`<button type="button" class="modal-btn" style="background:#16a085" onclick="markSavedIdeaUsed(${index})">✅ Použité</button>`);
             if (status.group !== 'watch' && status.group !== 'avoid' && status.group !== 'rejected') primaryButtons.push(`<button type="button" class="modal-btn" style="background:#e67e22" onclick="openSavedIdeaListAction(${index}, 'watch')">👀 Sledovat</button>`);
             if (status.group !== 'avoid' && status.group !== 'rejected') primaryButtons.push(`<button type="button" class="modal-btn" style="background:#d35400" onclick="openSavedIdeaListAction(${index}, 'avoid')">🚫 Vyhnout se</button>`);
