@@ -15,7 +15,7 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "./index.html?v=2026-06-05-recepty-share",
+  "start_url": "./index.html?v=2026-06-05-menu-cleanup",
   "background_color": "#fbf7ef",
   "display": "standalone",
   "scope": "./",
