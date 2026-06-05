@@ -3040,6 +3040,84 @@
             }
         }
 
+
+
+        /* === OPRAVY UX: YouTube sdílení, plánované dny a scroll modalů 2026-06-05 === */
+        body.modal-open {
+            overflow: hidden !important;
+            height: 100vh;
+            touch-action: none;
+        }
+
+        body.modal-open .modal-box {
+            touch-action: pan-y;
+        }
+
+        .modal-overlay {
+            overscroll-behavior: contain;
+        }
+
+        .plan-confirm-btn {
+            position: static !important;
+            display: inline-flex !important;
+            width: auto !important;
+            max-width: 100%;
+            margin: 2px 0 12px 0 !important;
+            align-self: flex-start;
+            z-index: 1 !important;
+            white-space: normal;
+            line-height: 1.2;
+        }
+
+        .shared-recipe-preview {
+            border: 1px solid #f0dfc9;
+            background: #fffaf0;
+            border-radius: 18px;
+            padding: 12px;
+            margin: 10px 0 14px;
+            text-align: left;
+        }
+
+        .shared-recipe-preview-title {
+            font-weight: 900;
+            color: #2f3a2c;
+            margin-bottom: 8px;
+        }
+
+        .shared-recipe-url {
+            font-size: 0.78rem;
+            color: #6b7280;
+            word-break: break-all;
+            margin-top: 8px;
+        }
+
+        .shared-recipe-select-wrap {
+            display: none;
+            margin: 10px 0 12px;
+            padding: 10px;
+            border-radius: 14px;
+            border: 1px solid #e9dcc8;
+            background: #fffdf8;
+        }
+
+        .shared-recipe-select-wrap label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 900;
+            color: #526047;
+            margin-bottom: 6px;
+        }
+
+        .shared-recipe-select-wrap select {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .recipe-inbox-box .recipe-youtube-preview,
+        .shared-recipe-preview .recipe-youtube-preview {
+            margin-top: 8px;
+        }
+
     </style>
 </head>
 
@@ -3292,6 +3370,26 @@
             <button class="modal-btn btn-cancel" onclick="closeRecipeEditModal(true)">ZAVŘÍT</button>
         </div>
     </div>
+
+
+    <div class="modal-overlay" id="recipeShareChoiceModal">
+        <div class="modal-box" style="text-align:left; max-width:460px;">
+            <div class="modal-title" style="text-align:center;">📥 Nové YouTube video</div>
+            <div class="modal-text" style="text-align:left;">Vyberte, kam se má sdílené video uložit.</div>
+            <div id="recipeShareChoiceContent"></div>
+            <div id="recipeShareExistingWrap" class="shared-recipe-select-wrap">
+                <label for="recipeShareExistingSelect">Přidat k receptu</label>
+                <select id="recipeShareExistingSelect"></select>
+                <button class="modal-btn btn-merge" style="margin-top:10px;" onclick="savePendingVideoToExistingRecipe()">📎 PŘIDAT K VYBRANÉMU RECEPTU</button>
+            </div>
+            <div class="recipe-actions">
+                <button class="modal-btn btn-merge" onclick="createRecipeFromPendingVideo()">➕ VYTVOŘIT NOVÝ RECEPT</button>
+                <button class="modal-btn" style="background:#3498db" onclick="showExistingRecipeVideoTarget()">📎 PŘIDAT K EXISTUJÍCÍMU</button>
+                <button class="modal-btn btn-cancel" onclick="discardPendingRecipeVideoAndClose()">ZAHODIT</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="childProfileModal">
         <div class="modal-box">
             <div class="modal-title">Údaje dítěte</div>
@@ -4189,12 +4287,14 @@ květák..."></textarea>
         }
 
         function checkRecipeShareTarget() {
+            let foundSharedVideo = false;
             try {
                 const shared = localStorage.getItem('sharedData') || '';
                 const normalizedShared = normalizeYouTubeUrl(shared);
                 if (normalizedShared) {
                     localStorage.setItem('pendingRecipeVideo', normalizedShared);
                     localStorage.removeItem('sharedData');
+                    foundSharedVideo = true;
                 }
                 const urlParams = new URLSearchParams(window.location.search);
                 const sharedUrl = urlParams.get('url') || urlParams.get('text');
@@ -4202,10 +4302,12 @@ květák..."></textarea>
                 if (normalizedFromParams) {
                     localStorage.setItem('pendingRecipeVideo', normalizedFromParams);
                     window.history.replaceState({}, document.title, window.location.pathname);
+                    foundSharedVideo = true;
                 }
             } catch (err) {
                 console.warn('YouTube recept sdílení se nepodařilo zpracovat:', err);
             }
+            return foundSharedVideo;
         }
 
         function openRecipesModal() {
@@ -4340,13 +4442,14 @@ květák..."></textarea>
         function renderRecipeInbox() {
             const box = document.getElementById('recipeInboxContent');
             if (!box) return;
-            const pending = normalizeYouTubeUrl(localStorage.getItem('pendingRecipeVideo') || '');
+            const pending = getPendingRecipeVideoUrl();
             if (!pending) { box.innerHTML = ''; return; }
             box.innerHTML = `<div class="recipe-inbox-box">
-                <div style="font-weight:900;">📥 Nový YouTube recept</div>
-                <div class="recipe-inbox-url">${escapeHtml(pending)}</div>
+                <div style="font-weight:900;">📥 Nový YouTube recept čeká na zařazení</div>
+                ${pendingRecipeVideoPreviewHtml(pending)}
                 <div class="recipe-actions">
-                    <button class="modal-btn btn-merge" onclick="openRecipeYoutubeModal()">💾 Uložit jako recept</button>
+                    <button class="modal-btn btn-merge" onclick="createRecipeFromPendingVideo()">➕ Nový recept</button>
+                    <button class="modal-btn" style="background:#3498db" onclick="openPendingRecipeVideoChoice()">📎 Vybrat kam uložit</button>
                     <button class="modal-btn btn-cancel" onclick="discardPendingRecipeVideo()">Zahodit</button>
                 </div>
             </div>`;
@@ -4355,6 +4458,88 @@ květák..."></textarea>
         function discardPendingRecipeVideo() {
             localStorage.removeItem('pendingRecipeVideo');
             renderRecipes();
+        }
+
+        function discardPendingRecipeVideoAndClose() {
+            localStorage.removeItem('pendingRecipeVideo');
+            const modal = document.getElementById('recipeShareChoiceModal');
+            if (modal) modal.style.display = 'none';
+            renderRecipes();
+        }
+
+        function getPendingRecipeVideoUrl() {
+            return normalizeYouTubeUrl(localStorage.getItem('pendingRecipeVideo') || '');
+        }
+
+        function pendingRecipeVideoPreviewHtml(url) {
+            const youtubeUrl = normalizeYouTubeUrl(url || getPendingRecipeVideoUrl());
+            if (!youtubeUrl) return '<div class="overview-box">Není uložený žádný platný YouTube odkaz.</div>';
+            const id = extractYouTubeVideoId(youtubeUrl);
+            return `<div class="shared-recipe-preview">
+                <div class="shared-recipe-preview-title">🎥 Sdílené YouTube video</div>
+                ${id ? `<div class="recipe-youtube-preview" onclick="window.open('https://www.youtube.com/watch?v=${id}', '_blank')">
+                    <img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt="YouTube náhled">
+                    <div class="recipe-youtube-play"><span>▶</span></div>
+                </div>` : ''}
+                <div class="shared-recipe-url">${escapeHtml(youtubeUrl)}</div>
+            </div>`;
+        }
+
+        function openPendingRecipeVideoChoice() {
+            const pending = getPendingRecipeVideoUrl();
+            if (!pending) return false;
+            const content = document.getElementById('recipeShareChoiceContent');
+            if (content) content.innerHTML = pendingRecipeVideoPreviewHtml(pending);
+            const wrap = document.getElementById('recipeShareExistingWrap');
+            if (wrap) wrap.style.display = 'none';
+            const modal = document.getElementById('recipeShareChoiceModal');
+            if (modal) modal.style.display = 'flex';
+            return true;
+        }
+
+        function createRecipeFromPendingVideo() {
+            const pending = getPendingRecipeVideoUrl();
+            if (!pending) return alert('Není uložený žádný platný YouTube odkaz.');
+            const modal = document.getElementById('recipeShareChoiceModal');
+            if (modal) modal.style.display = 'none';
+            openRecipeEditModal('', { source: 'youtube', youtubeUrl: pending, title: 'YouTube recept', note: 'Video bylo sdíleno z YouTube. Doplňte si prosím název, suroviny a vlastní ověřený postup.' });
+        }
+
+        function showExistingRecipeVideoTarget() {
+            const pending = getPendingRecipeVideoUrl();
+            if (!pending) return alert('Není uložený žádný platný YouTube odkaz.');
+            const recipes = getRecipes();
+            const select = document.getElementById('recipeShareExistingSelect');
+            const wrap = document.getElementById('recipeShareExistingWrap');
+            if (!select || !wrap) return;
+            if (!recipes.length) {
+                alert('Zatím nemáte žádný recept. Vytvořte prosím nový recept.');
+                return;
+            }
+            select.innerHTML = recipes.map(r => `<option value="${escapeHtml(r.id)}">${escapeHtml(r.title)} (${escapeHtml(getRecipeSourceLabel(r.source))})</option>`).join('');
+            wrap.style.display = 'block';
+        }
+
+        function savePendingVideoToExistingRecipe() {
+            const pending = getPendingRecipeVideoUrl();
+            const select = document.getElementById('recipeShareExistingSelect');
+            const recipeId = select ? select.value : '';
+            if (!pending || !recipeId) return alert('Vyberte recept a zkontrolujte YouTube odkaz.');
+            const recipes = getRecipes();
+            const idx = recipes.findIndex(r => r.id === recipeId);
+            if (idx < 0) return alert('Vybraný recept už neexistuje.');
+            createAutoBackup('před přidáním YouTube videa k receptu');
+            recipes[idx] = normalizeRecipe(Object.assign({}, recipes[idx], {
+                source: recipes[idx].source === 'own' ? 'youtube' : recipes[idx].source,
+                youtubeUrl: pending,
+                updatedAt: new Date().toISOString()
+            }));
+            setRecipes(recipes);
+            localStorage.removeItem('pendingRecipeVideo');
+            const modal = document.getElementById('recipeShareChoiceModal');
+            if (modal) modal.style.display = 'none';
+            alert('Video bylo přidáno k receptu: ' + recipes[idx].title);
+            openRecipesModal();
         }
 
         function renderRecipes() {
@@ -5208,6 +5393,36 @@ květák..."></textarea>
         }
 
 
+
+
+        function updateModalScrollLock() {
+            const visibleModal = Array.from(document.querySelectorAll('.modal-overlay')).some(modal => {
+                const style = window.getComputedStyle(modal);
+                return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+            });
+            document.body.classList.toggle('modal-open', visibleModal);
+        }
+
+        function installModalScrollLockObserver() {
+            const modals = document.querySelectorAll('.modal-overlay');
+            modals.forEach(modal => {
+                if (modal.dataset.scrollLockObserved === '1') return;
+                modal.dataset.scrollLockObserved = '1';
+                new MutationObserver(updateModalScrollLock).observe(modal, { attributes: true, attributeFilter: ['style', 'class'] });
+                modal.addEventListener('touchmove', (event) => {
+                    if (event.target === modal) event.preventDefault();
+                }, { passive: false });
+            });
+            updateModalScrollLock();
+        }
+
+        function handleRecipeShareOnStartup() {
+            const hasNewShare = checkRecipeShareTarget();
+            if (hasNewShare || getPendingRecipeVideoUrl()) {
+                setTimeout(openPendingRecipeVideoChoice, 250);
+            }
+        }
+
         function updateChildSummary() {
             // Údaje o dítěti jsou schované v modalu; souhrn zatím nezobrazujeme v pevné hlavičce, aby zůstala co nejnižší.
             updateChildAgeDisplay();
@@ -5242,7 +5457,7 @@ květák..."></textarea>
 
 
         function adjustSpacing() { document.getElementById('cardContainer').style.marginTop = (topMenu.offsetHeight + 15) + "px"; }
-        window.onload = () => { migrateStoredDataIfNeeded(); loadChildProfile(); checkRecipeShareTarget(); load(); adjustSpacing(); setInterval(updateChildAgeDisplay, 3600000); };
+        window.onload = () => { migrateStoredDataIfNeeded(); loadChildProfile(); load(); adjustSpacing(); installModalScrollLockObserver(); handleRecipeShareOnStartup(); setInterval(updateChildAgeDisplay, 3600000); };
         window.onresize = adjustSpacing;
 
         document.addEventListener('click', (e) => {

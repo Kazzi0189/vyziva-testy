@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vyziva-v5-2026-06-05-recepty-share';
+const CACHE_NAME = 'vyziva-v6-2026-06-05-youtube-share-ux';
 const ASSETS = [
   './',
   './index.html',
