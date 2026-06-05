@@ -2811,6 +2811,224 @@
             }
         }
 
+
+
+        /* === RECEPTY A YOUTUBE RECEPTY 2026-06-05 === */
+        .more-section-recipes {
+            background: #fff8ee;
+            border-color: #f8d7aa;
+            --section-btn-bg: #d97706;
+            --section-btn-bg-hover: #b96305;
+        }
+
+        #recipesModal .modal-box,
+        #recipeEditModal .modal-box {
+            max-width: 520px;
+        }
+
+        .recipe-toolbar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .recipe-toolbar input,
+        .recipe-toolbar select,
+        .recipe-form input,
+        .recipe-form select,
+        .recipe-form textarea {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #eadfce;
+            border-radius: 14px;
+            padding: 10px 12px;
+            font-size: 0.88rem;
+            background: #fffdf9;
+            color: #2f3a2c;
+            outline: none;
+        }
+
+        .recipe-toolbar input:focus,
+        .recipe-toolbar select:focus,
+        .recipe-form input:focus,
+        .recipe-form select:focus,
+        .recipe-form textarea:focus {
+            border-color: #d4a34a;
+            box-shadow: 0 0 0 3px rgba(212, 163, 74, 0.14);
+        }
+
+        .recipe-form {
+            display: grid;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .recipe-form label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 900;
+            color: #6b5b43;
+            margin: 0 0 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .recipe-form textarea {
+            min-height: 82px;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.42;
+        }
+
+        .recipe-card {
+            background: rgba(255, 253, 248, 0.96);
+            border: 1px solid #efe3cf;
+            border-radius: 18px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 6px 16px rgba(115, 90, 46, 0.08);
+            text-align: left;
+        }
+
+        .recipe-card-title {
+            font-weight: 900;
+            color: #2f3a2c;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .recipe-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 6px 0;
+            font-size: 0.74rem;
+            font-weight: 800;
+        }
+
+        .recipe-chip {
+            border-radius: 999px;
+            padding: 4px 8px;
+            background: #f7efdf;
+            color: #7a5b22;
+            border: 1px solid #ead9b9;
+        }
+
+        .recipe-chip.safe { background:#edf8e8; color:#4d7e29; border-color:#d5e9c7; }
+        .recipe-chip.watch { background:#fff6de; color:#a5680c; border-color:#f2d68f; }
+        .recipe-chip.avoid { background:#ffe9e2; color:#b9472e; border-color:#f2b6a6; }
+        .recipe-chip.ai { background:#f2ecff; color:#6a4db0; border-color:#dfd2ff; }
+        .recipe-chip.youtube { background:#ffecec; color:#c62828; border-color:#ffc9c9; }
+
+        .recipe-detail {
+            margin-top: 8px;
+            font-size: 0.86rem;
+            line-height: 1.45;
+            color: #42503d;
+            white-space: pre-wrap;
+        }
+
+        .recipe-safety-box {
+            margin-top: 8px;
+            border-radius: 14px;
+            padding: 9px 10px;
+            font-size: 0.82rem;
+            line-height: 1.38;
+            border: 1px solid #e7dccb;
+            background: #fbf7ef;
+        }
+
+        .recipe-safety-box.watch { background:#fff8e6; border-color:#f1d38e; color:#80540d; }
+        .recipe-safety-box.avoid { background:#fff0ea; border-color:#f2b7a6; color:#a33c25; }
+        .recipe-safety-box.risk { background:#fff3e8; border-color:#f3c595; color:#8a4b10; }
+
+        .recipe-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 7px;
+            margin-top: 10px;
+        }
+
+        .recipe-actions .modal-btn {
+            min-height: 42px;
+            padding: 9px 7px;
+            margin: 0;
+            border-radius: 13px;
+            font-size: 0.76rem;
+        }
+
+        .recipe-youtube-preview {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #111;
+            cursor: pointer;
+            margin-top: 9px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+        }
+
+        .recipe-youtube-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .recipe-youtube-play {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.22);
+        }
+
+        .recipe-youtube-play span {
+            width: 58px;
+            height: 40px;
+            border-radius: 12px;
+            background: #ff0000;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.32);
+        }
+
+        .recipe-inbox-box {
+            border: 1px solid #f0cf94;
+            background: #fff8e8;
+            color: #6c4b11;
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 12px;
+            text-align: left;
+            box-shadow: 0 4px 12px rgba(116, 84, 28, 0.08);
+        }
+
+        .recipe-inbox-url {
+            font-size: 0.78rem;
+            word-break: break-all;
+            margin: 6px 0 10px;
+            color: #77561c;
+        }
+
+        @media (max-width: 420px) {
+            .recipe-toolbar {
+                grid-template-columns: 1fr;
+            }
+            .recipe-actions {
+                grid-template-columns: 1fr;
+            }
+            .recipe-youtube-preview {
+                height: 135px;
+            }
+        }
+
     </style>
 </head>
 
@@ -2920,6 +3138,15 @@
                 </div>
             </div>
 
+            <div class="more-section more-section-recipes">
+                <div class="more-section-title">📖 Recepty</div>
+                <div class="more-grid">
+                    <button class="modal-btn" onclick="closeMoreMenu(); openRecipesModal();">📖 Receptář</button>
+                    <button class="modal-btn" onclick="closeMoreMenu(); openRecipeEditModal();">➕ Vlastní recept</button>
+                    <button class="modal-btn more-wide-btn" onclick="closeMoreMenu(); openRecipeYoutubeModal();">🎥 YouTube recept</button>
+                </div>
+            </div>
+
             <div class="more-section more-section-safety">
                 <div class="more-section-title">⚠️ Bezpečnost a rozbor</div>
                 <div class="more-grid">
@@ -2951,6 +3178,109 @@
         </div>
     </div>
 
+
+    <div class="modal-overlay" id="recipesModal">
+        <div class="modal-box" style="text-align:left;">
+            <div class="modal-title" style="text-align:center;">📖 Recepty</div>
+            <div class="modal-text" style="text-align:left;">Ukládejte vlastní recepty, YouTube odkazy a později i AI návrhy s postupem. Před použitím vždy zkontrolujte suroviny.</div>
+            <div id="recipeInboxContent"></div>
+            <div class="recipe-toolbar">
+                <input id="recipeSearchInput" type="text" placeholder="Hledat recept..." oninput="renderRecipes()">
+                <select id="recipeMealFilter" onchange="renderRecipes()">
+                    <option value="all">Všechny typy</option>
+                    <option value="Snídaně">Snídaně</option>
+                    <option value="Dop. Svačina">Dop. svačina</option>
+                    <option value="Oběd">Oběd</option>
+                    <option value="Odp. Svačina">Odp. svačina</option>
+                    <option value="Večeře">Večeře</option>
+                </select>
+                <select id="recipeSourceFilter" onchange="renderRecipes()">
+                    <option value="all">Všechny zdroje</option>
+                    <option value="own">Vlastní</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="ai">AI</option>
+                </select>
+                <select id="recipeStatusFilter" onchange="renderRecipes()">
+                    <option value="active">Aktivní</option>
+                    <option value="all">Vše</option>
+                    <option value="tested">Ověřené</option>
+                    <option value="new">Čeká na vyzkoušení</option>
+                    <option value="favorite">Oblíbené</option>
+                    <option value="watch">Sledovat</option>
+                    <option value="avoid">Vyhnout se</option>
+                </select>
+            </div>
+            <div class="recipe-actions" style="margin-bottom:12px;">
+                <button class="modal-btn btn-merge" onclick="openRecipeEditModal()">➕ Přidat vlastní</button>
+                <button class="modal-btn" style="background:#d32f2f" onclick="openRecipeYoutubeModal()">🎥 YouTube recept</button>
+            </div>
+            <div id="recipesContent"></div>
+            <button class="modal-btn btn-cancel" style="margin-top:12px;" onclick="closeRecipesModal(true)">ZAVŘÍT</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="recipeEditModal">
+        <div class="modal-box" style="text-align:left;">
+            <div class="modal-title" id="recipeEditTitle" style="text-align:center;">Přidat recept</div>
+            <div class="modal-text" style="text-align:left;">Vyplňte alespoň název. U YouTube receptu stačí odkaz, poznámka a případně vlastní suroviny/postup.</div>
+            <div class="recipe-form">
+                <input type="hidden" id="recipeEditId">
+                <div>
+                    <label for="recipeTitleInput">Název receptu</label>
+                    <input id="recipeTitleInput" type="text" placeholder="např. Jáhlová kaše s hruškou">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div>
+                        <label for="recipeMealTypeInput">Typ jídla</label>
+                        <select id="recipeMealTypeInput">
+                            <option value="Snídaně">Snídaně</option>
+                            <option value="Dop. Svačina">Dop. svačina</option>
+                            <option value="Oběd">Oběd</option>
+                            <option value="Odp. Svačina">Odp. svačina</option>
+                            <option value="Večeře">Večeře</option>
+                            <option value="Jiné">Jiné</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="recipeStatusInput">Stav</label>
+                        <select id="recipeStatusInput">
+                            <option value="new">Čeká na vyzkoušení</option>
+                            <option value="tested">Ověřené</option>
+                            <option value="favorite">Oblíbené</option>
+                            <option value="watch">Sledovat</option>
+                            <option value="avoid">Vyhnout se</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label for="recipeSourceInput">Zdroj</label>
+                    <select id="recipeSourceInput" onchange="toggleRecipeYoutubeField()">
+                        <option value="own">Vlastní</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="ai">AI návrh</option>
+                    </select>
+                </div>
+                <div id="recipeYoutubeWrap">
+                    <label for="recipeYoutubeInput">YouTube odkaz</label>
+                    <input id="recipeYoutubeInput" type="url" placeholder="https://www.youtube.com/watch?v=...">
+                </div>
+                <div>
+                    <label for="recipeIngredientsInput">Suroviny</label>
+                    <textarea id="recipeIngredientsInput" placeholder="Každá surovina na nový řádek nebo volný text..."></textarea>
+                </div>
+                <div>
+                    <label for="recipeStepsInput">Postup</label>
+                    <textarea id="recipeStepsInput" placeholder="Jednoduchý postup přípravy..."></textarea>
+                </div>
+                <div>
+                    <label for="recipeNoteInput">Poznámka</label>
+                    <textarea id="recipeNoteInput" placeholder="Poznámka k věku, konzistenci, reakci, úpravě receptu..."></textarea>
+                </div>
+            </div>
+            <button class="modal-btn btn-merge" style="margin-top:12px;" onclick="saveRecipeFromModal()">💾 ULOŽIT RECEPT</button>
+            <button class="modal-btn btn-cancel" onclick="closeRecipeEditModal(true)">ZAVŘÍT</button>
+        </div>
+    </div>
     <div class="modal-overlay" id="childProfileModal">
         <div class="modal-box">
             <div class="modal-title">Údaje dítěte</div>
@@ -3579,6 +3909,7 @@ květák..."></textarea>
         const WATCH_LIST_KEY = 'nutri_watch_list_v1';
         const RESOLVED_RISKS_KEY = 'nutri_resolved_risks_v1';
         const SAVED_IDEAS_KEY = 'nutri_saved_ideas_v1';
+        const RECIPES_KEY = 'nutri_recipes_v1';
         const AUTO_BACKUP_KEY = 'nutri_last_auto_backup_v1';
         const EDIT_AUTO_BACKUP_LAST_AT_KEY = 'nutri_edit_auto_backup_last_at_v1';
         const EDIT_AUTO_BACKUP_DELAY_MS = 30000;
@@ -3776,6 +4107,337 @@ květák..."></textarea>
             localStorage.setItem(SAVED_IDEAS_KEY, JSON.stringify(Array.isArray(items) ? items : []));
         }
 
+
+        function getRecipes() {
+            const raw = localStorage.getItem(RECIPES_KEY) || '[]';
+            try {
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed.map(normalizeRecipe).filter(Boolean) : [];
+            } catch (e) { return []; }
+        }
+
+        function setRecipes(items) {
+            localStorage.setItem(RECIPES_KEY, JSON.stringify((Array.isArray(items) ? items : []).map(normalizeRecipe).filter(Boolean)));
+        }
+
+        function makeRecipeId() {
+            return 'recipe_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        }
+
+        function normalizeRecipe(item) {
+            if (!item || typeof item !== 'object') return null;
+            const recipe = Object.assign({}, item);
+            recipe.id = recipe.id || makeRecipeId();
+            recipe.title = String(recipe.title || '').trim();
+            if (!recipe.title) recipe.title = 'Recept bez názvu';
+            recipe.mealType = String(recipe.mealType || 'Jiné').trim() || 'Jiné';
+            recipe.source = ['own', 'youtube', 'ai'].includes(recipe.source) ? recipe.source : 'own';
+            recipe.status = ['new', 'tested', 'favorite', 'watch', 'avoid'].includes(recipe.status) ? recipe.status : 'new';
+            recipe.ingredients = String(recipe.ingredients || '').trim();
+            recipe.steps = String(recipe.steps || '').trim();
+            recipe.note = String(recipe.note || '').trim();
+            recipe.youtubeUrl = normalizeYouTubeUrl(recipe.youtubeUrl || recipe.url || '');
+            recipe.youtubeId = recipe.youtubeUrl ? extractYouTubeVideoId(recipe.youtubeUrl) : '';
+            recipe.createdAt = recipe.createdAt || new Date().toISOString();
+            recipe.updatedAt = recipe.updatedAt || recipe.createdAt;
+            return recipe;
+        }
+
+        function extractYouTubeVideoId(input) {
+            const text = String(input || '').trim();
+            if (!text) return '';
+            const urlMatch = text.match(/https?:\/\/[^\s"'<>]+/i);
+            const rawUrl = urlMatch ? urlMatch[0] : text;
+            try {
+                const url = new URL(rawUrl);
+                const host = url.hostname.replace(/^www\./, '').replace(/^m\./, '');
+                if (host === 'youtu.be') return (url.pathname.split('/').filter(Boolean)[0] || '').trim();
+                if (host.includes('youtube.com')) {
+                    if (url.searchParams.get('v')) return url.searchParams.get('v').trim();
+                    const parts = url.pathname.split('/').filter(Boolean);
+                    if (parts.length >= 2 && ['shorts', 'embed', 'live'].includes(parts[0])) return parts[1].trim();
+                }
+            } catch (e) {}
+            const patterns = [
+                /youtu\.be\/([a-zA-Z0-9_-]{6,})/,
+                /youtube\.com\/watch\?[^\s]*v=([a-zA-Z0-9_-]{6,})/,
+                /youtube\.com\/shorts\/([a-zA-Z0-9_-]{6,})/,
+                /youtube\.com\/embed\/([a-zA-Z0-9_-]{6,})/,
+                /youtube\.com\/live\/([a-zA-Z0-9_-]{6,})/
+            ];
+            for (const pattern of patterns) {
+                const match = text.match(pattern);
+                if (match && match[1]) return match[1].trim();
+            }
+            return '';
+        }
+
+        function normalizeYouTubeUrl(input) {
+            const videoId = extractYouTubeVideoId(input);
+            return videoId ? `https://www.youtube.com/watch?v=${videoId}` : '';
+        }
+
+        function checkRecipeShareTarget() {
+            try {
+                const shared = localStorage.getItem('sharedData') || '';
+                const normalizedShared = normalizeYouTubeUrl(shared);
+                if (normalizedShared) {
+                    localStorage.setItem('pendingRecipeVideo', normalizedShared);
+                    localStorage.removeItem('sharedData');
+                }
+                const urlParams = new URLSearchParams(window.location.search);
+                const sharedUrl = urlParams.get('url') || urlParams.get('text');
+                const normalizedFromParams = normalizeYouTubeUrl(sharedUrl);
+                if (normalizedFromParams) {
+                    localStorage.setItem('pendingRecipeVideo', normalizedFromParams);
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            } catch (err) {
+                console.warn('YouTube recept sdílení se nepodařilo zpracovat:', err);
+            }
+        }
+
+        function openRecipesModal() {
+            checkRecipeShareTarget();
+            renderRecipes();
+            document.getElementById('recipesModal').style.display = 'flex';
+        }
+
+        function closeRecipesModal(backToMore = false) {
+            document.getElementById('recipesModal').style.display = 'none';
+            returnToMoreMenuIfRequested(backToMore);
+        }
+
+        function openRecipeYoutubeModal() {
+            const pending = normalizeYouTubeUrl(localStorage.getItem('pendingRecipeVideo') || '');
+            openRecipeEditModal('', { source: 'youtube', youtubeUrl: pending });
+        }
+
+        function openRecipeEditModal(recipeId = '', prefill = null) {
+            const recipes = getRecipes();
+            const recipe = recipeId ? recipes.find(r => r.id === recipeId) : null;
+            const data = recipe || normalizeRecipe(Object.assign({ title: '', source: 'own', status: 'new', mealType: 'Jiné' }, prefill || {}));
+            document.getElementById('recipeEditTitle').innerText = recipe ? 'Upravit recept' : 'Přidat recept';
+            document.getElementById('recipeEditId').value = recipe ? recipe.id : '';
+            document.getElementById('recipeTitleInput').value = recipe ? recipe.title : (data.title === 'Recept bez názvu' ? '' : data.title);
+            document.getElementById('recipeMealTypeInput').value = data.mealType || 'Jiné';
+            document.getElementById('recipeStatusInput').value = data.status || 'new';
+            document.getElementById('recipeSourceInput').value = data.source || 'own';
+            document.getElementById('recipeYoutubeInput').value = data.youtubeUrl || '';
+            document.getElementById('recipeIngredientsInput').value = data.ingredients || '';
+            document.getElementById('recipeStepsInput').value = data.steps || '';
+            document.getElementById('recipeNoteInput').value = data.note || '';
+            toggleRecipeYoutubeField();
+            document.getElementById('recipeEditModal').style.display = 'flex';
+        }
+
+        function closeRecipeEditModal(backToRecipes = false) {
+            document.getElementById('recipeEditModal').style.display = 'none';
+            if (backToRecipes) setTimeout(openRecipesModal, 0);
+        }
+
+        function toggleRecipeYoutubeField() {
+            const source = document.getElementById('recipeSourceInput')?.value || 'own';
+            const wrap = document.getElementById('recipeYoutubeWrap');
+            if (wrap) wrap.style.display = source === 'youtube' ? 'block' : 'none';
+        }
+
+        function saveRecipeFromModal() {
+            const id = document.getElementById('recipeEditId')?.value || '';
+            const source = document.getElementById('recipeSourceInput')?.value || 'own';
+            const youtubeRaw = document.getElementById('recipeYoutubeInput')?.value || '';
+            const youtubeUrl = source === 'youtube' ? normalizeYouTubeUrl(youtubeRaw) : '';
+            if (source === 'youtube' && !youtubeUrl) {
+                alert('Vložte prosím platný YouTube odkaz.');
+                return;
+            }
+            const recipes = getRecipes();
+            const existingIndex = id ? recipes.findIndex(r => r.id === id) : -1;
+            const old = existingIndex >= 0 ? recipes[existingIndex] : {};
+            const titleInput = (document.getElementById('recipeTitleInput')?.value || '').trim();
+            const recipe = normalizeRecipe(Object.assign({}, old, {
+                id: id || makeRecipeId(),
+                title: titleInput || (youtubeUrl ? 'YouTube recept' : 'Recept bez názvu'),
+                mealType: document.getElementById('recipeMealTypeInput')?.value || 'Jiné',
+                status: document.getElementById('recipeStatusInput')?.value || 'new',
+                source,
+                youtubeUrl,
+                ingredients: document.getElementById('recipeIngredientsInput')?.value || '',
+                steps: document.getElementById('recipeStepsInput')?.value || '',
+                note: document.getElementById('recipeNoteInput')?.value || '',
+                updatedAt: new Date().toISOString()
+            }));
+            createAutoBackup(existingIndex >= 0 ? 'před úpravou receptu' : 'před přidáním receptu');
+            if (existingIndex >= 0) recipes[existingIndex] = recipe;
+            else recipes.unshift(recipe);
+            setRecipes(recipes);
+            if (youtubeUrl && normalizeYouTubeUrl(localStorage.getItem('pendingRecipeVideo') || '') === youtubeUrl) {
+                localStorage.removeItem('pendingRecipeVideo');
+            }
+            closeRecipeEditModal(true);
+            alert('Recept byl uložen.');
+        }
+
+        function recipeTextForSafety(recipe) {
+            return [recipe.title, recipe.ingredients, recipe.steps, recipe.note].filter(Boolean).join('\n');
+        }
+
+        function getRecipeSafety(recipe) {
+            const text = recipeTextForSafety(recipe);
+            const avoidHits = getMatchedListItems(text, getAvoidList());
+            const watchHits = getMatchedListItems(text, getWatchList());
+            const riskHits = getRiskHits(text);
+            return { avoidHits, watchHits, riskHits };
+        }
+
+        function recipeSafetyHtml(recipe) {
+            const safety = getRecipeSafety(recipe);
+            const parts = [];
+            if (safety.avoidHits.length) parts.push(`<div class="recipe-safety-box avoid">🚫 Obsahuje položky z Vyhnout se: <b>${escapeHtml(safety.avoidHits.join(', '))}</b>. Recept nepoužívejte bez ruční kontroly.</div>`);
+            if (safety.watchHits.length) parts.push(`<div class="recipe-safety-box watch">👀 Obsahuje položky ze Sledovat: <b>${escapeHtml(safety.watchHits.join(', '))}</b>. Pokud recept podáte, sledujte reakci.</div>`);
+            if (safety.riskHits.length) parts.push(`<div class="recipe-safety-box risk">⚠️ Rizikový text: <b>${escapeHtml(safety.riskHits.join(', '))}</b>. Zkontrolujte poznámky a postup.</div>`);
+            if (!parts.length) parts.push('<div class="recipe-safety-box">✅ V textu receptu nejsou nalezené položky z Vyhnout se / Sledovat ani rizikové poznámky. Přesto před podáním zkontrolujte věk, konzistenci a suroviny.</div>');
+            return parts.join('');
+        }
+
+        function getRecipeSourceLabel(source) {
+            if (source === 'youtube') return 'YouTube';
+            if (source === 'ai') return 'AI';
+            return 'Vlastní';
+        }
+
+        function getRecipeStatusLabel(status) {
+            return {
+                new: 'Čeká na vyzkoušení',
+                tested: 'Ověřené',
+                favorite: 'Oblíbené',
+                watch: 'Sledovat',
+                avoid: 'Vyhnout se'
+            }[status] || 'Čeká na vyzkoušení';
+        }
+
+        function recipeYoutubeHtml(recipe) {
+            const id = recipe.youtubeId || extractYouTubeVideoId(recipe.youtubeUrl || '');
+            if (!id) return '';
+            const url = `https://www.youtube.com/watch?v=${id}`;
+            return `<div class="recipe-youtube-preview" onclick="window.open('${url}', '_blank')">
+                <img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt="YouTube náhled">
+                <div class="recipe-youtube-play"><span>▶</span></div>
+            </div>`;
+        }
+
+        function renderRecipeInbox() {
+            const box = document.getElementById('recipeInboxContent');
+            if (!box) return;
+            const pending = normalizeYouTubeUrl(localStorage.getItem('pendingRecipeVideo') || '');
+            if (!pending) { box.innerHTML = ''; return; }
+            box.innerHTML = `<div class="recipe-inbox-box">
+                <div style="font-weight:900;">📥 Nový YouTube recept</div>
+                <div class="recipe-inbox-url">${escapeHtml(pending)}</div>
+                <div class="recipe-actions">
+                    <button class="modal-btn btn-merge" onclick="openRecipeYoutubeModal()">💾 Uložit jako recept</button>
+                    <button class="modal-btn btn-cancel" onclick="discardPendingRecipeVideo()">Zahodit</button>
+                </div>
+            </div>`;
+        }
+
+        function discardPendingRecipeVideo() {
+            localStorage.removeItem('pendingRecipeVideo');
+            renderRecipes();
+        }
+
+        function renderRecipes() {
+            renderRecipeInbox();
+            const box = document.getElementById('recipesContent');
+            if (!box) return;
+            const query = normalizeSearchText(document.getElementById('recipeSearchInput')?.value || '');
+            const mealFilter = document.getElementById('recipeMealFilter')?.value || 'all';
+            const sourceFilter = document.getElementById('recipeSourceFilter')?.value || 'all';
+            const statusFilter = document.getElementById('recipeStatusFilter')?.value || 'active';
+            const recipes = getRecipes().filter(recipe => {
+                const text = normalizeSearchText(recipeTextForSafety(recipe));
+                if (query && !text.includes(query)) return false;
+                if (mealFilter !== 'all' && recipe.mealType !== mealFilter) return false;
+                if (sourceFilter !== 'all' && recipe.source !== sourceFilter) return false;
+                if (statusFilter === 'active' && recipe.status === 'avoid') return false;
+                if (statusFilter !== 'all' && statusFilter !== 'active' && recipe.status !== statusFilter) return false;
+                return true;
+            });
+            if (!recipes.length) {
+                box.innerHTML = '<div class="overview-box" style="color:#95a5a6;">Zatím zde nejsou žádné recepty pro vybraný filtr.</div>';
+                return;
+            }
+            box.innerHTML = recipes.map(renderRecipeCard).join('');
+        }
+
+        function renderRecipeCard(recipe) {
+            const sourceClass = recipe.source === 'youtube' ? 'youtube' : (recipe.source === 'ai' ? 'ai' : 'safe');
+            const statusClass = recipe.status === 'avoid' ? 'avoid' : (recipe.status === 'watch' ? 'watch' : 'safe');
+            return `<div class="recipe-card">
+                <div class="recipe-card-title">${escapeHtml(recipe.title)}</div>
+                <div class="recipe-meta">
+                    <span class="recipe-chip">${escapeHtml(recipe.mealType)}</span>
+                    <span class="recipe-chip ${sourceClass}">${escapeHtml(getRecipeSourceLabel(recipe.source))}</span>
+                    <span class="recipe-chip ${statusClass}">${escapeHtml(getRecipeStatusLabel(recipe.status))}</span>
+                </div>
+                ${recipeYoutubeHtml(recipe)}
+                ${recipe.ingredients ? `<details style="margin-top:8px;"><summary style="cursor:pointer; font-weight:900; color:#2f3a2c;">Suroviny</summary><div class="recipe-detail">${escapeHtml(recipe.ingredients)}</div></details>` : ''}
+                ${recipe.steps ? `<details style="margin-top:8px;"><summary style="cursor:pointer; font-weight:900; color:#2f3a2c;">Postup</summary><div class="recipe-detail">${escapeHtml(recipe.steps)}</div></details>` : ''}
+                ${recipe.note ? `<details style="margin-top:8px;"><summary style="cursor:pointer; font-weight:900; color:#2f3a2c;">Poznámka</summary><div class="recipe-detail">${escapeHtml(recipe.note)}</div></details>` : ''}
+                ${recipeSafetyHtml(recipe)}
+                <div class="recipe-actions">
+                    <button class="modal-btn" style="background:#3498db" onclick="useRecipeToDay('${recipe.id}')">➕ Do dne/plánu</button>
+                    <button class="modal-btn" style="background:#7aa33e" onclick="openRecipeEditModal('${recipe.id}')">✏️ Upravit</button>
+                    <button class="modal-btn" style="background:#e67e22" onclick="saveRecipeAsIdea('${recipe.id}')">💡 Do nápadů</button>
+                    <button class="modal-btn" style="background:#c0392b" onclick="deleteRecipe('${recipe.id}')">🗑️ Smazat</button>
+                </div>
+            </div>`;
+        }
+
+        function deleteRecipe(recipeId) {
+            const recipes = getRecipes();
+            const recipe = recipes.find(r => r.id === recipeId);
+            if (!recipe) return;
+            if (!confirm('Smazat recept: ' + recipe.title + '?')) return;
+            createAutoBackup('před smazáním receptu');
+            setRecipes(recipes.filter(r => r.id !== recipeId));
+            renderRecipes();
+        }
+
+        function saveRecipeAsIdea(recipeId) {
+            const recipe = getRecipes().find(r => r.id === recipeId);
+            if (!recipe) return;
+            const ideas = getSavedIdeas();
+            const text = [recipe.title, recipe.ingredients ? 'Suroviny:\n' + recipe.ingredients : '', recipe.steps ? 'Postup:\n' + recipe.steps : '', recipe.note ? 'Poznámka:\n' + recipe.note : '', recipe.youtubeUrl ? 'YouTube: ' + recipe.youtubeUrl : ''].filter(Boolean).join('\n\n');
+            if (ideas.some(i => normalizeFoodName(i.title || '') === normalizeFoodName(recipe.title))) {
+                if (!confirm('Nápad se stejným názvem už existuje. Přidat ho i tak?')) return;
+            }
+            createAutoBackup('uložení receptu jako nápadu');
+            ideas.unshift({ id: makeIdeaId(), title: recipe.title, mealType: recipe.mealType, text, status: 'new', source: 'recipe', recipeId: recipe.id, createdAt: new Date().toISOString() });
+            setSavedIdeas(ideas);
+            alert('Recept byl uložen do Nápadů jídel.');
+        }
+
+        function useRecipeToDay(recipeId) {
+            const recipe = getRecipes().find(r => r.id === recipeId);
+            if (!recipe) return;
+            const safety = getRecipeSafety(recipe);
+            if (safety.avoidHits.length) {
+                alert('Recept obsahuje položky z Vyhnout se: ' + safety.avoidHits.join(', ') + '\n\nNepůjde vložit bez ruční úpravy receptu.');
+                return;
+            }
+            const title = recipe.title;
+            const mealIndex = Math.max(0, mealLabels.findIndex(label => normalizeFoodName(label) === normalizeFoodName(recipe.mealType)));
+            const recipeIdea = { title, mealType: recipe.mealType, text: recipeTextForSafety(recipe), recipeId: recipe.id };
+            closeRecipesModal(false);
+            openUseIdeaModal(recipeIdea, 'recipe');
+            const mealSelect = document.getElementById('ideaUseMealIndex');
+            if (mealSelect) mealSelect.value = String(mealIndex >= 0 ? mealIndex : 0);
+            if (safety.watchHits.length || safety.riskHits.length) {
+                setTimeout(() => alert('U receptu je upozornění: ' + [...safety.watchHits, ...safety.riskHits].join(', ') + '\n\nPo vložení receptu sledujte reakci a zkontrolujte suroviny.'), 120);
+            }
+        }
+
         function makeIdeaId() {
             return 'idea_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
         }
@@ -3879,6 +4541,7 @@ květák..."></textarea>
                 watchList: getWatchList(),
                 resolvedRisks: getResolvedRisks(),
                 savedIdeas: getSavedIdeas(),
+                recipes: getRecipes(),
                 draft: getDraftData ? getDraftData() : []
             };
         }
@@ -3934,6 +4597,7 @@ květák..."></textarea>
             if (Array.isArray(backup.watchList)) setWatchList(backup.watchList);
             if (Array.isArray(backup.resolvedRisks)) setResolvedRisks(backup.resolvedRisks);
             if (Array.isArray(backup.savedIdeas)) setSavedIdeas(backup.savedIdeas);
+            if (Array.isArray(backup.recipes)) setRecipes(backup.recipes);
             if (Array.isArray(backup.draft)) localStorage.setItem('nutri_draft', JSON.stringify(backup.draft));
             closeSettings();
             loadChildProfile();
@@ -4567,7 +5231,7 @@ květák..."></textarea>
 
 
         function adjustSpacing() { document.getElementById('cardContainer').style.marginTop = (topMenu.offsetHeight + 15) + "px"; }
-        window.onload = () => { migrateStoredDataIfNeeded(); loadChildProfile(); load(); adjustSpacing(); setInterval(updateChildAgeDisplay, 3600000); };
+        window.onload = () => { migrateStoredDataIfNeeded(); loadChildProfile(); checkRecipeShareTarget(); load(); adjustSpacing(); setInterval(updateChildAgeDisplay, 3600000); };
         window.onresize = adjustSpacing;
 
         document.addEventListener('click', (e) => {
@@ -6140,6 +6804,7 @@ Tuto akci nelze vrátit zpět.`)) return;
         function openUseIdeaModal(indexOrIdea, source = 'current') {
             let idea = null;
             if (source === 'saved') idea = getSavedIdeas()[indexOrIdea] || null;
+            else if (source === 'recipe') idea = (indexOrIdea && typeof indexOrIdea === 'object') ? indexOrIdea : (pendingIdeaUse && pendingIdeaUse.idea ? pendingIdeaUse.idea : null);
             else idea = currentAiIdeaSuggestions[indexOrIdea] || null;
             if (!idea) return;
             pendingIdeaUse = { idea, source, index: indexOrIdea };
@@ -6358,12 +7023,34 @@ Tuto akci nelze vrátit zpět.`)) return;
             openRiskActionModal(encodeURIComponent(idea.title || ''), listType, '', 'ideas', String(index));
         }
 
+        function saveSavedIdeaAsRecipe(index) {
+            const idea = getSavedIdeas()[index];
+            if (!idea) return;
+            const recipes = getRecipes();
+            createAutoBackup('uložení AI nápadu jako receptu');
+            recipes.unshift(normalizeRecipe({
+                id: makeRecipeId(),
+                title: idea.title || 'AI recept',
+                mealType: idea.mealType || 'Jiné',
+                source: 'ai',
+                status: 'new',
+                ingredients: '',
+                steps: idea.text || '',
+                note: 'Uloženo z AI nápadu. Před podáním zkontrolujte suroviny, věk dítěte a seznamy Vyhnout se / Sledovat.',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            }));
+            setRecipes(recipes);
+            alert('AI nápad byl uložen jako recept. Postup je zatím převzatý z textu nápadu, před použitím ho upravte a zkontrolujte.');
+        }
+
         function renderSavedIdeaCard(idea, index) {
             const status = getIdeaStatusInfo(idea);
             const created = idea.createdAt ? new Date(idea.createdAt).toLocaleString('cs-CZ') : '';
             const showUse = status.group !== 'avoid' && status.group !== 'rejected';
             const primaryButtons = [];
             if (showUse) primaryButtons.push(`<button type="button" class="modal-btn" style="background:#27ae60" onclick="openUseIdeaModal(${index}, 'saved')">➕ Použít</button>`);
+            primaryButtons.push(`<button type="button" class="modal-btn" style="background:#d97706" onclick="saveSavedIdeaAsRecipe(${index})">📖 Recept</button>`);
             if (status.group !== 'used' && status.group !== 'avoid' && status.group !== 'rejected') primaryButtons.push(`<button type="button" class="modal-btn" style="background:#16a085" onclick="markSavedIdeaUsed(${index})">✅ Použité</button>`);
             if (status.group !== 'watch' && status.group !== 'avoid' && status.group !== 'rejected') primaryButtons.push(`<button type="button" class="modal-btn" style="background:#e67e22" onclick="openSavedIdeaListAction(${index}, 'watch')">👀 Sledovat</button>`);
             if (status.group !== 'avoid' && status.group !== 'rejected') primaryButtons.push(`<button type="button" class="modal-btn" style="background:#d35400" onclick="openSavedIdeaListAction(${index}, 'avoid')">🚫 Vyhnout se</button>`);
@@ -7008,7 +7695,8 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                 avoidList: getAvoidList(),
                 watchList: getWatchList(),
                 resolvedRisks: getResolvedRisks(),
-                savedIdeas: getSavedIdeas()
+                savedIdeas: getSavedIdeas(),
+                recipes: getRecipes()
             };
             const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: 'application/json' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -7056,6 +7744,7 @@ Záznamy se stejným datem budou nahrazeny importovaným plánem. Skutečná his
                     if (Array.isArray(importedRaw.watchList)) setWatchList(importedRaw.watchList);
                     if (Array.isArray(importedRaw.resolvedRisks)) setResolvedRisks(importedRaw.resolvedRisks);
                     if (Array.isArray(importedRaw.savedIdeas)) setSavedIdeas(importedRaw.savedIdeas);
+                    if (Array.isArray(importedRaw.recipes)) setRecipes(importedRaw.recipes);
                     importedRaw = importedRaw.entries;
                 }
                 let imported = importedRaw;
